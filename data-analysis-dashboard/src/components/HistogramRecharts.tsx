@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface HistogramRechartsProps {
   data: number[];
-  bins?: number; // Optional: Number of bins for the histogram TODO: add input in the modal window
+  initialBins?: number;
 }
 
-const HistogramRecharts: React.FC<HistogramRechartsProps> = ({ data, bins = 10 }) => {
+const HistogramRecharts: React.FC<HistogramRechartsProps> = ({ 
+  data, 
+  initialBins = 10 
+}) => {
+  const [bins, setBins] = useState(initialBins);
+  const binOptions = [2, 5, 10, 15, 20, 25, 30];
+
   if (data.length === 0) return <p>No data available</p>;
 
   // Calculate bins
@@ -27,15 +33,31 @@ const HistogramRecharts: React.FC<HistogramRechartsProps> = ({ data, bins = 10 }
   });
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={histogramData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="bin" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="count" fill="#8884d8" />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="histogram-wrapper">
+      <div className="histogram-controls">
+        <label>Bin Count: </label>
+        <select 
+          value={bins} 
+          onChange={(e) => setBins(Number(e.target.value))}
+          className="bin-select"
+        >
+          {binOptions.map(option => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={histogramData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="bin" />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey="count" fill="#8884d8" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 

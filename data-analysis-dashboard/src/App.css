@@ -3,12 +3,13 @@
   display: flex;
   flex-direction: column;
   height: 98vh;
+  font-family: 'Courier New', Courier, monospace; 
 }
 
 
 
 .table-container {
-  width: 80%;
+  width: 100%;
   height: 70vh;
   margin: 20px auto;
   overflow-x: auto;
@@ -22,6 +23,17 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-family: 'Courier New', Courier, monospace;
+}
+
+.compressed-table {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+
+  .selected {
+    background-color: #007bff;
+    color: white;
+  }
 }
 
 th {
@@ -60,7 +72,7 @@ th.selected {
 }
 
 header, footer {
-  max-height: 10vh;
+  height: 5vh;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -77,7 +89,7 @@ body {
 }
 
 .main-content {
-  padding: 20px;
+  padding: 10px;
   height: calc(90vh - 20px); /* Adjusted to account for header */
   overflow: hidden;
 }
@@ -124,10 +136,14 @@ body {
 }
 
 .panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;  /* This controls the space between title and button */
   margin-bottom: 5px;
   padding-bottom: 5px;
   border-bottom: 2px solid #ddd;
   flex-shrink: 0;
+  justify-content: flex-start; /* Align items to the start */
 }
 
 /* Table container specific styles */
@@ -186,4 +202,379 @@ body {
   cursor: pointer;
   padding: 0;
   margin-right: 10px;
+}
+
+.toggle-view-button {
+  width: 24px;
+  height: 24px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 10px; /* Replace margin-left: auto with a fixed margin */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+}
+
+.toggle-view-button:hover {
+  background-color: #f1f1f1;
+}
+
+.compress-button {
+  background-image: url('./assets/compress.svg');
+}
+
+.expand-button {
+  background-image: url('./assets/expand.svg');
+}
+
+.toggle-view-button img {
+  width: 20px;
+  height: 20px;
+}
+
+.table-container.compressed {
+  height: auto;
+  margin: 10px 0; /* Changed from auto to 0 for left alignment */
+  width: 100%; /* Limit width to 50% */
+  display: flex;
+}
+
+.table-container.compressed table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* This helps maintain consistent column widths */
+}
+
+.table-container.compressed th,
+.table-container.compressed td {
+  padding: 8px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+}
+
+.table-container.compressed .column-name {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.table-container.compressed .column-name:hover {
+  background-color: #e0e0e0;
+}
+
+/* selected column should be highlighted the same as the non compressed table */
+.table-container.compressed .selected {
+  background-color: #007bff;
+  color: white;
+}
+
+.compressed-view-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+.histogram-container {
+  flex: 1;
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}
+
+.histogram-button {
+  padding: 4px 8px;
+  background-color: #e1e1e1;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  min-width: 60px; /* Ensure consistent button width */
+}
+
+.histogram-button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+.table-container.compressed {
+  width: min-content;
+  max-width: 50%;
+  margin: 10px 0;
+}
+
+.table-container.compressed table {
+  width: auto;
+  min-width: 200px;
+}
+
+.histogram-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.histogram-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bin-select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+}
+
+.bin-select:hover {
+  border-color: #007bff;
+}
+
+/* Add these new styles */
+.table-container.compressed td:last-child {
+  text-align: center; /* Center horizontally */
+  vertical-align: middle; /* Center vertically */
+}
+
+.pca-container {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.pca-controls {
+  margin-bottom: 20px;
+}
+
+.plot-count-input {
+  margin-left: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.scatterplots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 20px;
+}
+
+.scatterplot-container {
+  padding: 15px;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.component-selectors {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.component-select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.plot-with-variance {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.variance-info {
+  width: 20%;
+  padding: 10px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.variance-info p {
+  margin: 5px 0;
+  font-size: 0.9em;
+}
+
+.variance-info p:last-child {
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* PCA Analysis Styles */
+.pca-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: auto;
+}
+
+.pca-controls {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pc-selector {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pc-selector label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.pc-selector select {
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pc-selector select:hover {
+  border-color: #007bff;
+}
+
+.pc-selector select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.plot-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  flex: 1;
+  min-height: 0; /* Allow container to shrink */
+  display: flex;
+  flex-direction: column;
+}
+
+.variance-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.variance-info p:first-child {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.variance-info p:last-child {
+  color: #007bff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Option styling in select */
+.pc-selector select option {
+  padding: 8px;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .pc-selector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Loading/Empty states */
+.pca-container p {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 0;
+}
+
+/* Modified compressed view container */
+.compressed-view-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Modified compressed table styles */
+.table-container.compressed {
+  flex: 0 0 33%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.table-container.compressed table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Updated column widths for compressed table */
+.table-container.compressed th:first-child,
+.table-container.compressed td:first-child {
+  width: 50%; /* Feature name */
+}
+
+.table-container.compressed th:nth-child(2),
+.table-container.compressed td:nth-child(2) {
+  width: 15%; /* Show checkbox */
+  text-align: center;
+}
+
+.table-container.compressed th:last-child,
+.table-container.compressed td:last-child {
+  width: 35%; /* Histogram button */
+  text-align: center;
+}
+
+/* Checkbox styling */
+.show-column-checkbox {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.show-column-checkbox:hover {
+  opacity: 0.8;
+}
+
+/* Add these new styles */
+.show-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.table-container.compressed th .show-column-checkbox {
+  margin-left: 4px;
+  vertical-align: middle;
 }

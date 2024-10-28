@@ -1,7 +1,7 @@
 import './App.css';
 import React, { useState } from 'react';
 import DataTable from './components/DataTable';
-// import HistogramRecharts from './components/HistogramRecharts';
+import PCAAnalysis from './components/PCAAnalysis';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -18,6 +18,7 @@ interface DataState {
 const App: React.FC = () => {
   // Initialize state with proper typing
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [isExpanded, setIsExpanded] = useState(true); // Add this state
   const [data, setData] = useState<DataState>({
     csvData: [],
     columns: []
@@ -43,20 +44,30 @@ const App: React.FC = () => {
         {data.csvData.length > 0 ? (
           <div className="panels-container">
             <div className="panel panel-left">
-              <div className="table-panel-content">
-                <h2> Data</h2>
-                <DataTable 
-                  data={data.csvData} 
-                  columns={data.columns} 
-                  onColumnSelect={handleColumnSelect} 
+              <h2>
+                Data
+                <button 
+                  className={`toggle-view-button ${isExpanded ? 'compress-button' : 'expand-button'}`}
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  aria-label={isExpanded ? "Compress table" : "Expand table"}
+                  // hovered: display tooltip
+                  title={isExpanded ? "Compress table" : "Expand table"}
                 />
-              </div>
+              </h2>
+              <DataTable 
+                data={data.csvData} 
+                columns={data.columns} 
+                onColumnSelect={handleColumnSelect}
+                isExpanded={isExpanded}
+              />
             </div>
             
             <div className="panel panel-middle">
-              <h2>Visualization</h2>
-              {/* pca clustering component here */}
-              <p>Visualization coming soon...</p>
+              <h2>PCA Analysis</h2>
+              <PCAAnalysis 
+                data={data.csvData}
+                selectedColumns={selectedColumns}
+              />
             </div>
             
             <div className="panel panel-right">

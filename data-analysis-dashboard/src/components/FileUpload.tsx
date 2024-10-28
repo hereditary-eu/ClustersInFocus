@@ -5,6 +5,20 @@ interface FileUploadProps {
   onFileLoaded: (data: any[], columns: string[]) => void;
 }
 
+// Helper function to determine column type
+const inferColumnType = (values: any[]): 'number' | 'string' => {
+  // Filter out empty values
+  const nonEmptyValues = values.filter(v => v !== null && v !== '');
+  
+  // If all values can be converted to numbers, it's a number column
+  const isNumeric = nonEmptyValues.every(value => {
+    const num = Number(value);
+    return !isNaN(num) && typeof num === 'number';
+  });
+
+  return isNumeric ? 'number' : 'string';
+};
+
 const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
   const [fileName, setFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,23 +41,35 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
           return;
         }
 
-        const data = result.data as Record<string, any>[];
-        const headers = Object.keys(data[0]);
+        const rawData = result.data as Record<string, any>[];
+        const headers = Object.keys(rawData[0]);
 
-        // Filter out any empty rows and ensure data consistency
-        const cleanData = data.filter(row => 
-          Object.values(row).some(value => value !== null && value !== '')
-        );
-
-        // Format data for the table
-        const formattedData = cleanData.map(row => {
-          const newRow: Record<string, any> = {};
-          headers.forEach(header => {
-            newRow[header] = row[header] || ''; // Replace null/undefined with empty string
-          });
-          return newRow;
+        // Determine column types
+        const columnTypes: Record<string, 'number' | 'string'> = {};
+        headers.forEach(header => {
+          const columnValues = rawData.map(row => row[header]);
+          columnTypes[header] = inferColumnType(columnValues);
         });
 
+        // Filter and format data
+        const formattedData = rawData
+          .filter(row => Object.values(row).some(value => value !== null && value !== ''))
+          .map(row => {
+            const newRow: Record<string, any> = {};
+            headers.forEach(header => {
+              const value = row[header];
+              if (columnTypes[header] === 'number') {
+                // Convert to number if it's a numeric column
+                newRow[header] = value === '' ? null : Number(value);
+              } else {
+                // Keep as string for string columns
+                newRow[header] = value || '';
+              }
+            });
+            return newRow;
+          });
+
+        console.log('Column types:', columnTypes); // Debug log
         onFileLoaded(formattedData, headers);
       },
       error: (error) => {
@@ -63,7 +89,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
         type="file" 
         accept=".csv" 
         onChange={handleFileChange}
-        style={{ display: 'none' }}  // Hide the default input
+        style={{ display: 'none' }}
       />
       <button 
         className="file-upload-button"

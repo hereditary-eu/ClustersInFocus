@@ -1,97 +1,86 @@
 import './App.css';
 import React, { useState } from 'react';
-import Papa from 'papaparse';
 import DataTable from './components/DataTable';
+// import HistogramRecharts from './components/HistogramRecharts';
+import Header from './components/Header';
+import Footer from './components/Footer';
 
-import Boxplot from './components/BoxplotReactCharts';
-import BoxplotRecharts from './components/BoxplotRecharts';
-import HistogramRecharts from './components/HistogramRecharts';
-import BarChart from './components/BarChartD3';
+// Improve type safety with proper interfaces
+interface DataRow {
+  [key: string]: string | number;  // Each row is an object with string keys and string/number values
+}
+
+interface DataState {
+  csvData: DataRow[];
+  columns: string[];
+}
 
 const App: React.FC = () => {
-  const [csvData, setCsvData] = useState<any[]>([]);
-  const [columns, setColumns] = useState<any[]>([]);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>([]); // Track selected columns
-
-  const sampleData = [35, 42, 55, 70, 80, 90, 100, 120, 130, 145];
-
-  const handleFileUpload = (file: File) => {
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (result) => {
-        const data = result.data as object[];
-        const keys = Object.keys(data[0] as object);
-
-        // Create columns in the format react-table requires
-        const tableColumns = keys.map((key) => ({
-          Header: key,
-          accessor: key,
-        }));
-
-        setColumns(tableColumns);
-        setCsvData(data);
-      }
-    });
-  };
+  // Initialize state with proper typing
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [data, setData] = useState<DataState>({
+    csvData: [],
+    columns: []
+  });
 
   const handleColumnSelect = (selected: string[]) => {
-    setSelectedColumns(selected); // Track selected columns in state
+    setSelectedColumns(selected);
+  };
+
+  const handleFileUpload = (csvData: DataRow[], headers: string[]) => {
+    console.log('Received data:', { rows: csvData.length, headers }); // Debug log
+    setData({
+      csvData: csvData,
+      columns: headers
+    });
   };
 
   return (
     <div className="App">
-      <h1>Data Analysis Dashboard</h1>
+      <Header onFileUpload={handleFileUpload} />
       
-      {/* File Upload Section */}
-      <input
-        type="file"
-        accept=".csv"
-        onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
-      />
+      <main className="main-content">
+        {data.csvData.length > 0 ? (
+          <div className="panels-container">
+            <div className="panel panel-left">
+              <div className="table-panel-content">
+                <h2> Data</h2>
+                <DataTable 
+                  data={data.csvData} 
+                  columns={data.columns} 
+                  onColumnSelect={handleColumnSelect} 
+                />
+              </div>
+            </div>
+            
+            <div className="panel panel-middle">
+              <h2>Visualization</h2>
+              {/* pca clustering component here */}
+              <p>Visualization coming soon...</p>
+            </div>
+            
+            <div className="panel panel-right">
+              <h2>Analysis</h2>
+              <div className="debug-section">
+                <h4>Debug Section</h4>
+                <p>Selected Columns</p>
+                <ul>
+                  {selectedColumns.map((col) => (
+                    <li key={col}>{col}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="upload-prompt">
+            <p>No data loaded. Please upload a CSV file.</p>
+          </div>
+        )}
+      </main>
       
-      {/* Display DataTable once CSV is uploaded */}
-      {csvData.length > 0 && (
-        <div>
-          <h2>CSV Data Table</h2>
-          <DataTable data={csvData} columns={columns} onColumnSelect={handleColumnSelect} />
-        </div>
-      )}
-        
-      {/* Display Boxplot with sample data
-      <div>
-        <h2>Boxplot attempt react charts</h2>
-        <Boxplot data={sampleData} />
-      </div> */}
-
-      {/* Display Boxplot with sample data
-      <div>
-        <h2>Boxplot attempt recharts</h2>
-        <BoxplotRecharts data={sampleData} />
-      </div> */}
-      <hr />
-      <h2>DEBUG: Selected Columns</h2>
-      <ul>
-        {selectedColumns.map((col) => (
-          <li key={col}>{col}</li>
-        ))}
-      </ul>
-      
-      <hr />
-      
-      <h2>Charting Component Tests</h2>
-      {/* Display Histogram with sample data */}
-      <div>
-        <h2>Histogram</h2>
-        <HistogramRecharts data={sampleData} />
-      </div>
-
-      {/* Display BarChart with sample data */}
-      <div>
-        <h2>Bar Chart</h2>
-        <BarChart data={sampleData} />
-      </div>
-  </div>
+      <Footer />
+    </div>
   );
 };
 

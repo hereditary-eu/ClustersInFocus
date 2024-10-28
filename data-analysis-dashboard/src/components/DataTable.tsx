@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { useTable } from 'react-table';
+import React, { useState, useMemo } from 'react';
+import { useTable, Column } from 'react-table';
 
 interface DataTableProps {
   data: any[];
-  columns: any[];
-  onColumnSelect: (selectedColumns: string[]) => void; // Prop to send selected columns back to parent
+  columns: string[];
+  onColumnSelect: (selectedColumns: string[]) => void;
 }
 
 const DataTable: React.FC<DataTableProps> = ({ data, columns, onColumnSelect }) => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+
+  // Format columns for react-table
+  const tableColumns = useMemo<Column[]>(() => 
+    columns.map((col) => ({
+      Header: col,
+      accessor: col, // This is the key that was missing
+      id: col,
+    })),
+    [columns]
+  );
 
   const {
     getTableProps,
@@ -17,7 +27,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, columns, onColumnSelect }) 
     rows,
     prepareRow,
   } = useTable({
-    columns,
+    columns: tableColumns as readonly Column<any>[],
     data,
   });
 
@@ -40,31 +50,37 @@ const DataTable: React.FC<DataTableProps> = ({ data, columns, onColumnSelect }) 
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th
-                  {...column.getHeaderProps()}
-                  onClick={() => toggleColumnSelection(column.id)}
-                  className={selectedColumns.includes(column.id) ? 'selected' : ''}
-                >
-                  {column.render('Header')}
-                </th>
-              ))}
+              {headerGroup.headers.map((column) => {
+                const headerProps = column.getHeaderProps();
+                return (
+                  <th
+                    {...headerProps}
+                    onClick={() => toggleColumnSelection(column.id)}
+                    className={selectedColumns.includes(column.id) ? 'selected' : ''}
+                  >
+                    {column.render('Header')}
+                  </th>
+                );
+              })}
             </tr>
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
+          {rows.map((row, i) => {
             prepareRow(row);
             return (
               <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => (
-                  <td
-                    {...cell.getCellProps()}
-                    className={selectedColumns.includes(cell.column.id) ? 'selected' : ''}
-                  >
-                    {cell.render('Cell')}
-                  </td>
-                ))}
+                {row.cells.map((cell) => {
+                  const cellProps = cell.getCellProps();
+                  return (
+                    <td
+                      {...cellProps}
+                      className={selectedColumns.includes(cell.column.id) ? 'selected' : ''}
+                    >
+                      {cell.render('Cell')}
+                    </td>
+                  );
+                })}
               </tr>
             );
           })}

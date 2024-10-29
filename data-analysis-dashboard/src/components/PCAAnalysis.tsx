@@ -7,20 +7,28 @@ interface PCAAnalysisProps {
   selectedColumns: string[];
 }
 
-const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns }) => {
+interface PCAAnalysisProps {
+  data: any[];
+  selectedColumns: string[];
+  onPCAUpdate: (pcSelection: { pc1: number | null; pc2: number | null }, variance: number[]) => void;
+}
+
+const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns, onPCAUpdate }) => {
   const [pcaResult, setPcaResult] = useState<ml.PCA | null>(null);
   const [transformedData, setTransformedData] = useState<number[][]>([]);
-  const [explainedVariance, setExplainedVariance] = useState<number[]>([]);
-  const [cumulativeExplainedVariance, setCumulativeExplainedVariance] = useState<number[]>([]);
   const [selectedPCs, setSelectedPCs] = useState<{ pc1: number | null; pc2: number | null }>({
     pc1: null,
     pc2: null,
   });
+  const varianceRatios = pcaResult?.getExplainedVariance() || [];
 
   // Perform PCA when selected columns change
   useEffect(() => {
     if (selectedColumns.length < 2) {
       setPcaResult(null);
+      setTransformedData([]);
+      setSelectedPCs({ pc1: null, pc2: null });
+      onPCAUpdate({ pc1: null, pc2: null }, []);
       return;
     }
 
@@ -43,17 +51,13 @@ const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns }) => {
 
       // Get individual explained variance ratios
       const varianceRatios = pca.getExplainedVariance();
-      setExplainedVariance(varianceRatios);
 
-      // Calculate cumulative explained variance
-      const cumulative = varianceRatios.map((_, i) =>
-        varianceRatios.slice(0, i + 1).reduce((a, b) => a + b, 0)
-      );
-      setCumulativeExplainedVariance(cumulative);
+      // Send the individual variance ratios instead of cumulative
+      onPCAUpdate(selectedPCs, varianceRatios);
     } catch (error) {
       console.error('PCA calculation error:', error);
     }
-  }, [data, selectedColumns]);
+  }, [data, selectedColumns, onPCAUpdate, selectedPCs]);
 
   if (!pcaResult || selectedColumns.length < 2) {
     return <p>Select at least two numerical columns for PCA analysis</p>;
@@ -64,7 +68,7 @@ const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns }) => {
       <div className="pca-controls">
         <div className="pc-selector">
           <label>
-            First Principal Component:
+            1st Principal Component:
             <select
               value={selectedPCs.pc1 ?? ''}
               onChange={(e) =>
@@ -75,7 +79,7 @@ const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns }) => {
               }
             >
               <option value="">Select PC</option>
-              {explainedVariance.map((variance, i) => (
+              {varianceRatios.map((variance, i) => (
                 <option key={i} value={i}>
                   PC{i + 1} ({(variance * 100).toFixed(2)}% variance)
                 </option>
@@ -84,7 +88,7 @@ const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns }) => {
           </label>
 
           <label>
-            Second Principal Component:
+            2nd Principal Component:
             <select
               value={selectedPCs.pc2 ?? ''}
               onChange={(e) =>
@@ -95,7 +99,7 @@ const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns }) => {
               }
             >
               <option value="">Select PC</option>
-              {explainedVariance.map((variance, i) => (
+              {varianceRatios.map((variance, i) => (
                 <option key={i} value={i}>
                   PC{i + 1} ({(variance * 100).toFixed(2)}% variance)
                 </option>
@@ -115,17 +119,6 @@ const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns }) => {
               width="100%"
               height={400}
             />
-            <div className="variance-info">
-              <p>Maximum Cumulative Explained Variance for Selected PCs:</p>
-              <p>
-                {(
-                  cumulativeExplainedVariance[
-                    Math.max(selectedPCs.pc1, selectedPCs.pc2)
-                  ] * 100
-                ).toFixed(2)}
-                %
-              </p>
-            </div>
           </div>
         )}
       </div>

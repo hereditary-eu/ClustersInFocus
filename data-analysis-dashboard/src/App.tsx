@@ -4,6 +4,7 @@ import DataTable from './components/DataTable';
 import PCAAnalysis from './components/PCAAnalysis';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import AnalysisPanel from './components/AnalysisPanel';
 
 // Improve type safety with proper interfaces
 interface DataRow {
@@ -15,6 +16,12 @@ interface DataState {
   columns: string[];
 }
 
+// Add to your interfaces
+interface PCSelection {
+  pc1: number | null;
+  pc2: number | null;
+}
+
 const App: React.FC = () => {
   // Initialize state with proper typing
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
@@ -23,6 +30,8 @@ const App: React.FC = () => {
     csvData: [],
     columns: []
   });
+  const [selectedPCs, setSelectedPCs] = useState<PCSelection>({ pc1: null, pc2: null });
+  const [cumulativeExplainedVariance, setCumulativeExplainedVariance] = useState<number[]>([]);
 
   const handleColumnSelect = (selected: string[]) => {
     setSelectedColumns(selected);
@@ -34,6 +43,11 @@ const App: React.FC = () => {
       csvData: csvData,
       columns: headers
     });
+  };
+
+  const handlePCAUpdate = (pcSelection: PCSelection, variance: number[]) => {
+    setSelectedPCs(pcSelection);
+    setCumulativeExplainedVariance(variance);
   };
 
   return (
@@ -63,24 +77,20 @@ const App: React.FC = () => {
             </div>
             
             <div className="panel panel-middle">
-              <h2>PCA Analysis</h2>
+              <h2>PCA / Clustering</h2>
               <PCAAnalysis 
                 data={data.csvData}
                 selectedColumns={selectedColumns}
+                onPCAUpdate={handlePCAUpdate}
               />
             </div>
             
             <div className="panel panel-right">
               <h2>Analysis</h2>
-              <div className="debug-section">
-                <h4>Debug Section</h4>
-                <p>Selected Columns</p>
-                <ul>
-                  {selectedColumns.map((col) => (
-                    <li key={col}>{col}</li>
-                  ))}
-                </ul>
-              </div>
+              <AnalysisPanel
+                selectedPCs={selectedPCs}
+                cumulativeExplainedVariance={cumulativeExplainedVariance}
+              />
             </div>
           </div>
         ) : (

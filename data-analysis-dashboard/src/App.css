@@ -1,4 +1,7 @@
-/* Container for the table */
+/* TODO: Clean up this mess */
+
+
+
 .App {
   display: flex;
   flex-direction: column;
@@ -393,21 +396,28 @@ body {
 }
 
 .variance-info {
-  width: 20%;
-  padding: 10px;
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex: 1;  /* Take up remaining space */
+  margin: 16px 0;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: fit-content;
 }
 
-.variance-info p {
-  margin: 5px 0;
-  font-size: 0.9em;
+.variance-info p:first-child {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 8px;
 }
 
 .variance-info p:last-child {
-  font-weight: bold;
   color: #007bff;
+  font-size: 24px;  /* Increased for better visibility */
+  font-weight: 600;
+  margin: 0;
 }
 
 /* PCA Analysis Styles */
@@ -555,7 +565,6 @@ body {
   text-align: center;
 }
 
-/* Checkbox styling */
 .show-column-checkbox {
   cursor: pointer;
   width: 16px;
@@ -566,7 +575,6 @@ body {
   opacity: 0.8;
 }
 
-/* Add these new styles */
 .show-header {
   display: flex;
   align-items: center;
@@ -577,4 +585,72 @@ body {
 .table-container.compressed th .show-column-checkbox {
   margin-left: 4px;
   vertical-align: middle;
+}
+
+/* Header content styling */
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.combinations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.summands-picker {
+  display: flex;
+  align-items: center;
+}
+
+.summands-options {
+  display: flex;
+  gap: 16px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radio-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #007bff;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-button:hover {
+  background: #e3f2fd;
+}
+
+.radio-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #007bff;
+  display: block;
+}
+
+.radio-item label {
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+}
+
+.combinations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }

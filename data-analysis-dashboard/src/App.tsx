@@ -25,13 +25,14 @@ interface PCSelection {
 const App: React.FC = () => {
   // Initialize state with proper typing
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-  const [isExpanded, setIsExpanded] = useState(true); // Add this state
+  const [isDataTableExpanded, setIsDataTableExpanded] = useState(true); // Add this state
   const [data, setData] = useState<DataState>({
     csvData: [],
     columns: []
   });
   const [selectedPCs, setSelectedPCs] = useState<PCSelection>({ pc1: null, pc2: null });
   const [cumulativeExplainedVariance, setCumulativeExplainedVariance] = useState<number[]>([]);
+  const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
 
   const handleColumnSelect = (selected: string[]) => {
     setSelectedColumns(selected);
@@ -50,6 +51,27 @@ const App: React.FC = () => {
     setCumulativeExplainedVariance(variance);
   };
 
+  const handlePanelClick = (panelId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent click from bubbling to document
+    
+    // Only change panel state if clicking a different panel or a collapsed panel
+    if (expandedPanel !== panelId) {
+      setExpandedPanel(panelId);
+    }
+  };
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const panelsContainer = document.querySelector('.panels-container');
+      if (panelsContainer && !panelsContainer.contains(event.target as Node)) {
+        setExpandedPanel(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   return (
     <div className="App">
       <Header onFileUpload={handleFileUpload} />
@@ -57,27 +79,33 @@ const App: React.FC = () => {
       <main className="main-content">
         {data.csvData.length > 0 ? (
           <div className="panels-container">
-            <div className="panel panel-left">
+            <div 
+              className={`panel panel-left ${expandedPanel === 'left' ? 'expanded' : ''}`}
+              onClick={(e) => handlePanelClick('left', e)}
+            >
               <h2>
-                Data
+                Data |
                 <button 
-                  className={`toggle-view-button ${isExpanded ? 'compress-button' : 'expand-button'}`}
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  aria-label={isExpanded ? "Compress table" : "Expand table"}
+                  className={`toggle-view-button ${isDataTableExpanded ? 'compress-button' : 'expand-button'}`}
+                  onClick={() => setIsDataTableExpanded(!isDataTableExpanded)}
+                  aria-label={isDataTableExpanded ? "Compress table" : "Expand table"}
                   // hovered: display tooltip
-                  title={isExpanded ? "Compress table" : "Expand table"}
+                  title={isDataTableExpanded ? "Compress table" : "Expand table"}
                 />
               </h2>
               <DataTable 
                 data={data.csvData} 
                 columns={data.columns} 
                 onColumnSelect={handleColumnSelect}
-                isExpanded={isExpanded}
+                isExpanded={isDataTableExpanded}
               />
             </div>
             
-            <div className="panel panel-middle">
-              <h2>PCA / Clustering</h2>
+            <div 
+              className={`panel panel-middle ${expandedPanel === 'middle' ? 'expanded' : ''}`}
+              onClick={(e) => handlePanelClick('middle', e)}
+            >
+              <h2>Clustering</h2>
               <PCAAnalysis 
                 data={data.csvData}
                 selectedColumns={selectedColumns}
@@ -85,7 +113,10 @@ const App: React.FC = () => {
               />
             </div>
             
-            <div className="panel panel-right">
+            <div 
+              className={`panel panel-right ${expandedPanel === 'right' ? 'expanded' : ''}`}
+              onClick={(e) => handlePanelClick('right', e)}
+            >
               <h2>Analysis</h2>
               <AnalysisPanel
                 selectedPCs={selectedPCs}

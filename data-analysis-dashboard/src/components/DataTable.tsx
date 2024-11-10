@@ -21,7 +21,6 @@ const DataTable: React.FC<DataTableProps> = ({
   columns,
   hiddenColumns,
   onColumnHide,
-  onColumnRestore,
   onColumnSelect,
   isExpanded 
 }) => {
@@ -139,30 +138,26 @@ const DataTable: React.FC<DataTableProps> = ({
 
   const toggleColumnSelection = (colId: string) => {
     setSelectedColumns(prevSelected => {
+      let newSelected;
       // If column is already selected, remove it
       if (prevSelected.includes(colId)) {
-        return prevSelected.filter(col => col !== colId);
+        newSelected = prevSelected.filter(col => col !== colId);
+      } else {
+        // If trying to add a new column
+        if (prevSelected.length >= 2) {
+          // If already at max selection, remove the first selected column
+          newSelected = [...prevSelected.slice(1), colId];
+        } else {
+          // Otherwise, add the new column
+          newSelected = [...prevSelected, colId];
+        }
       }
       
-      // If trying to add a new column
-      if (prevSelected.length >= 2) {
-        // If already at max selection, remove the first selected column
-        return [...prevSelected.slice(1), colId];
-      }
-      
-      // Otherwise, add the new column
-      return [...prevSelected, colId];
+      // Update parent component directly here
+      onColumnSelect(newSelected);
+      return newSelected;
     });
   };
-
-  const toggleColumnVisibility = (colId: string) => {
-    onColumnRestore(colId);
-  };
-
-  // Notify parent component of selected columns
-  React.useEffect(() => {
-    onColumnSelect(selectedColumns);
-  }, [selectedColumns, onColumnSelect]);
 
   const getColumnData = (columnName: string): number[] => {
     return data.map(row => row[columnName]).filter(value => !isNaN(value));

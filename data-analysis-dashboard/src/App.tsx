@@ -1,7 +1,7 @@
 import './App.css';
 import React, { useState } from 'react';
 import DataTable from './components/DataTable';
-import PCAAnalysis from './components/PCAAnalysis';
+import ClusteringPanel from './components/ClusteringPanel';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AnalysisPanel from './components/AnalysisPanel';
@@ -17,10 +17,10 @@ interface DataState {
 }
 
 // Add to your interfaces
-interface PCSelection {
-  pc1: number | null;
-  pc2: number | null;
-}
+// interface PCSelection {
+//   pc1: number | null;
+//   pc2: number | null;
+// }
 
 const App: React.FC = () => {
   // Initialize state with proper typing
@@ -30,8 +30,8 @@ const App: React.FC = () => {
     csvData: [],
     columns: []
   });
-  const [selectedPCs, setSelectedPCs] = useState<PCSelection>({ pc1: null, pc2: null });
-  const [cumulativeExplainedVariance, setCumulativeExplainedVariance] = useState<number[]>([]);
+  // const [selectedPCs, setSelectedPCs] = useState<PCSelection>({ pc1: null, pc2: null });
+  // const [cumulativeExplainedVariance, setCumulativeExplainedVariance] = useState<number[]>([]);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
 
@@ -47,10 +47,10 @@ const App: React.FC = () => {
     });
   };
 
-  const handlePCAUpdate = (pcSelection: PCSelection, variance: number[]) => {
-    setSelectedPCs(pcSelection);
-    setCumulativeExplainedVariance(variance);
-  };
+  // const handlePCAUpdate = (pcSelection: PCSelection, variance: number[]) => {
+  //   setSelectedPCs(pcSelection);
+  //   setCumulativeExplainedVariance(variance);
+  // };
 
   const handlePanelClick = (panelId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent click from bubbling to document
@@ -83,7 +83,10 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <Header onFileUpload={handleFileUpload} />
+      <Header 
+        onFileUpload={handleFileUpload}
+        data={data.csvData.length > 0 ? data : undefined}
+      />
       
       <main className="main-content">
         {data.csvData.length > 0 ? (
@@ -108,7 +111,7 @@ const App: React.FC = () => {
                             }}
                             title="Restore column"
                           >
-                            ×
+                            X
                           </button>
                         </span>
                       ))}
@@ -140,10 +143,10 @@ const App: React.FC = () => {
               <h2>
                 <div className='panel-header-middle-title'>Clustering</div>
               </h2>
-              <PCAAnalysis 
+              <ClusteringPanel 
                 data={data.csvData}
                 selectedColumns={selectedColumns}
-                onPCAUpdate={handlePCAUpdate}
+                k={3}
               />
             </div>
             
@@ -154,10 +157,10 @@ const App: React.FC = () => {
               <h2>
                 <div className='panel-header-title'>Analysis</div>
               </h2>
-              <AnalysisPanel
+              {/* <AnalysisPanel
                 selectedPCs={selectedPCs}
                 cumulativeExplainedVariance={cumulativeExplainedVariance}
-              />
+              /> */}
             </div>
           </div>
         ) : (

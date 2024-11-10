@@ -91,12 +91,12 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
+      {fileName && <p>Selected File: {fileName}</p> }
       <button 
         className="file-upload-button"
         onClick={handleButtonClick}
         aria-label="Upload file"
       />
-      {fileName && <p>Selected File: {fileName}</p>}
     </div>
   );
 };

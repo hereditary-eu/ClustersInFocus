@@ -1,48 +1,129 @@
 import React, { useState, useMemo } from 'react';
-import { useTable, Column } from 'react-table';
+import { useTable, Column, SortingRule } from 'react-table';
 import HistogramRecharts from './HistogramRecharts';
+import ColumnMenu from './ColumnMenu';
 
 interface DataTableProps {
   data: any[];
   columns: string[];
+  hiddenColumns: string[];
+  onColumnHide: (column: string) => void;
+  onColumnRestore: (column: string) => void;
   onColumnSelect: (selectedColumns: string[]) => void;
   isExpanded: boolean;
 }
 
+// Add type definition for column types
+type ColumnType = 'number' | 'string' | 'mixed';
+
 const DataTable: React.FC<DataTableProps> = ({ 
   data, 
-  columns, 
+  columns,
+  hiddenColumns,
+  onColumnHide,
+  onColumnRestore,
   onColumnSelect,
   isExpanded 
 }) => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [activeHistogram, setActiveHistogram] = useState<string | null>(null);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(columns);
+  const [hoveredColumn, setHoveredColumn] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ id: string; desc: boolean } | null>(null);
 
-  // Add toggle all columns function
-  const toggleAllColumns = () => {
-    if (visibleColumns.length === columns.length) {
-      setVisibleColumns([]); // Hide all
-    } else {
-      setVisibleColumns([...columns]); // Show all
+  const handleSort = (columnId: string) => {
+    setSortConfig(prev => ({
+      id: columnId,
+      desc: prev?.id === columnId ? !prev.desc : false
+    }));
+  };
+
+  const handleHideColumn = (columnId: string) => {
+    onColumnHide(columnId);
+  };
+
+  // Determine column type based on data
+  const getColumnType = (columnId: string): ColumnType => {
+    const values = data.map(row => row[columnId]);
+    const hasNumbers = values.some(val => typeof val === 'number');
+    const hasStrings = values.some(val => typeof val === 'string');
+    
+    if (hasNumbers && !hasStrings) return 'number';
+    if (hasStrings && !hasNumbers) return 'string';
+    return 'mixed';
+  };
+
+  // Custom sort function
+  const sortData = (a: any, b: any, columnId: string): number => {
+    const columnType = getColumnType(columnId);
+    const aValue = a[columnId];
+    const bValue = b[columnId];
+
+    // Handle null/undefined values
+    if (aValue == null) return 1;
+    if (bValue == null) return -1;
+    if (aValue == null && bValue == null) return 0;
+
+    switch (columnType) {
+      case 'number':
+        return Number(aValue) - Number(bValue);
+      case 'string':
+        return String(aValue).localeCompare(String(bValue));
+      case 'mixed':
+        // For mixed types, try to convert to numbers if possible
+        const aNum = Number(aValue);
+        const bNum = Number(bValue);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+          return aNum - bNum;
+        }
+        return String(aValue).localeCompare(String(bValue));
+      default:
+        return 0;
     }
   };
 
-  // Get numerical data for histogram
-  const getColumnData = (colName: string): number[] => {
-    return data.map(row => row[colName]).filter(val => val !== null);
-  };
+  // Sort the data based on current sort config
+  const sortedData = useMemo(() => {
+    if (!sortConfig) return data;
 
-  // Format columns for react-table, filtering by displayedColumns
+    return [...data].sort((a, b) => {
+      const sortOrder = sortConfig.desc ? -1 : 1;
+      return sortData(a, b, sortConfig.id) * sortOrder;
+    });
+  }, [data, sortConfig]);
+
+  // Format columns for react-table
   const expandedTableColumns = useMemo<Column[]>(() => 
     columns
-      .filter(col => visibleColumns.includes(col))
+      .filter(col => !hiddenColumns.includes(col))
       .map((col) => ({
-        Header: col,
+        Header: () => (
+          <div
+            className={`column-header ${
+              sortConfig?.id === col 
+                ? sortConfig.desc 
+                  ? 'sorted-desc' 
+                  : 'sorted-asc'
+                : ''
+            }`}
+            onMouseEnter={() => setHoveredColumn(col)}
+            onMouseLeave={() => setHoveredColumn(null)}
+          >
+            <span>{col}</span>
+            {hoveredColumn === col && (
+              <ColumnMenu
+                column={col}
+                onSort={handleSort}
+                onHide={handleHideColumn}
+                sortConfig={sortConfig}
+              />
+            )}
+          </div>
+        ),
         accessor: col,
         id: col,
+        sortType: (rowA: any, rowB: any) => sortData(rowA, rowB, col),
       })),
-    [columns, visibleColumns]
+    [columns, hiddenColumns, hoveredColumn, sortConfig]
   );
 
   const {
@@ -53,29 +134,39 @@ const DataTable: React.FC<DataTableProps> = ({
     prepareRow,
   } = useTable({
     columns: expandedTableColumns as readonly Column<any>[],
-    data,
+    data: sortedData
   });
 
   const toggleColumnSelection = (colId: string) => {
-    setSelectedColumns(prevSelected =>
-      prevSelected.includes(colId)
-        ? prevSelected.filter(col => col !== colId)
-        : [...prevSelected, colId]
-    );
+    setSelectedColumns(prevSelected => {
+      // If column is already selected, remove it
+      if (prevSelected.includes(colId)) {
+        return prevSelected.filter(col => col !== colId);
+      }
+      
+      // If trying to add a new column
+      if (prevSelected.length >= 2) {
+        // If already at max selection, remove the first selected column
+        return [...prevSelected.slice(1), colId];
+      }
+      
+      // Otherwise, add the new column
+      return [...prevSelected, colId];
+    });
   };
 
   const toggleColumnVisibility = (colId: string) => {
-    setVisibleColumns(prevVisible =>
-      prevVisible.includes(colId)
-        ? prevVisible.filter(col => col !== colId)
-        : [...prevVisible, colId]
-    );
+    onColumnRestore(colId);
   };
 
   // Notify parent component of selected columns
   React.useEffect(() => {
     onColumnSelect(selectedColumns);
   }, [selectedColumns, onColumnSelect]);
+
+  const getColumnData = (columnName: string): number[] => {
+    return data.map(row => row[columnName]).filter(value => !isNaN(value));
+  };
 
   return (
     <div className="table-panel-content">
@@ -123,18 +214,6 @@ const DataTable: React.FC<DataTableProps> = ({
               <thead>
                 <tr>
                   <th>Feature</th>
-                  <th>
-                    <div className="show-header">
-                      Show
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns.length === columns.length}
-                        onChange={toggleAllColumns}
-                        className="show-column-checkbox"
-                        aria-label="Toggle all columns"
-                      />
-                    </div>
-                  </th>
                   <th>Histogram</th>
                 </tr>
               </thead>
@@ -146,15 +225,11 @@ const DataTable: React.FC<DataTableProps> = ({
                       onClick={() => toggleColumnSelection(col)}
                     >
                       {col}
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns.includes(col)}
-                        onChange={() => toggleColumnVisibility(col)}
-                        className="show-column-checkbox"
-                        aria-label={`Show ${col} column`}
-                      />
+                      {hiddenColumns.includes(col) && (
+                        <span className="hidden-indicator" title="Hidden in expanded view">
+                          (hidden)
+                        </span>
+                      )}
                     </td>
                     <td>
                       {typeof data[0]?.[col] === 'number' && (

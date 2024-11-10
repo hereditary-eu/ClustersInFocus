@@ -59,7 +59,11 @@ const PCAAnalysis: React.FC<PCAAnalysisProps> = ({ data, selectedColumns, onPCAU
     }
   }, [data, selectedColumns, onPCAUpdate, selectedPCs]);
 
-  if (!pcaResult || selectedColumns.length < 2) {
+  const numericalColumns = selectedColumns.filter(col => 
+    data.some(row => typeof row[col] === 'number')
+  );
+
+  if (!pcaResult || numericalColumns.length < 2) {
     return <p>Select at least two numerical columns for PCA analysis</p>;
   }
 

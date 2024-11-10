@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const [selectedPCs, setSelectedPCs] = useState<PCSelection>({ pc1: null, pc2: null });
   const [cumulativeExplainedVariance, setCumulativeExplainedVariance] = useState<number[]>([]);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
+  const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
 
   const handleColumnSelect = (selected: string[]) => {
     setSelectedColumns(selected);
@@ -60,6 +61,14 @@ const App: React.FC = () => {
     }
   };
 
+  const handleColumnHide = (column: string) => {
+    setHiddenColumns(prev => [...prev, column]);
+  };
+
+  const handleColumnRestore = (column: string) => {
+    setHiddenColumns(prev => prev.filter(col => col !== column));
+  };
+
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const panelsContainer = document.querySelector('.panels-container');
@@ -83,19 +92,42 @@ const App: React.FC = () => {
               className={`panel panel-left ${expandedPanel === 'left' ? 'expanded' : ''}`}
               onClick={(e) => handlePanelClick('left', e)}
             >
-              <h2>
-                Data |
-                <button 
-                  className={`toggle-view-button ${isDataTableExpanded ? 'compress-button' : 'expand-button'}`}
-                  onClick={() => setIsDataTableExpanded(!isDataTableExpanded)}
-                  aria-label={isDataTableExpanded ? "Compress table" : "Expand table"}
-                  // hovered: display tooltip
-                  title={isDataTableExpanded ? "Compress table" : "Expand table"}
-                />
+              <h2 className="panel-header-left">
+                <div className="panel-header-title">Data</div>
+                <div className='panel-header-options'>
+                  {expandedPanel === 'left' && hiddenColumns.length > 0 && (
+                    <div className="hidden-columns-tags">
+                      {hiddenColumns.map((col) => (
+                        <span key={col} className="column-tag">
+                          {col}: hidden
+                          <button 
+                            className="restore-column-button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleColumnRestore(col);
+                            }}
+                            title="Restore column"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <button 
+                    className={`toggle-view-button ${isDataTableExpanded ? 'compress-button' : 'expand-button'}`}
+                    onClick={() => setIsDataTableExpanded(!isDataTableExpanded)}
+                    aria-label={isDataTableExpanded ? "Compress table" : "Expand table"}
+                    title={isDataTableExpanded ? "Compress table" : "Expand table"}
+                  />
+                </div>
               </h2>
               <DataTable 
                 data={data.csvData} 
-                columns={data.columns} 
+                columns={data.columns}
+                hiddenColumns={hiddenColumns}
+                onColumnHide={handleColumnHide}
+                onColumnRestore={handleColumnRestore}
                 onColumnSelect={handleColumnSelect}
                 isExpanded={isDataTableExpanded}
               />
@@ -105,7 +137,9 @@ const App: React.FC = () => {
               className={`panel panel-middle ${expandedPanel === 'middle' ? 'expanded' : ''}`}
               onClick={(e) => handlePanelClick('middle', e)}
             >
-              <h2>Clustering</h2>
+              <h2>
+                <div className='panel-header-middle-title'>Clustering</div>
+              </h2>
               <PCAAnalysis 
                 data={data.csvData}
                 selectedColumns={selectedColumns}
@@ -117,7 +151,9 @@ const App: React.FC = () => {
               className={`panel panel-right ${expandedPanel === 'right' ? 'expanded' : ''}`}
               onClick={(e) => handlePanelClick('right', e)}
             >
-              <h2>Analysis</h2>
+              <h2>
+                <div className='panel-header-title'>Analysis</div>
+              </h2>
               <AnalysisPanel
                 selectedPCs={selectedPCs}
                 cumulativeExplainedVariance={cumulativeExplainedVariance}

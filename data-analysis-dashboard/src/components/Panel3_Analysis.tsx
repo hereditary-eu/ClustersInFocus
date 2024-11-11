@@ -46,7 +46,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
                 <th>Feature 1</th>
                 <th>Feature 2</th>
                 <th>Cluster</th>
-                <th>Similarity</th>
+                <th>Jaccard Similarity</th>
               </tr>
             </thead>
             <tbody>

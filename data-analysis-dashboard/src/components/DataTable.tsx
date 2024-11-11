@@ -190,8 +190,8 @@ const DataTable: React.FC<DataTableProps> = ({
     
     return {
       background: `hsl(200, 70%, ${100 - normalizedValue * 50}%)`,
-      height: '4px',
-      padding: '0px 4px',
+      height: '2px',
+      padding: '0px 2px',
       textAlign: 'center' as const,
       fontSize: viewMode === 'heatmap' ? '0px' : 'inherit'
     };

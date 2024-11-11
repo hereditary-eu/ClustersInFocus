@@ -34,6 +34,7 @@ const App: React.FC = () => {
   // const [cumulativeExplainedVariance, setCumulativeExplainedVariance] = useState<number[]>([]);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
+  const [dataViewMode, setDataViewMode] = useState<'numerical' | 'heatmap'>('numerical');
 
   const handleColumnSelect = (selected: string[]) => {
     setSelectedColumns(selected);
@@ -115,6 +116,30 @@ const App: React.FC = () => {
                       ))}
                     </div>
                   )}
+                  {isDataTableExpanded && (
+                    <div className="view-mode-switch">
+                      <button
+                        className={`view-mode-button ${dataViewMode === 'numerical' ? 'active' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDataViewMode('numerical');
+                        }}
+                        title="Show numerical values"
+                      >
+                        123
+                      </button>
+                      <button
+                        className={`view-mode-button ${dataViewMode === 'heatmap' ? 'active' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDataViewMode('heatmap');
+                        }}
+                        title="Show heatmap"
+                      >
+                        ▦
+                      </button>
+                    </div>
+                  )}
                   <button 
                     className={`toggle-view-button ${isDataTableExpanded ? 'compress-button' : 'expand-button'}`}
                     onClick={() => setIsDataTableExpanded(!isDataTableExpanded)}
@@ -131,6 +156,7 @@ const App: React.FC = () => {
                 onColumnRestore={handleColumnRestore}
                 onColumnSelect={handleColumnSelect}
                 isExpanded={isDataTableExpanded}
+                viewMode={dataViewMode}
               />
             </div>
             

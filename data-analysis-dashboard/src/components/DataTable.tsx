@@ -12,6 +12,7 @@ interface DataTableProps {
   onColumnRestore: (column: string) => void;
   onColumnSelect: (selectedColumns: string[]) => void;
   isExpanded: boolean;
+  viewMode: 'numerical' | 'heatmap';
 }
 
 // Add type definition for column types
@@ -23,7 +24,8 @@ const DataTable: React.FC<DataTableProps> = ({
   hiddenColumns,
   onColumnHide,
   onColumnSelect,
-  isExpanded 
+  isExpanded,
+  viewMode
 }) => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [activeHistogram, setActiveHistogram] = useState<string | null>(null);
@@ -174,6 +176,28 @@ const DataTable: React.FC<DataTableProps> = ({
     setActiveHistogram(activeHistogram === columnName ? null : columnName);
   };
 
+  // Add helper function to calculate cell background color
+  const getCellStyle = (value: number, columnId: string) => {
+    if (viewMode !== 'heatmap' || typeof value !== 'number') return {};
+    
+    const columnValues = data
+      .map(row => row[columnId])
+      .filter(val => typeof val === 'number');
+    
+    const min = Math.min(...columnValues);
+    const max = Math.max(...columnValues);
+    const range = max - min;
+    const normalizedValue = range !== 0 ? (value - min) / range : 0.5;
+    
+    return {
+      background: `hsl(200, 70%, ${100 - normalizedValue * 50}%)`,
+      height: '4px',
+      padding: '0px 4px',
+      textAlign: 'center' as const,
+      fontSize: viewMode === 'heatmap' ? '0px' : 'inherit'
+    };
+  };
+
   return (
     <div className="table-panel-content">
       {isExpanded ? (
@@ -202,9 +226,13 @@ const DataTable: React.FC<DataTableProps> = ({
                     {row.cells.map((cell) => (
                       <td
                         {...cell.getCellProps()}
-                        className={selectedColumns.includes(cell.column.id) ? 'selected' : ''}
+                        className={`
+                          ${selectedColumns.includes(cell.column.id) ? 'selected' : ''}
+                          ${viewMode === 'heatmap' ? 'heatmap-cell' : ''}
+                        `}
+                        style={getCellStyle(cell.value, cell.column.id)}
                       >
-                        {cell.render('Cell')}
+                        {viewMode === 'numerical' ? cell.render('Cell') : ''}
                       </td>
                     ))}
                   </tr>

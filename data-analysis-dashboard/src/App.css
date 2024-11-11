@@ -896,3 +896,34 @@
     width: 120px;
     vertical-align: middle;
   }
+
+
+  /* HEATMAP */
+  .view-mode-switch {
+    display: flex;
+    gap: 2px;
+    margin-right: 8px;
+    background: #f0f0f0;
+    padding: 2px;
+    border-radius: 4px;
+  }
+  
+  .view-mode-button {
+    border: none;
+    background: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .view-mode-button.active {
+    background: white;
+    color: #333;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  .view-mode-button:hover:not(.active) {
+    background: rgba(255,255,255,0.5);
+  }

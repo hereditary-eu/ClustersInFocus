@@ -331,7 +331,7 @@ th.selected {
   vertical-align: middle; /* Center vertically */
 }
 
-.pca-container {
+/* .pca-container {
   padding: 20px;
   background: white;
   border-radius: 8px;
@@ -340,7 +340,7 @@ th.selected {
 
 .pca-controls {
   margin-bottom: 20px;
-}
+} */
 
 .plot-count-input {
   margin-left: 10px;
@@ -406,7 +406,7 @@ th.selected {
 }
 
 /* PCA Analysis Styles */
-.pca-container {
+/* .pca-container {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -455,7 +455,7 @@ th.selected {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
+} */
 
 .plot-container {
   background: white;
@@ -489,27 +489,27 @@ th.selected {
 }
 
 /* Option styling in select */
-.pc-selector select option {
+/* .pc-selector select option {
   padding: 8px;
   font-size: 14px;
-}
+} */
 
 /* Responsive adjustments */
-@media (min-width: 768px) {
+/* @media (min-width: 768px) {
   .pc-selector {
     grid-template-columns: repeat(2, 1fr);
   }
-}
+} */
 
 /* Loading/Empty states */
-.pca-container p {
+/* .pca-container p {
   text-align: center;
   color: #666;
   padding: 20px;
   background: #f8f9fa;
   border-radius: 8px;
   margin: 0;
-}
+} */
 
 /* Modified compressed table styles */
 .table-container.compressed {
@@ -1044,4 +1044,30 @@ footer {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+}
+
+
+.similarity-table {
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
+}
+
+.similarity-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.similarity-table th,
+.similarity-table td {
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.similarity-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.similarity-table tr:hover {
+  background-color: #f8f8f8;
 }

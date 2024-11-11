@@ -62,4 +62,61 @@ export class ClusteringService {
       }
     }
   }
+
+  static calculateJaccardIndex(set1: number[], set2: number[]): number {
+    const intersection = set1.filter(x => set2.includes(x));
+    const union = Array.from(new Set([...set1, ...set2]));
+    return intersection.length / union.length;
+  }
+
+  static getClusterSimilarities(
+    selectedFeature1: string,
+    selectedFeature2: string,
+    selectedClusterId: number
+  ): Array<{
+    feature1: string,
+    feature2: string,
+    clusterId: number,
+    similarity: number
+  }> {
+    // Get the selected cluster's data points
+    const selectedClusterGroups = LocalStorageService.getClusters(selectedFeature1, selectedFeature2) ?? {};
+    const selectedClusterPoints = selectedClusterGroups[selectedClusterId] || [];
+    
+    const results: Array<{
+      feature1: string,
+      feature2: string,
+      clusterId: number,
+      similarity: number
+    }> = [];
+
+    // Get all stored feature pairs
+    const allFeaturePairs = LocalStorageService.getAllClusteredFeaturePairs();
+
+    // Compare with all other clusters
+    for (const pair of allFeaturePairs) {
+      const { feature1, feature2 } = pair;
+      const clusterGroups = LocalStorageService.getClusters(feature1, feature2);
+      
+      // Skip comparing with itself
+      if (feature1 === selectedFeature1 && feature2 === selectedFeature2) continue;
+
+      // Skip if no clusters found
+      if (!clusterGroups) continue;
+      
+      // Calculate Jaccard index for each cluster in this feature pair
+      Object.entries(clusterGroups).forEach(([clusterId, clusterPoints]) => {
+        const similarity = this.calculateJaccardIndex(selectedClusterPoints, clusterPoints);
+        results.push({
+          feature1,
+          feature2,
+          clusterId: Number(clusterId),
+          similarity
+        });
+      });
+    }
+
+    // Sort by similarity in descending order
+    return results.sort((a, b) => b.similarity - a.similarity);
+  }
 } 

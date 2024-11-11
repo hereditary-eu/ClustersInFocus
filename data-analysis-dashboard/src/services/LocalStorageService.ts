@@ -18,4 +18,24 @@ export class LocalStorageService {
     const cacheKey = this.generateCacheKey(feature1, feature2);
     localStorage.setItem(cacheKey, JSON.stringify(clusterGroups));
   }
+
+  static getAllClusteredFeaturePairs(): Array<{ feature1: string, feature2: string }> {
+    const pairs: Array<{ feature1: string, feature2: string }> = [];
+    
+    // Iterate through all localStorage keys
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      
+      // Check if this is a kmeans cache key
+      if (key?.startsWith('kmeans-')) {
+        // Extract feature names from the key (format: 'kmeans-feature1-feature2')
+        const [_, feature1, feature2] = key.split('-');
+        if (feature1 && feature2) {
+          pairs.push({ feature1, feature2 });
+        }
+      }
+    }
+    
+    return pairs;
+  }
 } 

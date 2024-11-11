@@ -8,6 +8,7 @@ interface ScatterplotClusteredProps {
   k: number;
   width?: string | number;
   height?: number;
+  onPointClick: (cluster: number) => void;
 }
 
 const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
@@ -16,9 +17,23 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   yLabel,
   k,
   width = "100%",
-  height = 400
+  height = 400,
+  onPointClick
 }) => {
+  // Early return if data is missing or empty
   if (!data || data.length === 0) return <p>No data available</p>;
+
+  // Check if any data point has non-numerical values
+  const hasNonNumericalValues = data.some(point => 
+    typeof point[0] !== 'number' || 
+    isNaN(point[0]) || 
+    typeof point[1] !== 'number' || 
+    isNaN(point[1])
+  );
+
+  if (hasNonNumericalValues) {
+    return <p>Please select numerical columns only</p>;
+  }
 
   // Transform data into the format Recharts expects and separate by clusters
   const clusterData = Array.from({ length: k }, (_, i) => 
@@ -27,7 +42,7 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
       .map(point => ({
         x: point[0],
         y: point[1],
-        cluster: point[2]
+        cluster: i  // Explicitly store cluster index
       }))
   );
 
@@ -35,6 +50,11 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   const colors = Array.from({ length: k }, (_, i) => 
     `hsl(${(i * 360) / k}, 70%, 50%)`
   );
+
+  const handleClick = (clusterIndex: number) => {
+    console.log('Clicked cluster:', clusterIndex); // Debug log
+    onPointClick(clusterIndex);
+  };
 
   return (
     <div className="scatterplot-wrapper">
@@ -47,22 +67,13 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
             dataKey="x" 
             name={xLabel}
             type="number"
-            label={{ 
-              value: xLabel, 
-              position: 'bottom',
-              offset: 5
-            }}
+            label={{ value: xLabel, position: 'bottom', offset: 5 }}
           />
           <YAxis 
             dataKey="y" 
             name={yLabel}
             type="number"
-            label={{ 
-              value: yLabel, 
-              angle: -90, 
-              position: 'left',
-              offset: 5
-            }}
+            label={{ value: yLabel, angle: -90, position: 'left', offset: 5 }}
           />
           <Tooltip 
             cursor={{ strokeDasharray: '3 3' }}
@@ -88,6 +99,8 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
               shape="circle"
               r={4}
               animationDuration={0}
+              onClick={() => handleClick(i)}
+              cursor="pointer"
             />
           ))}
         </ScatterChart>

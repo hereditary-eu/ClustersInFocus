@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTable, Column } from 'react-table';
-import HistogramRecharts from './HistogramBig';
-import ColumnMenu from './DataTableColumnMenu';
-import TinyHistogram from './HistogramTiny';
+import Histogram from './Histogram';
+import ColumnMenu from './DataTableColumnHoverMenu';
 
 interface DataTableProps {
   data: any[];
@@ -273,8 +272,9 @@ const DataTable: React.FC<DataTableProps> = ({
                         title={isNumericalColumn(col) ? "Click to view detailed histogram" : "Not a numerical column"}
                       >
                         {isNumericalColumn(col) ? (
-                          <TinyHistogram 
+                          <Histogram 
                             data={getColumnData(col)}
+                            variant="tiny"
                             width={100}
                             height={30}
                           />
@@ -291,7 +291,10 @@ const DataTable: React.FC<DataTableProps> = ({
           {activeHistogram && (
             <div className="histogram-container">
               <h3>{activeHistogram} Distribution</h3>
-              <HistogramRecharts data={getColumnData(activeHistogram)} />
+              <Histogram 
+                data={getColumnData(activeHistogram)}
+                variant="big"
+              />
             </div>
           )}
         </div>

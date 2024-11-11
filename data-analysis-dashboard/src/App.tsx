@@ -1,10 +1,10 @@
 import './App.css';
 import React, { useState } from 'react';
-import Panel1Data from './components/Panel1Data';
+import Panel1Data from './components/Panel1_Data';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import ClusteringPanel from './components/Panel2Clustering';
-import AnalysisPanel from './components/Panel3Analysis';
+import ClusteringPanel from './components/Panel2_Clustering';
+import AnalysisPanel from './components/Panel3_Analysis';
 
 // Improve type safety with proper interfaces
 interface DataRow {
@@ -27,9 +27,10 @@ const App: React.FC = () => {
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
   const [dataViewMode, setDataViewMode] = useState<'numerical' | 'heatmap'>('numerical');
+  const [selectedCluster, setSelectedCluster] = useState<number | null>(null);
 
   const handleColumnSelect = (selected: string[]) => {
-    setSelectedColumns(selected);
+    setSelectedColumns(selected.slice().sort());
   };
 
   const handleFileUpload = (csvData: DataRow[], headers: string[]) => {
@@ -100,12 +101,14 @@ const App: React.FC = () => {
               selectedColumns={selectedColumns}
               expandedPanel={expandedPanel}
               onPanelClick={handlePanelClick}
+              onClusterSelect={setSelectedCluster}
             />
-            <AnalysisPanel 
-              cumulativeExplainedVariance={[/* your data here */]}
-              selectedPCs={{ pc1: null, pc2: null }}
+            <AnalysisPanel
               expandedPanel={expandedPanel}
               onPanelClick={handlePanelClick}
+              selectedCluster={selectedCluster}
+              selectedColumns={selectedColumns}
+              onClusterSelect={setSelectedCluster}
             />
           </div>
         ) : (

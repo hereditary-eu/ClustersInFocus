@@ -7,6 +7,7 @@ interface Panel2ClusteringProps {
   selectedColumns: string[];
   expandedPanel: string | null;
   onPanelClick: (panelId: string, event: React.MouseEvent) => void;
+  onClusterSelect: (cluster: number | null) => void;
 }
 
 const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
@@ -14,6 +15,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
   selectedColumns,
   expandedPanel,
   onPanelClick,
+  onClusterSelect,
 }) => {
   const [clusterData, setClusterData] = useState<number[] | null>(null);
   const [scatterData, setScatterData] = useState<number[][]>([]);
@@ -27,6 +29,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
         return;
       }
 
+      // Sort features alphabetically
       const [feature1, feature2] = selectedColumns;
       const clusterGroups = LocalStorageService.getClusters(feature1, feature2);
 
@@ -59,6 +62,18 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
       return <p>Select exactly two numerical columns to view clustering results</p>;
     }
 
+    // Check if selected columns contain numerical data
+    const hasNonNumericalValues = data.some(row => 
+      typeof Number(row[selectedColumns[0]]) !== 'number' || 
+      isNaN(Number(row[selectedColumns[0]])) ||
+      typeof Number(row[selectedColumns[1]]) !== 'number' || 
+      isNaN(Number(row[selectedColumns[1]]))
+    );
+
+    if (hasNonNumericalValues) {
+      return <p>Please select numerical columns only</p>;
+    }
+
     if (!clusterData) {
       return (
         <div className="clustering-container">
@@ -79,6 +94,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
             xLabel={selectedColumns[0]}
             yLabel={selectedColumns[1]}
             k={numClusters}
+            onPointClick={(cluster) => onClusterSelect(cluster)}
           />
         </div>
       </div>
@@ -91,7 +107,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
       onClick={(e) => onPanelClick('middle', e)}
     >
       <h2>
-        <div className='panel-header-middle-title'>Clustering</div>
+        <div className='panel-header-middle-title'>Visualization</div>
       </h2>
       {renderContent()}
     </div>

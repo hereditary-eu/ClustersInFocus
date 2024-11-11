@@ -19,8 +19,8 @@ const ColumnMenu: React.FC<ColumnMenuProps> = ({ column, onSort, onHide, sortCon
       >
         <span>
           {sortConfig?.id === column 
-            ? (sortConfig.desc ? '↓ Sort Ascending' : '↑ Sort Descending')
-            : '⇅ Sort'
+            ? (sortConfig.desc ? 'Sort ASC ↑' : 'Sort DESC ↓')
+            : 'Sort ⇅'
           }
         </span>
       </div>

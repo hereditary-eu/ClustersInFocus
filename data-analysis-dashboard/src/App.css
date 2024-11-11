@@ -42,7 +42,7 @@
 
   th {
     background-color: #e4e4e4; /* header bg */
-    padding: 12px;
+    /* padding: 12px; */
     border-bottom: 2px solid #ddd;
     text-align: left;
     text-transform: uppercase; /* Uppercase for header text */
@@ -266,9 +266,13 @@
     table-layout: fixed; /* This helps maintain consistent column widths */
   }
 
+  .table-container.compressed th {
+    height: 30px;
+  } 
+
   .table-container.compressed th,
   .table-container.compressed td {
-    padding: 8px 12px;
+    padding: 0px 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; /* Add ellipsis for overflowing text */
@@ -277,6 +281,7 @@
   .table-container.compressed .column-name {
     cursor: pointer;
     font-weight: 500;
+    height: 30px;
   }
 
   .table-container.compressed .column-name:hover {
@@ -672,7 +677,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* padding: 8px; */
+    padding: 8px;
     cursor: pointer;
   }
 
@@ -724,24 +729,21 @@
   }
   
   .column-tag {
-    background-color: #666;
-    color: white;
-    padding: 2px 6px;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 2px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
     border-radius: 12px;
     font-size: 12px;
-  }
-  
-  .restore-column-button {
-    background: none;
-    border: none;
-    color: white;
+    color: #666;
     cursor: pointer;
-    font-size: 12px;
+    transition: all 0.2s ease;
   }
   
-  .restore-column-button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
+  .column-tag:hover {
+    background-color: #e0e0e0;
+    color: #333;
   }
   
   /* Adjust existing panel header styles */
@@ -859,4 +861,38 @@
     display: flex;
     gap: 16px;
     align-items: center;
+  }
+
+
+  .tiny-histogram-cell {
+    width: 120px;
+    vertical-align: middle;
+    background: none;
+    cursor: pointer;
+  }
+
+  .tiny-histogram-wrapper {
+    background: none;
+    border: none;
+  }
+
+  .tiny-histogram-wrapper.clickable:hover {
+    cursor: pointer;
+  }
+  
+  .histogram-wrapper svg {
+    display: block;
+    background: #f5f5f5;
+    border-radius: 2px;
+  }
+  
+  .non-numerical-indicator {
+    color: #999;
+    font-size: 14px;
+  }
+
+
+  .tiny-histogram-cell {
+    width: 120px;
+    vertical-align: middle;
   }

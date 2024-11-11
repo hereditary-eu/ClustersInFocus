@@ -101,19 +101,17 @@ const App: React.FC = () => {
                   {expandedPanel === 'left' && hiddenColumns.length > 0 && (
                     <div className="hidden-columns-tags">
                       {hiddenColumns.map((col) => (
-                        <span key={col} className="column-tag">
+                        <button
+                          key={col}
+                          className="column-tag"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleColumnRestore(col);
+                          }}
+                          title="Click to restore column"
+                        >
                           {col}: hidden
-                          <button 
-                            className="restore-column-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleColumnRestore(col);
-                            }}
-                            title="Restore column"
-                          >
-                            X
-                          </button>
-                        </span>
+                        </button>
                       ))}
                     </div>
                   )}

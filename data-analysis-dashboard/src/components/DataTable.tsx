@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useTable, Column, SortingRule } from 'react-table';
-import HistogramRecharts from './HistogramRecharts';
-import ColumnMenu from './ColumnMenu';
+import HistogramRecharts from './HistogramBig';
+import ColumnMenu from './DataTableColumnMenu';
+import TinyHistogram from './TinyHistogram';
 
 interface DataTableProps {
   data: any[];
@@ -163,6 +164,16 @@ const DataTable: React.FC<DataTableProps> = ({
     return data.map(row => row[columnName]).filter(value => !isNaN(value));
   };
 
+  // Helper function to check if a column is numerical
+  const isNumericalColumn = (columnName: string): boolean => {
+    return data.length > 0 && typeof data[0][columnName] === 'number' &&
+      data.every(row => typeof row[columnName] === 'number' || row[columnName] === null);
+  };
+
+  const handleHistogramClick = (columnName: string) => {
+    setActiveHistogram(activeHistogram === columnName ? null : columnName);
+  };
+
   return (
     <div className="table-panel-content">
       {isExpanded ? (
@@ -209,7 +220,7 @@ const DataTable: React.FC<DataTableProps> = ({
               <thead>
                 <tr>
                   <th>Feature</th>
-                  <th>Histogram</th>
+                  <th>Distribution</th>
                 </tr>
               </thead>
               <tbody>
@@ -226,16 +237,23 @@ const DataTable: React.FC<DataTableProps> = ({
                         </span>
                       )}
                     </td>
-                    <td>
-                      {typeof data[0]?.[col] === 'number' && (
-                        <button
-                          className="histogram-button"
-                          onClick={() => setActiveHistogram(activeHistogram === col ? null : col)}
-                          aria-label={`Show histogram for ${col}`}
-                        >
-                          {activeHistogram === col ? 'Hide' : 'Show'}
-                        </button>
-                      )}
+                    <td className="tiny-histogram-cell">
+                      <button 
+                        className={`tiny-histogram-wrapper ${isNumericalColumn(col) ? 'clickable' : ''}`}
+                        onClick={() => isNumericalColumn(col) && handleHistogramClick(col)}
+                        disabled={!isNumericalColumn(col)}
+                        title={isNumericalColumn(col) ? "Click to view detailed histogram" : "Not a numerical column"}
+                      >
+                        {isNumericalColumn(col) ? (
+                          <TinyHistogram 
+                            data={getColumnData(col)}
+                            width={100}
+                            height={30}
+                          />
+                        ) : (
+                          <span className="non-numerical-indicator">—</span>
+                        )}
+                      </button>
                     </td>
                   </tr>
                 ))}

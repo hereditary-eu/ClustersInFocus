@@ -39,7 +39,9 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   return (
     <div className="scatterplot-wrapper">
       <ResponsiveContainer width={width} height={height}>
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+        <ScatterChart 
+          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="x" 
@@ -85,6 +87,7 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
               fillOpacity={0.6}
               shape="circle"
               r={4}
+              animationDuration={0}
             />
           ))}
         </ScatterChart>

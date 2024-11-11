@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ScatterplotRecharts from './ScatterplotRecharts';
+import ScatterplotRecharts from './ScatterplotPCA';
 import * as ml from 'ml-pca';
 
 interface PCAAnalysisProps {

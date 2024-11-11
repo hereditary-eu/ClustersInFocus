@@ -5,3 +5,4 @@ node_modules/
 
 # while cleaning up the css files:
 *.scss
+*.backup

@@ -1,10 +1,10 @@
 import './App.css';
 import React, { useState } from 'react';
-import DataTable from './components/DataTable';
-import ClusteringPanel from './components/ClusteringPanel';
+import Panel1Data from './components/Panel1Data';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import AnalysisPanel from './components/AnalysisPanel';
+import ClusteringPanel from './components/Panel2Clustering';
+import AnalysisPanel from './components/Panel3Analysis';
 
 // Improve type safety with proper interfaces
 interface DataRow {
@@ -16,22 +16,14 @@ interface DataState {
   columns: string[];
 }
 
-// Add to your interfaces
-// interface PCSelection {
-//   pc1: number | null;
-//   pc2: number | null;
-// }
-
 const App: React.FC = () => {
-  // Initialize state with proper typing
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-  const [isDataTableExpanded, setIsDataTableExpanded] = useState(true); // Add this state
+  const [isDataTableExpanded, setIsDataTableExpanded] = useState(true);
   const [data, setData] = useState<DataState>({
     csvData: [],
     columns: []
   });
-  // const [selectedPCs, setSelectedPCs] = useState<PCSelection>({ pc1: null, pc2: null });
-  // const [cumulativeExplainedVariance, setCumulativeExplainedVariance] = useState<number[]>([]);
+
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
   const [dataViewMode, setDataViewMode] = useState<'numerical' | 'heatmap'>('numerical');
@@ -48,15 +40,9 @@ const App: React.FC = () => {
     });
   };
 
-  // const handlePCAUpdate = (pcSelection: PCSelection, variance: number[]) => {
-  //   setSelectedPCs(pcSelection);
-  //   setCumulativeExplainedVariance(variance);
-  // };
-
   const handlePanelClick = (panelId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent click from bubbling to document
     
-    // Only change panel state if clicking a different panel or a collapsed panel
     if (expandedPanel !== panelId) {
       setExpandedPanel(panelId);
     }
@@ -87,105 +73,40 @@ const App: React.FC = () => {
       <Header 
         onFileUpload={handleFileUpload}
         data={data.csvData.length > 0 ? data : undefined}
+        onClustersComputed={() => {
+          handleColumnSelect([]);
+        }}
       />
       
       <main className="main-content">
         {data.csvData.length > 0 ? (
           <div className="panels-container">
-            <div 
-              className={`panel panel-left ${expandedPanel === 'left' ? 'expanded' : ''}`}
-              onClick={(e) => handlePanelClick('left', e)}
-            >
-              <h2 className="panel-header-left">
-                <div className="panel-header-title">Data</div>
-                <div className='panel-header-options'>
-                  {expandedPanel === 'left' && hiddenColumns.length > 0 && (
-                    <div className="hidden-columns-tags">
-                      {hiddenColumns.map((col) => (
-                        <button
-                          key={col}
-                          className="column-tag"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleColumnRestore(col);
-                          }}
-                          title="Click to restore column"
-                        >
-                          {col}: hidden
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {isDataTableExpanded && (
-                    <div className="view-mode-switch">
-                      <button
-                        className={`view-mode-button ${dataViewMode === 'numerical' ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDataViewMode('numerical');
-                        }}
-                        title="Show numerical values"
-                      >
-                        123
-                      </button>
-                      <button
-                        className={`view-mode-button ${dataViewMode === 'heatmap' ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDataViewMode('heatmap');
-                        }}
-                        title="Show heatmap"
-                      >
-                        ▦
-                      </button>
-                    </div>
-                  )}
-                  <button 
-                    className={`toggle-view-button ${isDataTableExpanded ? 'compress-button' : 'expand-button'}`}
-                    onClick={() => setIsDataTableExpanded(!isDataTableExpanded)}
-                    aria-label={isDataTableExpanded ? "Compress table" : "Expand table"}
-                    title={isDataTableExpanded ? "Compress table" : "Expand table"}
-                  />
-                </div>
-              </h2>
-              <DataTable 
-                data={data.csvData} 
-                columns={data.columns}
-                hiddenColumns={hiddenColumns}
-                onColumnHide={handleColumnHide}
-                onColumnRestore={handleColumnRestore}
-                onColumnSelect={handleColumnSelect}
-                isExpanded={isDataTableExpanded}
-                viewMode={dataViewMode}
-              />
-            </div>
-            
-            <div 
-              className={`panel panel-middle ${expandedPanel === 'middle' ? 'expanded' : ''}`}
-              onClick={(e) => handlePanelClick('middle', e)}
-            >
-              <h2>
-                <div className='panel-header-middle-title'>Clustering</div>
-              </h2>
-              <ClusteringPanel 
-                data={data.csvData}
-                selectedColumns={selectedColumns}
-                k={3}
-              />
-            </div>
-            
-            <div 
-              className={`panel panel-right ${expandedPanel === 'right' ? 'expanded' : ''}`}
-              onClick={(e) => handlePanelClick('right', e)}
-            >
-              <h2>
-                <div className='panel-header-title'>Analysis</div>
-              </h2>
-              {/* <AnalysisPanel
-                selectedPCs={selectedPCs}
-                cumulativeExplainedVariance={cumulativeExplainedVariance}
-              /> */}
-            </div>
+            <Panel1Data
+              data={data.csvData}
+              columns={data.columns}
+              expandedPanel={expandedPanel}
+              hiddenColumns={hiddenColumns}
+              isDataTableExpanded={isDataTableExpanded}
+              dataViewMode={dataViewMode}
+              onPanelClick={handlePanelClick}
+              onColumnHide={handleColumnHide}
+              onColumnRestore={handleColumnRestore}
+              onColumnSelect={handleColumnSelect}
+              setDataViewMode={setDataViewMode}
+              setIsDataTableExpanded={setIsDataTableExpanded}
+            />
+            <ClusteringPanel 
+              data={data.csvData}
+              selectedColumns={selectedColumns}
+              expandedPanel={expandedPanel}
+              onPanelClick={handlePanelClick}
+            />
+            <AnalysisPanel 
+              cumulativeExplainedVariance={[/* your data here */]}
+              selectedPCs={{ pc1: null, pc2: null }}
+              expandedPanel={expandedPanel}
+              onPanelClick={handlePanelClick}
+            />
           </div>
         ) : (
           <div className="upload-prompt">

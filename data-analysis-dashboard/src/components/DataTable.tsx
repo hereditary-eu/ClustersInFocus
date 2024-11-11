@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { useTable, Column, SortingRule } from 'react-table';
+import { useTable, Column } from 'react-table';
 import HistogramRecharts from './HistogramBig';
 import ColumnMenu from './DataTableColumnMenu';
-import TinyHistogram from './TinyHistogram';
+import TinyHistogram from './HistogramTiny';
 
 interface DataTableProps {
   data: any[];

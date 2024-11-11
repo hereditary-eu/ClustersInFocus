@@ -26,7 +26,8 @@ const Histogram: React.FC<HistogramProps> = ({
   showTooltip = variant === 'big',
   showGrid = variant === 'big',
   barColor = '#8884d8',
-  animated = variant === 'big'
+  // animated = variant === 'big'
+  animated = false
 }) => {
   const [bins, setBins] = useState(initialBins);
   const binOptions = [2, 5, 10, 15, 20, 25, 30];

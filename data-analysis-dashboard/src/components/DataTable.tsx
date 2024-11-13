@@ -12,6 +12,10 @@ interface DataTableProps {
   onColumnSelect: (selectedColumns: string[]) => void;
   isExpanded: boolean;
   viewMode: 'numerical' | 'heatmap';
+  menuOptions?: {
+    canSort?: boolean;
+    canHide?: boolean;
+  };
 }
 
 // Add type definition for column types
@@ -24,7 +28,11 @@ const DataTable: React.FC<DataTableProps> = ({
   onColumnHide,
   onColumnSelect,
   isExpanded,
-  viewMode
+  viewMode,
+  menuOptions = {
+    canSort: true,
+    canHide: true
+  }
 }) => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [activeHistogram, setActiveHistogram] = useState<string | null>(null);
@@ -113,9 +121,10 @@ const DataTable: React.FC<DataTableProps> = ({
             {hoveredColumn === col && (
               <ColumnMenu
                 column={col}
-                onSort={handleSort}
-                onHide={handleHideColumn}
+                onSort={menuOptions.canSort ? handleSort : undefined}
+                onHide={menuOptions.canHide ? handleHideColumn : undefined}
                 sortConfig={sortConfig}
+                menuOptions={menuOptions}
               />
             )}
           </div>
@@ -124,7 +133,7 @@ const DataTable: React.FC<DataTableProps> = ({
         id: col,
         sortType: (rowA: any, rowB: any) => sortData(rowA, rowB, col),
       })),
-    [columns, hiddenColumns, hoveredColumn, sortConfig]
+    [columns, hiddenColumns, hoveredColumn, sortConfig, menuOptions]
   );
 
   const {
@@ -139,26 +148,15 @@ const DataTable: React.FC<DataTableProps> = ({
   });
 
   const toggleColumnSelection = (colId: string) => {
-    setSelectedColumns(prevSelected => {
-      let newSelected;
-      // If column is already selected, remove it
-      if (prevSelected.includes(colId)) {
-        newSelected = prevSelected.filter(col => col !== colId);
-      } else {
-        // If trying to add a new column
-        if (prevSelected.length >= 2) {
-          // If already at max selection, remove the first selected column
-          newSelected = [...prevSelected.slice(1), colId];
-        } else {
-          // Otherwise, add the new column
-          newSelected = [...prevSelected, colId];
-        }
-      }
-      
-      // Update parent component directly here
-      onColumnSelect(newSelected);
-      return newSelected;
-    });
+    const newSelected = selectedColumns.includes(colId)
+      ? selectedColumns.filter(col => col !== colId)
+      : selectedColumns.length >= 2
+        ? [...selectedColumns.slice(1), colId]
+        : [...selectedColumns, colId];
+    
+    setSelectedColumns(newSelected);
+    // Move the parent update outside of setState
+    onColumnSelect(newSelected);
   };
 
   const getColumnData = (columnName: string): number[] => {
@@ -189,12 +187,9 @@ const DataTable: React.FC<DataTableProps> = ({
     const normalizedValue = range !== 0 ? (value - min) / range : 0.5;
     
     return {
-      background: `hsl(200, 70%, ${100 - normalizedValue * 50}%)`,
-      height: '2px',
-      padding: '0px 2px',
-      textAlign: 'center' as const,
-      fontSize: viewMode === 'heatmap' ? '0px' : 'inherit'
-    };
+      '--normalized-value': normalizedValue,
+    } as React.CSSProperties;
+
   };
 
   return (
@@ -203,37 +198,49 @@ const DataTable: React.FC<DataTableProps> = ({
         <div className="table-container">
           <table {...getTableProps()}>
             <thead>
-              {headerGroups.map((headerGroup) => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <th
-                      {...column.getHeaderProps()}
-                      onClick={() => toggleColumnSelection(column.id)}
-                      className={selectedColumns.includes(column.id) ? 'selected' : ''}
-                    >
-                      {column.render('Header')}
-                    </th>
-                  ))}
-                </tr>
-              ))}
+              {headerGroups.map((headerGroup) => {
+                const { key, ...headerGroupProps } = headerGroup.getHeaderGroupProps();
+                return (
+                  <tr key={key} {...headerGroupProps}>
+                    {headerGroup.headers.map((column) => {
+                      const { key: headerKey, ...headerProps } = column.getHeaderProps();
+                      return (
+                        <th
+                          key={headerKey}
+                          {...headerProps}
+                          onClick={() => toggleColumnSelection(column.id)}
+                          className={selectedColumns.includes(column.id) ? 'selected' : ''}
+                        >
+                          {column.render('Header')}
+                        </th>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </thead>
             <tbody {...getTableBodyProps()}>
               {rows.map((row) => {
                 prepareRow(row);
+                const { key, ...rowProps } = row.getRowProps();
                 return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map((cell) => (
-                      <td
-                        {...cell.getCellProps()}
-                        className={`
-                          ${selectedColumns.includes(cell.column.id) ? 'selected' : ''}
-                          ${viewMode === 'heatmap' ? 'heatmap-cell' : ''}
-                        `}
-                        style={getCellStyle(cell.value, cell.column.id)}
-                      >
-                        {viewMode === 'numerical' ? cell.render('Cell') : ''}
-                      </td>
-                    ))}
+                  <tr key={key} {...rowProps}>
+                    {row.cells.map((cell) => {
+                      const { key: cellKey, ...cellProps } = cell.getCellProps();
+                      return (
+                        <td
+                          key={cellKey}
+                          {...cellProps}
+                          className={`
+                            ${selectedColumns.includes(cell.column.id) ? 'selected' : ''}
+                            ${viewMode === 'heatmap' ? 'heatmap-cell' : ''}
+                          `}
+                          style={getCellStyle(cell.value, cell.column.id)}
+                        >
+                          {viewMode === 'numerical' ? cell.render('Cell') : ''}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })}

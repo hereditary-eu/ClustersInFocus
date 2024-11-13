@@ -26,7 +26,6 @@ const Histogram: React.FC<HistogramProps> = ({
   showTooltip = variant === 'big',
   showGrid = variant === 'big',
   barColor = '#8884d8',
-  // animated = variant === 'big'
   animated = false
 }) => {
   const [bins, setBins] = useState(initialBins);
@@ -41,7 +40,7 @@ const Histogram: React.FC<HistogramProps> = ({
 
   // Create and populate bins
   const histogramData = Array.from({ length: bins }, (_, i) => ({
-    bin: `${(min + i * binWidth).toFixed(2)} - ${(min + (i + 1) * binWidth).toFixed(2)}`,
+    bin: `${(min + i * binWidth).toFixed(3)} - ${(min + (i + 1) * binWidth).toFixed(3)}`,
     count: 0,
   }));
 
@@ -50,9 +49,6 @@ const Histogram: React.FC<HistogramProps> = ({
     const binIndex = Math.min(Math.floor((value - min) / binWidth), bins - 1);
     histogramData[binIndex].count += 1;
   });
-
-//   const ChartComponent = width ? BarChart : ResponsiveContainer;
-  const chartProps = width ? { width, height } : { height };
 
   return (
     <div className="histogram-wrapper">
@@ -74,8 +70,9 @@ const Histogram: React.FC<HistogramProps> = ({
       )}
       {width ? (
         <BarChart 
-          {...chartProps}
-          data={histogramData} 
+          width={width}
+          height={height}
+          data={histogramData}
           margin={variant === 'big' ? { top: 20, right: 30, bottom: 20, left: 20 } : { top: 0, right: 0, bottom: 0, left: 0 }}
         >
           {showGrid && <CartesianGrid strokeDasharray="3 3" />}
@@ -86,6 +83,7 @@ const Histogram: React.FC<HistogramProps> = ({
             dataKey="count" 
             fill={barColor}
             isAnimationActive={animated}
+            id={`histogram-${variant}-${Date.now()}`}
           />
         </BarChart>
       ) : (
@@ -102,6 +100,7 @@ const Histogram: React.FC<HistogramProps> = ({
               dataKey="count" 
               fill={barColor}
               isAnimationActive={animated}
+              id={`histogram-${variant}-${Date.now()}`}
             />
           </BarChart>
         </ResponsiveContainer>

@@ -39,7 +39,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
       <div className="similarity-analysis">
         Feature pair: {selectedColumns[0]} & {selectedColumns[1]} <br /> Cluster {selectedCluster + 1} Similarity Analysis.
         <hr />
-        <div className="similarity-table">
+        <div className="table-container">
           <table>
             <thead>
               <tr>

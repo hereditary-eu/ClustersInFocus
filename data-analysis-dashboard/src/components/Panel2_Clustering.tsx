@@ -76,7 +76,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
 
     if (!clusterData) {
       return (
-        <div className="clustering-container">
+        <div className="visualize-clusters-container">
           <p>No clustering data available for {selectedColumns.join(' and ')}.</p>
           <p>Please compute clusters first using the button in the header.</p>
         </div>
@@ -84,8 +84,8 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
     }
 
     return (
-      <div className="clustering-container">
-        <div className="clustering-info">
+      <div className="visualize-clusters-container">
+        <div>
           <p>Showing clusters for {selectedColumns.join(' vs ')}</p>
         </div>
         <div className="scatterplot-container">
@@ -95,6 +95,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
             yLabel={selectedColumns[1]}
             k={numClusters}
             onPointClick={(cluster) => onClusterSelect(cluster)}
+            onPanelClick={onPanelClick}
           />
         </div>
       </div>

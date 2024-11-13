@@ -9,6 +9,7 @@ interface ScatterplotClusteredProps {
   width?: string | number;
   height?: number;
   onPointClick: (cluster: number) => void;
+  onPanelClick: (panelId: string, event: React.MouseEvent) => void;
 }
 
 const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
@@ -18,7 +19,8 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   k,
   width = "100%",
   height = 400,
-  onPointClick
+  onPointClick,
+  onPanelClick
 }) => {
   // Early return if data is missing or empty
   if (!data || data.length === 0) return <p>No data available</p>;
@@ -52,8 +54,14 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   );
 
   const handleClick = (clusterIndex: number) => {
-    console.log('Clicked cluster:', clusterIndex); // Debug log
     onPointClick(clusterIndex);
+    // Create a synthetic mouse event
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+    onPanelClick('right', event as unknown as React.MouseEvent);
   };
 
   return (
@@ -76,7 +84,12 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
             label={{ value: yLabel, angle: -90, position: 'left', offset: 5 }}
           />
           <Tooltip 
-            cursor={{ strokeDasharray: '3 3' }}
+            cursor={{
+              strokeDasharray: '3 3',
+              stroke: 'rgba(0, 0, 0, 0.2)',
+              strokeWidth: 1,
+              fill: 'rgba(0, 0, 0, 0.05)'
+            }}
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 return (

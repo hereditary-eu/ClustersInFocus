@@ -11,14 +11,14 @@ interface ComputeClustersButtonProps {
   onClustersComputed: () => void;
 }
 
-interface CustomizeModalProps {
+interface HyperparamModalProps {
   algorithm: ClusteringAlgorithm;
   params: ClusteringParams[ClusteringAlgorithm];
   onClose: () => void;
   onSave: (params: ClusteringParams[ClusteringAlgorithm]) => void;
 }
 
-const CustomizeModal: React.FC<CustomizeModalProps> = ({ algorithm, params, onClose, onSave }) => {
+const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, onClose, onSave }) => {
   const [localParams, setLocalParams] = useState(params);
 
   const renderParamsInputs = () => {
@@ -61,8 +61,8 @@ const CustomizeModal: React.FC<CustomizeModalProps> = ({ algorithm, params, onCl
   };
 
   return (
-    <div className="customize-modal">
-      <div className="customize-modal-content">
+    <div className="hyperparam-modal">
+      <div className="hyperparam-modal-content">
         <h3>Customize {algorithm.toUpperCase()} Parameters</h3>
         {renderParamsInputs()}
         <div className="modal-buttons">
@@ -77,7 +77,7 @@ const CustomizeModal: React.FC<CustomizeModalProps> = ({ algorithm, params, onCl
 export function ComputeClustersButton({ csvData, columns, onClustersComputed }: ComputeClustersButtonProps) {
   const [isComputing, setIsComputing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [showCustomize, setShowCustomize] = useState(false);
+  const [showHyperparam, setShowHyperparam] = useState(false);
   const [algorithm, setAlgorithm] = useState<ClusteringAlgorithm>('kmeans');
   const [params, setParams] = useState<ClusteringParams[typeof algorithm]>(DEFAULT_PARAMS.kmeans);
 
@@ -108,28 +108,28 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
       </select>
 
       <button
-        onClick={() => setShowCustomize(true)}
+        onClick={() => setShowHyperparam(true)}
         disabled={isComputing}
-        className="customize-button"
+        className="text-button"
       >
-        Customize
+        Configure
       </button>
 
       <button
         onClick={computeClusters}
         disabled={isComputing}
-        className="kmeans-button"
+        className="text-button"
       >
         {isComputing ? `Computing... ${Math.round(progress)}%` : 'Compute Clusters'}
       </button>
 
       {isComputing && (
-        <div className="kmeans-modal">
-          <div className="kmeans-modal-content">
+        <div className="clustering-modal">
+          <div className="clustering-modal-content">
             <h3>Computing Clusters</h3>
-            <div className="kmeans-progress-bar-container">
+            <div className="clustering-progress-bar-container">
               <div 
-                className="kmeans-progress-bar"
+                className="clustering-progress-bar"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -138,14 +138,14 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
         </div>
       )}
 
-      {showCustomize && (
-        <CustomizeModal
+      {showHyperparam && (
+        <HyperparamModal
           algorithm={algorithm}
           params={params}
-          onClose={() => setShowCustomize(false)}
+          onClose={() => setShowHyperparam(false)}
           onSave={(newParams) => {
             setParams(newParams);
-            setShowCustomize(false);
+            setShowHyperparam(false);
           }}
         />
       )}

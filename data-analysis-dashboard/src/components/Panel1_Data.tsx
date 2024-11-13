@@ -100,6 +100,10 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
         onColumnSelect={onColumnSelect}
         isExpanded={isDataTableExpanded}
         viewMode={dataViewMode}
+        menuOptions={{
+          canSort: true,
+          canHide: true
+        }}
       />
     </div>
   );

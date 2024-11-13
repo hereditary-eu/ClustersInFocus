@@ -1,3 +1,5 @@
+import '../styles/Footer.module.scss';
+
 const Footer: React.FC = () => {
   return (
   <div>Uicons by <a href="https://www.flaticon.com/uicons">Flaticon</a></div> // TODO: check if project allows this

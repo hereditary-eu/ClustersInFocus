@@ -267,6 +267,7 @@ th.selected {
 
 .table-container.compressed th {
   height: 30px;
+  padding-left: 10px;
 } 
 
 .table-container.compressed th,
@@ -281,6 +282,7 @@ th.selected {
   cursor: pointer;
   font-weight: 500;
   height: 30px;
+  padding-left: 10px;
 }
 
 .table-container.compressed .column-name:hover {
@@ -322,12 +324,12 @@ th.selected {
   min-width: 200px;
 }
 
-.histogram-wrapper {
+/* .histogram-wrapper {
   display: flex;
   flex-direction: column;
   gap: 10px;
   background: none;
-}
+} */
 
 .histogram-controls {
   display: flex;

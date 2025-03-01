@@ -501,10 +501,6 @@ th.selected {
   flex-direction: column;
 }
 
-.text-button:disabled {
-  background-color: var(--color-gray-lighter);
-  cursor: not-allowed;
-}
 
 .clustering-modal {
   position: fixed;
@@ -731,10 +727,15 @@ header {
 
 .text-button {
   padding: 5px 10px;
-  background: var(--color-white-accent);
-  border: 1px solid var(--color-gray-lighter);
+  /* background: var(--color-gray-lighter); */
+  border: 1px solid var(--color-gray-light);
   border-radius: 4px;
   cursor: pointer;
+}
+
+.text-button:disabled {
+  background-color: var(--color-white-gray);
+  cursor: not-allowed;
 }
 
 .text-button:hover {

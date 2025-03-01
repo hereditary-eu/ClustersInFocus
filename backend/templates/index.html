@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        .description {
+            color: #4b5563;
+            margin-bottom: 2rem;
+        }
+        .api-links {
+            list-style: none;
+            padding: 0;
+        }
+        .api-links li {
+            margin-bottom: 1rem;
+        }
+        .api-links a {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        .api-links a:hover {
+            background-color: #1d4ed8;
+        }
+        .version {
+            margin-top: 2rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ title }}</h1>
+        <p class="description">
+            Welcome to the API documentation. This API provides endpoints for data analysis 
+            and clustering operations. Choose your preferred documentation format below.
+        </p>
+        <ul class="api-links">
+            <li>
+                <a href="/docs">Interactive API Documentation (Swagger UI)</a>
+            </li>
+            <li>
+                <a href="/redoc">Alternative Documentation (ReDoc)</a>
+            </li>
+        </ul>
+        <p class="version">Version: {{ version }}</p>
+    </div>
+</body>
+</html> 

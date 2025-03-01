@@ -1,0 +1,8 @@
+# structural 
+fastapi
+uvicorn
+jinja2
+
+# logical
+shap
+scikit-learn

@@ -9,3 +9,11 @@ node_modules/
 
 # large csv for performance testing
 train.csv
+
+
+venv/
+
+
+# pycache
+*.pyc
+__pycache__/

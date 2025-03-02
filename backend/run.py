@@ -6,9 +6,9 @@ from fastapi.responses import HTMLResponse
 from pathlib import Path
 
 from core.config import CONFIG
-from routers.analysis import analysis_router
+from routers.shapley import shapley_router
 from routers.clustering import clustering_router
-
+from routers.debug import debug_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -45,11 +45,11 @@ def create_app() -> FastAPI:
         )
 
     # adding routers
-    app.include_router(analysis_router)
+    app.include_router(shapley_router)
     app.include_router(clustering_router)
+    app.include_router(debug_router)
 
     return app
-
 
 app = create_app()
 if __name__ == "__main__":

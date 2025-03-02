@@ -17,3 +17,6 @@ venv/
 # pycache
 *.pyc
 __pycache__/
+
+# notes files
+**/notes.md

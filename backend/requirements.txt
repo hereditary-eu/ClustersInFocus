@@ -6,3 +6,6 @@ jinja2
 # logical
 shap
 scikit-learn
+xgboost
+lightgbm
+

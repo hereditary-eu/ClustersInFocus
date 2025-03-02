@@ -1,15 +1,19 @@
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal
 from pydantic import BaseModel, Field
 
 class KMeansParams(BaseModel):
     k: int = Field(default=3, gt=0)
     max_iterations: int = Field(default=1000, gt=0)
 
+class DBScanParams(BaseModel):
+    eps: float = Field(default=0.5, gt=0)
+    min_samples: int = Field(default=2, gt=0)
+
 class ClusteringRequest(BaseModel):
     data: List[Dict[str, float | str]]  # The CSV data
     columns: List[str]  # Selected columns for clustering
-    algorithm: Literal["kmeans"] = "kmeans"
-    params: KMeansParams
+    algorithm: Literal["kmeans", "dbscan"] = "kmeans"
+    params: KMeansParams | DBScanParams
 
 class ClusterGroup(BaseModel):
     cluster_id: int

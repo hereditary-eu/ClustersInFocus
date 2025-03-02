@@ -1,2 +1,2 @@
 from .clustering_service import ClusteringService
-from .computing_service import ComputingService
+from .shapley_service import ShapleyService

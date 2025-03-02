@@ -1,18 +1,20 @@
 import React from 'react';
 import { FileUploadButton } from './FileUploadButton';
 import { ComputeClustersButton } from './ComputeClustersButton';
+import { ComputeShapleyValuesButton } from './ComputeShapleyValuesButton';
 import { DataRow } from '../services/FileService';
 
 interface HeaderProps {
   onFileUpload: (data: DataRow[], headers: string[]) => void;
   onClustersComputed: () => void;
+  onShapleyValuesComputed: (targetColumn: string) => void;
   data?: {
     csvData: DataRow[];
     columns: string[];
   };
 }
 
-const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed }) => {
+const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed, onShapleyValuesComputed }) => {
   const numericColumns = data?.columns.filter(col => 
     data.csvData.length > 0 && typeof data.csvData[0][col] === 'number'
   ) ?? [];
@@ -22,11 +24,18 @@ const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed 
       <div className="header-title">Data Analysis Dashboard</div>
       <div className="header-controls">
         {data && numericColumns.length >= 2 && (
-          <ComputeClustersButton
-            csvData={data.csvData}
-            columns={numericColumns}
-            onClustersComputed={onClustersComputed}
-          />
+          <>
+            <ComputeClustersButton
+              csvData={data.csvData}
+              columns={numericColumns}
+              onClustersComputed={onClustersComputed}
+            />
+            <span className="separator">|</span>
+            <ComputeShapleyValuesButton
+              columns={numericColumns}
+              onShapleyValuesComputed={onShapleyValuesComputed}
+            />
+          </>
         )}
         <FileUploadButton onFileLoaded={onFileUpload} />
       </div>

@@ -1,16 +1,17 @@
 import { API_ROUTES } from './ApiRoutes';
 import { ApiClient } from './ApiClient';
+import { ShapleyValueItem, DataRow } from '../types';
 
-interface DataRow {
-  [key: string]: string | number;
-}
-
-export type ClusteringAlgorithm = 'kmeans';
+export type ClusteringAlgorithm = 'kmeans' | 'dbscan';
 
 export interface ClusteringParams {
   kmeans: {
     k: number;
     maxIterations: number;
+  };
+  dbscan: {
+    eps: number;
+    minSamples: number;
   };
   // Add more algorithm params here later
 }
@@ -19,107 +20,13 @@ export const DEFAULT_PARAMS: ClusteringParams = {
   kmeans: {
     k: 3,
     maxIterations: 1000
+  },
+  dbscan: {
+    eps: 0.5,
+    minSamples: 2
   }
 };
 
-// export class ClusteringService {
-//   static async computeFeaturePairsClusters(
-//     csvData: DataRow[],
-//     columns: string[],
-//     algorithm: ClusteringAlgorithm,
-//     params: ClusteringParams[typeof algorithm],
-//     onProgress: (progress: number) => void
-//   ): Promise<void> {
-//     const dataset = csvData.map(row => 
-//       columns.map(col => Number(row[col]))
-//     );
-    
-//     const totalPairs = (columns.length * (columns.length - 1)) / 2;
-//     let completedPairs = 0;
-    
-//     for (let i = 0; i < columns.length; i++) {
-//       for (let j = i + 1; j < columns.length; j++) {
-//         const featurePairData = dataset.map(row => [row[i], row[j]]);
-        
-//         const { clusters } = kmeans(featurePairData, params.k, { 
-//           maxIterations: params.maxIterations 
-//         });
-
-//         const clusterGroups: { [key: number]: number[] } = {};
-//         clusters.forEach((cluster, dataPointIndex) => {
-//           if (!clusterGroups[cluster]) {
-//             clusterGroups[cluster] = [];
-//           }
-//           clusterGroups[cluster].push(dataPointIndex);
-//         });
-
-//         LocalStorageService.saveClusters(columns[i], columns[j], clusterGroups);
-        
-//         completedPairs++;
-//         onProgress((completedPairs / totalPairs) * 100);
-        
-//         await new Promise(resolve => setTimeout(resolve, 0));
-//       }
-//     }
-//   }
-
-//   static calculateJaccardIndex(set1: number[], set2: number[]): number {
-//     const intersection = set1.filter(x => set2.includes(x));
-//     const union = Array.from(new Set([...set1, ...set2]));
-//     return intersection.length / union.length;
-//   }
-
-//   static getClusterSimilarities(
-//     selectedFeature1: string,
-//     selectedFeature2: string,
-//     selectedClusterId: number
-//   ): Array<{
-//     feature1: string,
-//     feature2: string,
-//     clusterId: number,
-//     similarity: number
-//   }> {
-//     // Get the selected cluster's data points
-//     const selectedClusterGroups = LocalStorageService.getClusters(selectedFeature1, selectedFeature2) ?? {};
-//     const selectedClusterPoints = selectedClusterGroups[selectedClusterId] || [];
-    
-//     const results: Array<{
-//       feature1: string,
-//       feature2: string,
-//       clusterId: number,
-//       similarity: number
-//     }> = [];
-
-//     // Get all stored feature pairs
-//     const allFeaturePairs = LocalStorageService.getAllClusteredFeaturePairs();
-
-//     // Compare with all other clusters
-//     for (const pair of allFeaturePairs) {
-//       const { feature1, feature2 } = pair;
-//       const clusterGroups = LocalStorageService.getClusters(feature1, feature2);
-      
-//       // Skip comparing with itself
-//       if (feature1 === selectedFeature1 && feature2 === selectedFeature2) continue;
-
-//       // Skip if no clusters found
-//       if (!clusterGroups) continue;
-      
-//       // Calculate Jaccard index for each cluster in this feature pair
-//       Object.entries(clusterGroups).forEach(([clusterId, clusterPoints]) => {
-//         const similarity = this.calculateJaccardIndex(selectedClusterPoints, clusterPoints);
-//         results.push({
-//           feature1,
-//           feature2,
-//           clusterId: Number(clusterId),
-//           similarity
-//         });
-//       });
-//     }
-
-//     // Sort by similarity in descending order
-//     return results.sort((a, b) => b.similarity - a.similarity);
-//   }
-// } 
 
 interface ClusterSimilarityResponse {
   feature1: string;
@@ -127,6 +34,8 @@ interface ClusterSimilarityResponse {
   cluster_id: number;
   similarity: number;
 }
+
+
 
 export class ClusteringService {
   static async computeFeaturePairsClusters(
@@ -143,16 +52,17 @@ export class ClusteringService {
         data: csvData,
         columns: columns,
         algorithm: algorithm,
-        params: {
-          k: params.k,
-          max_iterations: params.maxIterations
+        params: algorithm === 'kmeans' ? {
+          k: (params as ClusteringParams['kmeans']).k,
+          max_iterations: (params as ClusteringParams['kmeans']).maxIterations
+        } : {
+          eps: (params as ClusteringParams['dbscan']).eps,
+          min_samples: (params as ClusteringParams['dbscan']).minSamples
         }
       };
       
-      // Use the API client
       await ApiClient.post(API_ROUTES.clustering.compute, requestData);
       
-      // Completed
       onProgress(100); // 100%, todo: add actual progress (websocket?)
 
     } catch (error) {
@@ -194,6 +104,49 @@ export class ClusteringService {
     } catch (error) {
       console.error('Error getting similarities:', error);
       throw error;
+    }
+  }
+
+  static async getClustersByFeatures(
+    feature1: string,
+    feature2: string
+  ): Promise<Record<number, number[]> | null> {
+    try {
+      const url = `${API_ROUTES.clustering.getByFeatures}?feature1=${feature1}&feature2=${feature2}`;
+      return await ApiClient.get<Record<number, number[]> | null>(url);
+    } catch (error) {
+      console.error('Error fetching clusters:', error);
+      return null;
+    }
+  }
+
+  static async computeShapleyValues(
+    targetColumn: string,
+    onProgress: (progress: number) => void
+  ): Promise<void> {
+    try {
+      onProgress(10); // Initial progress
+      
+      const requestData = {
+        target_column: targetColumn
+      };
+      
+      await ApiClient.post(API_ROUTES.shapley.compute, requestData);
+      
+      onProgress(100); // Complete
+    } catch (error) {
+      console.error('Error computing Shapley values:', error);
+      throw error;
+    }
+  }
+
+  static async getShapleyValues(targetColumn: string): Promise<ShapleyValueItem[] | null> {
+    try {
+      const url = `${API_ROUTES.shapley.getValues}/${targetColumn}`;
+      return await ApiClient.get<ShapleyValueItem[] | null>(url);
+    } catch (error) {
+      console.error('Error fetching Shapley values:', error);
+      return null;
     }
   }
 }

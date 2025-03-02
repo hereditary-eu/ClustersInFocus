@@ -1,9 +1,7 @@
 import React from 'react';
 import DataTable from './DataTable';
+import { ShapleyValueItem, DataRow } from '../types';
 
-interface DataRow {
-  [key: string]: string | number;
-}
 
 interface Panel1DataProps {
   data: DataRow[];
@@ -18,6 +16,7 @@ interface Panel1DataProps {
   onColumnSelect: (selected: string[]) => void;
   setDataViewMode: (mode: 'numerical' | 'heatmap') => void;
   setIsDataTableExpanded: (expanded: boolean) => void;
+  shapleyValues: ShapleyValueItem[] | null;
 }
 
 const Panel1Data: React.FC<Panel1DataProps> = ({
@@ -33,6 +32,7 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
   onColumnSelect,
   setDataViewMode,
   setIsDataTableExpanded,
+  shapleyValues,
 }) => {
   return (
     <div 
@@ -91,6 +91,7 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
           />
         </div>
       </h2>
+      
       <DataTable 
         data={data} 
         columns={columns}
@@ -104,6 +105,7 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
           canSort: true,
           canHide: true
         }}
+        shapleyValues={shapleyValues}
       />
     </div>
   );

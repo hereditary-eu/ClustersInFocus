@@ -23,3 +23,12 @@ async def compute_shap_values(request: ShapValuesRequest):
     shap_values_json = shap_values.to_json(orient='records')
     return json.loads(shap_values_json)
 
+
+
+@shapley_router.get("/get_shapley_values/{target_column}")
+async def get_shapley_values(target_column: str):
+    shap_values = temp_database['shap_values'].get(target_column, None)
+    if shap_values is None:
+        raise HTTPException(status_code=404, detail=f"Shapley values for target column {target_column} not found")
+    shap_values_json = shap_values.to_json(orient='records')
+    return json.loads(shap_values_json)

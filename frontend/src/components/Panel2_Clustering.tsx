@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ScatterplotClustered from './ScatterplotClustered';
-import { LocalStorageService } from '../services/LocalStorageService';
+import { ClusteringService } from '../services/ClusteringService';
 
 interface Panel2ClusteringProps {
   data: Record<string, any>[];
@@ -20,6 +20,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
   const [clusterData, setClusterData] = useState<number[] | null>(null);
   const [scatterData, setScatterData] = useState<number[][]>([]);
   const [numClusters, setNumClusters] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchClusters = async () => {
@@ -29,28 +30,53 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
         return;
       }
 
-      // Sort features alphabetically
-      const [feature1, feature2] = selectedColumns;
-      const clusterGroups = LocalStorageService.getClusters(feature1, feature2);
+      setIsLoading(true);
+      
+      try {
+        // Sort features alphabetically for consistent caching
+        const [feature1, feature2] = selectedColumns;
+        const clusterGroups = await ClusteringService.getClustersByFeatures(feature1, feature2);
 
       if (clusterGroups) {
+        console.log('Retrieved cluster groups:', clusterGroups);
+        
         // Convert cluster groups to array format
         const clusterArray = new Array(data.length).fill(-1);
+        
+        // Extract all unique cluster IDs
+        const uniqueClusterIds = Object.keys(clusterGroups).map(Number);
+        console.log('Unique cluster IDs:', uniqueClusterIds);
+        
+        // Populate the cluster array
         Object.entries(clusterGroups).forEach(([clusterId, indices]) => {
           indices.forEach((index: number) => {
-            clusterArray[Number(index)] = Number(clusterId);
+            clusterArray[index] = Number(clusterId);
           });
         });
 
-        setClusterData(clusterArray);
-        setNumClusters(Object.keys(clusterGroups).length);
-        
-        const newScatterData = data.map((row, index) => [
-          Number(row[feature1]),
-          Number(row[feature2]),
-          clusterArray[index]
-        ]);
-        setScatterData(newScatterData);
+          setClusterData(clusterArray);
+          setNumClusters(uniqueClusterIds.length);
+          
+          // Create scatter data points
+          const newScatterData = data.map((row, index) => [
+            Number(row[feature1]),
+            Number(row[feature2]),
+            clusterArray[index]
+          ]);
+          
+          console.log(`Created scatter data with ${newScatterData.length} points for ${uniqueClusterIds.length} clusters`);
+          setScatterData(newScatterData);
+        } else {
+          console.log('No cluster data found for', selectedColumns);
+          setClusterData(null);
+          setScatterData([]);
+        }
+      } catch (error) {
+        console.error('Error fetching cluster data:', error);
+        setClusterData(null);
+        setScatterData([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -72,6 +98,10 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
 
     if (hasNonNumericalValues) {
       return <p>Please select numerical columns only</p>;
+    }
+    
+    if (isLoading) {
+      return <p>Loading cluster data...</p>;
     }
 
     if (!clusterData) {

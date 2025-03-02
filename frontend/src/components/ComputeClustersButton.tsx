@@ -33,7 +33,7 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
                 id="k"
                 min="2"
                 max="10"
-                value={localParams.k}
+                value={(localParams as ClusteringParams['kmeans']).k}
                 onChange={(e) => setLocalParams({
                   ...localParams,
                   k: Number(e.target.value)
@@ -48,10 +48,44 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
                 min="100"
                 max="10000"
                 step="100"
-                value={localParams.maxIterations}
+                value={(localParams as ClusteringParams['kmeans']).maxIterations}
                 onChange={(e) => setLocalParams({
                   ...localParams,
                   maxIterations: Number(e.target.value)
+                })}
+              />
+            </div>
+          </div>
+        );
+      case 'dbscan':
+        return (
+          <div className="params-inputs">
+            <div className="param-group">
+              <label htmlFor="eps">Epsilon (eps):</label>
+              <input
+                type="number"
+                id="eps"
+                min="0.1"
+                max="2"
+                step="0.1"
+                value={(localParams as ClusteringParams['dbscan']).eps}
+                onChange={(e) => setLocalParams({
+                  ...localParams,
+                  eps: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div className="param-group">
+              <label htmlFor="minSamples">Min Samples:</label>
+              <input
+                type="number"
+                id="minSamples"
+                min="2"
+                max="10"
+                value={(localParams as ClusteringParams['dbscan']).minSamples}
+                onChange={(e) => setLocalParams({
+                  ...localParams,
+                  minSamples: Number(e.target.value)
                 })}
               />
             </div>
@@ -80,31 +114,51 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
   const [showHyperparam, setShowHyperparam] = useState(false);
   const [algorithm, setAlgorithm] = useState<ClusteringAlgorithm>('kmeans');
   const [params, setParams] = useState<ClusteringParams[typeof algorithm]>(DEFAULT_PARAMS.kmeans);
+  const [error, setError] = useState<string | null>(null);
 
   const computeClusters = useCallback(async () => {
     setIsComputing(true);
     setProgress(0);
+    setError(null);
     
-    await ClusteringService.computeFeaturePairsClusters(
-      csvData,
-      columns,
-      algorithm,
-      params,
-      setProgress
-    );
-    
-    setIsComputing(false);
-    onClustersComputed();
+    try {
+      await ClusteringService.computeFeaturePairsClusters(
+        csvData,
+        columns,
+        algorithm,
+        params,
+        setProgress
+      );
+      
+      setIsComputing(false);
+      onClustersComputed();
+    } catch (err) {
+      console.error('Error computing clusters:', err);
+      setIsComputing(false);
+      
+      // Check if this is a network error
+      if (err instanceof TypeError && err.message.includes('network') || 
+          (err instanceof Error && err.message.includes('Failed to fetch'))) {
+        setError('Unable to connect to the server. Please check that the backend is running or try again later.');
+      } else {
+        setError('An error occurred while computing clusters. Please try again.');
+      }
+    }
   }, [csvData, columns, algorithm, params, onClustersComputed]);
 
   return (
     <div className="clustering-controls">
       <select
         value={algorithm}
-        onChange={(e) => setAlgorithm(e.target.value as ClusteringAlgorithm)}
+        onChange={(e) => {
+          const newAlgorithm = e.target.value as ClusteringAlgorithm;
+          setAlgorithm(newAlgorithm);
+          setParams(DEFAULT_PARAMS[newAlgorithm]);
+        }}
         disabled={isComputing}
       >
         <option value="kmeans">K-Means</option>
+        <option value="dbscan">DBSCAN</option>
       </select>
 
       <button
@@ -148,6 +202,21 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
             setShowHyperparam(false);
           }}
         />
+      )}
+
+      {error && (
+        <div className="clustering-modal">
+          <div className="clustering-modal-content error-modal">
+            <h3>Connection Error</h3>
+            <p>{error}</p>
+            <button 
+              onClick={() => setError(null)}
+              className="text-button"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

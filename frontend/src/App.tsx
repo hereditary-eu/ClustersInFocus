@@ -5,16 +5,8 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ClusteringPanel from './components/Panel2_Clustering';
 import AnalysisPanel from './components/Panel3_Analysis';
-
-// Improve type safety with proper interfaces
-interface DataRow {
-  [key: string]: string | number;  // Each row is an object with string keys and string/number values
-}
-
-interface DataState {
-  csvData: DataRow[];
-  columns: string[];
-}
+import { ClusteringService } from './services/ClusteringService';
+import { ShapleyValueItem, DataState, DataRow } from './types';
 
 const App: React.FC = () => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
@@ -28,6 +20,7 @@ const App: React.FC = () => {
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
   const [dataViewMode, setDataViewMode] = useState<'numerical' | 'heatmap'>('numerical');
   const [selectedCluster, setSelectedCluster] = useState<number | null>(null);
+  const [shapleyValues, setShapleyValues] = useState<ShapleyValueItem[] | null>(null);
 
   const handleColumnSelect = (selected: string[]) => {
     setSelectedColumns(selected.slice().sort());
@@ -57,6 +50,15 @@ const App: React.FC = () => {
     setHiddenColumns(prev => prev.filter(col => col !== column));
   };
 
+  const handleShapleyValuesComputed = async (targetColumn: string) => {
+    try {
+      const values = await ClusteringService.getShapleyValues(targetColumn);
+      setShapleyValues(values);
+    } catch (error) {
+      console.error('Error fetching Shapley values:', error);
+    }
+  };
+
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const panelsContainer = document.querySelector('.panels-container');
@@ -73,10 +75,11 @@ const App: React.FC = () => {
     <div className="App">
       <Header 
         onFileUpload={handleFileUpload}
-        data={data.csvData.length > 0 ? data : undefined}
         onClustersComputed={() => {
           handleColumnSelect([]);
         }}
+        onShapleyValuesComputed={handleShapleyValuesComputed}
+        data={data.csvData.length > 0 ? data : undefined}
       />
       
       <main className="main-content">
@@ -95,6 +98,7 @@ const App: React.FC = () => {
               onColumnSelect={handleColumnSelect}
               setDataViewMode={setDataViewMode}
               setIsDataTableExpanded={setIsDataTableExpanded}
+              shapleyValues={shapleyValues}
             />
             <ClusteringPanel 
               data={data.csvData}

@@ -790,3 +790,36 @@ header {
   margin-left: 10px;
   margin-right: 10px;
 }
+
+/* SHAPLEY VALUES */
+.importance-cell {
+  width: 90px;
+}
+
+.importance-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.importance-rank {
+  font-size: 0.85em;
+  font-weight: bold;
+  min-width: 30px;
+}
+
+.importance-bar-container {
+  flex-grow: 1;
+  height: 12px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.importance-bar {
+  height: 100%;
+  background-color: #4a90e2;
+  border-radius: 6px;
+}
+
+/* END SHAPLEY VALUES */

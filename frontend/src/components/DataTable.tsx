@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useTable, Column } from 'react-table';
 import Histogram from './Histogram';
 import ColumnMenu from './DataTableColumnHoverMenu';
+import { ShapleyValueItem } from '../types';
 
 interface DataTableProps {
   data: any[];
@@ -16,7 +17,9 @@ interface DataTableProps {
     canSort?: boolean;
     canHide?: boolean;
   };
+  shapleyValues?: ShapleyValueItem[] | null;
 }
+
 
 // Add type definition for column types
 type ColumnType = 'number' | 'string' | 'mixed';
@@ -32,7 +35,8 @@ const DataTable: React.FC<DataTableProps> = ({
   menuOptions = {
     canSort: true,
     canHide: true
-  }
+  },
+  shapleyValues
 }) => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [activeHistogram, setActiveHistogram] = useState<string | null>(null);
@@ -192,6 +196,27 @@ const DataTable: React.FC<DataTableProps> = ({
 
   };
 
+  // ranked Shapley values
+  const rankedShapleyValues = useMemo(() => {
+    if (!shapleyValues || shapleyValues.length === 0) return null;
+    
+    const sorted = [...shapleyValues].sort((a, b) => b['SHAP Value'] - a['SHAP Value']);
+    
+    const maxValue = sorted[0]['SHAP Value'];
+    
+    // Add rank and normalized value
+    return sorted.map((item, index) => ({
+      ...item,
+      rank: index + 1,
+      normalizedValue: item['SHAP Value'] / maxValue
+    }));
+  }, [shapleyValues]);
+
+  const getFeatureImportance = (featureName: string) => {
+    if (!rankedShapleyValues) return null;
+    return rankedShapleyValues.find(item => item.feature === featureName);
+  };
+
   return (
     <div className="table-panel-content">
       {isExpanded ? (
@@ -254,44 +279,70 @@ const DataTable: React.FC<DataTableProps> = ({
               <thead>
                 <tr>
                   <th>Feature</th>
+                  {shapleyValues && shapleyValues.length > 0 && (
+                    <th>Importance</th>
+                  )}
                   <th>Distribution</th>
                 </tr>
               </thead>
               <tbody>
-                {columns.map((col) => (
-                  <tr key={col}>
-                    <td
-                      className={`column-name ${selectedColumns.includes(col) ? 'selected' : ''}`}
-                      onClick={() => toggleColumnSelection(col)}
-                    >
-                      {col}
-                      {hiddenColumns.includes(col) && (
-                        <span className="hidden-indicator" title="Hidden in expanded view">
-                          (hidden)
-                        </span>
-                      )}
-                    </td>
-                    <td className="tiny-histogram-cell">
-                      <button 
-                        className={`tiny-histogram-wrapper ${isNumericalColumn(col) ? 'clickable' : ''}`}
-                        onClick={() => isNumericalColumn(col) && handleHistogramClick(col)}
-                        disabled={!isNumericalColumn(col)}
-                        title={isNumericalColumn(col) ? "Click to view detailed histogram" : "Not a numerical column"}
+                {columns.map((col) => {
+                  // Get feature importance data
+                  const importance = getFeatureImportance(col);
+                  
+                  return (
+                    <tr key={col}>
+                      <td
+                        className={`column-name ${selectedColumns.includes(col) ? 'selected' : ''}`}
+                        onClick={() => toggleColumnSelection(col)}
                       >
-                        {isNumericalColumn(col) ? (
-                          <Histogram 
-                            data={getColumnData(col)}
-                            variant="tiny"
-                            width={100}
-                            height={30}
-                          />
-                        ) : (
-                          <span className="non-numerical-indicator">—</span>
+                        {col}
+                        {hiddenColumns.includes(col) && (
+                          <span className="hidden-indicator" title="Hidden in expanded view">
+                            (hidden)
+                          </span>
                         )}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      {shapleyValues && shapleyValues.length > 0 && (
+                        <td className="importance-cell">
+                          {importance ? (
+                            <div className="importance-container">
+                              <div className="importance-rank">#{importance.rank}</div>
+                              <div className="importance-bar-container">
+                                <div 
+                                  className="importance-bar" 
+                                  style={{ width: `${importance.normalizedValue * 100}%` }}
+                                  title={`SHAP Value: ${importance['SHAP Value'].toFixed(4)}`}
+                                ></div>
+                              </div>
+                            </div>
+                          ) : (
+                            <span>—</span>
+                          )}
+                        </td>
+                      )}
+                      <td className="tiny-histogram-cell">
+                        <button 
+                          className={`tiny-histogram-wrapper ${isNumericalColumn(col) ? 'clickable' : ''}`}
+                          onClick={() => isNumericalColumn(col) && handleHistogramClick(col)}
+                          disabled={!isNumericalColumn(col)}
+                          title={isNumericalColumn(col) ? "Click to view detailed histogram" : "Not a numerical column"}
+                        >
+                          {isNumericalColumn(col) ? (
+                            <Histogram 
+                              data={getColumnData(col)}
+                              variant="tiny"
+                              width={100}
+                              height={30}
+                            />
+                          ) : (
+                            <span className="non-numerical-indicator">—</span>
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

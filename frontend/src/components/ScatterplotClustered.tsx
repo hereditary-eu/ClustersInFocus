@@ -24,6 +24,8 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
 }) => {
   // Early return if data is missing or empty
   if (!data || data.length === 0) return <p>No data available</p>;
+  
+  console.log(`ScatterplotClustered rendering with k=${k}, data length: ${data.length}`);
 
   // Check if any data point has non-numerical values
   const hasNonNumericalValues = data.some(point => 
@@ -37,23 +39,35 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
     return <p>Please select numerical columns only</p>;
   }
 
+  // Get the actual number of unique clusters in the data, which may be different from k
+  const actualClusterIds = Array.from(new Set(data.map(point => point[2])))
+    .filter(id => id !== -1 && id !== undefined)
+    .sort((a, b) => a - b);
+  
+  console.log('Actual cluster IDs in data:', actualClusterIds);
+  
+  // Use the maximum of k and actual unique clusters to ensure we have enough colors
+  const numClusters = Math.max(k, actualClusterIds.length);
+  console.log(`Using ${numClusters} clusters for visualization`);
+
   // Transform data into the format Recharts expects and separate by clusters
-  const clusterData = Array.from({ length: k }, (_, i) => 
+  const clusterData = actualClusterIds.map(clusterId => 
     data
-      .filter(point => point[2] === i)
+      .filter(point => point[2] === clusterId)
       .map(point => ({
         x: point[0],
         y: point[1],
-        cluster: i  // Explicitly store cluster index
+        cluster: clusterId  // Explicitly store cluster index
       }))
   );
 
-  // Generate k different colors for the clusters
-  const colors = Array.from({ length: k }, (_, i) => 
-    `hsl(${(i * 360) / k}, 70%, 50%)`
+  // Generate different colors for all clusters
+  const colors = Array.from({ length: numClusters }, (_, i) => 
+    `hsl(${(i * 360) / numClusters}, 70%, 50%)`
   );
 
   const handleClick = (clusterIndex: number) => {
+    console.log(`Clicked on cluster ${clusterIndex}`);
     onPointClick(clusterIndex);
     // Create a synthetic mouse event
     const event = new MouseEvent('click', {
@@ -103,19 +117,24 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
               return null;
             }}
           />
-          {clusterData.map((cluster, i) => (
-            <Scatter
-              key={i}
-              data={cluster}
-              fill={colors[i]}
-              fillOpacity={0.6}
-              shape="circle"
-              r={4}
-              animationDuration={0}
-              onClick={() => handleClick(i)}
-              cursor="pointer"
-            />
-          ))}
+          {/* <Legend /> */}
+          {clusterData.map((cluster, i) => {
+            const clusterId = actualClusterIds[i];
+            return (
+              <Scatter
+                key={clusterId}
+                name={`Cluster ${clusterId + 1}`}
+                data={cluster}
+                fill={colors[i % colors.length]} // Use modulo to avoid index errors
+                fillOpacity={0.6}
+                shape="circle"
+                r={4}
+                animationDuration={0}
+                onClick={() => handleClick(clusterId)}
+                cursor="pointer"
+              />
+            );
+          })}
         </ScatterChart>
       </ResponsiveContainer>
     </div>

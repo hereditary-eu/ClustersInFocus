@@ -1,5 +1,3 @@
-// import { API_ROUTES } from './ApiRoutes';
-
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 interface RequestOptions {

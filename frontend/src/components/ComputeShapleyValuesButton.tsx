@@ -47,26 +47,29 @@ export function ComputeShapleyValuesButton({ columns, onShapleyValuesComputed }:
 
   return (
     <div className="clustering-controls">
-      <select
-        value={targetColumn}
-        onChange={(e) => setTargetColumn(e.target.value)}
-        disabled={isComputing}
-      >
-        {columns.length === 0 ? (
-          <option value="">No columns available</option>
-        ) : (
-          columns.map(column => (
-            <option key={column} value={column}>
-              {column}
-            </option>
-          ))
-        )}
-      </select>
+      <div className="select-container">
+        <select
+          className="select"
+          value={targetColumn}
+          onChange={(e) => setTargetColumn(e.target.value)}
+          disabled={isComputing}
+        >
+          {columns.length === 0 ? (
+            <option value="">No columns available</option>
+          ) : (
+            columns.map(column => (
+              <option key={column} value={column}>
+                {column}
+              </option>
+            ))
+          )}
+        </select>
+      </div>
 
       <button
         onClick={computeShapleyValues}
         disabled={isComputing || !targetColumn}
-        className="text-button"
+        className="button button-primary"
       >
         {isComputing ? `Computing... ${Math.round(progress)}%` : 'Compute Shapley Values'}
       </button>
@@ -93,7 +96,7 @@ export function ComputeShapleyValuesButton({ columns, onShapleyValuesComputed }:
             <p>{error}</p>
             <button 
               onClick={() => setError(null)}
-              className="text-button"
+              className="button button-secondary"
             >
               Close
             </button>

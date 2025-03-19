@@ -252,8 +252,10 @@ th.selected {
 }
 
 .table-container.compressed {
+  width: 100%;
   height: auto;
   margin: 10px 0;
+  box-shadow: 0 2px 10px var(--color-black-transparent);
 }
 
 .table-container.compressed table {
@@ -314,23 +316,6 @@ th.selected {
 
 /* CONTINUE HERE */
 
-.table-container.compressed {
-  width: min-content;
-  margin: 10px 0;
-}
-
-.table-container.compressed table {
-  width: auto;
-  min-width: 200px;
-}
-
-/* .histogram-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: none;
-} */
-
 .histogram-controls {
   display: flex;
   align-items: center;
@@ -375,15 +360,6 @@ th.selected {
 .scatter-tooltip p {
   margin: 0;
   padding: 2px 0;
-}
-
-.table-container.compressed {
-  box-shadow: 0 2px 10px var(--color-black-transparent);
-}
-
-.table-container.compressed table {
-  width: 100%;
-  table-layout: fixed;
 }
 
 /* Updated column widths for compressed table */
@@ -591,7 +567,6 @@ header {
 .tiny-histogram-cell {
   width: 120px;
   vertical-align: middle;
-  background: none;
   cursor: pointer;
   background: var(--color-white-accent-transparent);
 }
@@ -614,13 +589,6 @@ header {
   color: var(--color-gray-light);
   font-size: 14px;
 }
-
-
-.tiny-histogram-cell {
-  width: 120px;
-  vertical-align: middle;
-}
-
 
 /* HEATMAP */
 .heatmap-cell {
@@ -771,7 +739,7 @@ header {
 
 .file-name {
   font-size: 0.9em;
-  color: #666;
+  color: var(--color-gray);
 }
 
 .file-upload-content {
@@ -823,3 +791,217 @@ header {
 }
 
 /* END SHAPLEY VALUES */
+
+/* Enhanced Button Styles */
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  box-shadow: 0 2px 4px var(--color-black-transparent);
+}
+
+.button-primary {
+  background-color: var(--color-blue-accent);
+  color: var(--color-white);
+}
+
+.button-primary:hover {
+  background-color: var(--color-blue-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px var(--color-black-transparent);
+}
+
+.button-primary:active {
+  background-color: var(--color-blue-accent-active);
+  transform: translateY(0);
+  box-shadow: 0 1px 2px var(--color-black-transparent);
+}
+
+.button-secondary {
+  background-color: var(--color-white);
+  color: var(--color-gray-dark);
+  border: 1px solid var(--color-gray-lighter);
+}
+
+.button-secondary:hover {
+  background-color: var(--color-white-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px var(--color-black-transparent);
+}
+
+.button-secondary:active {
+  background-color: var(--color-white-gray);
+  transform: translateY(0);
+  box-shadow: 0 1px 2px var(--color-black-transparent);
+}
+
+/* Enhanced Select Styles */
+.select-container {
+  position: relative;
+  min-width: 120px;
+}
+
+.select {
+  appearance: none;
+  padding: 8px 30px 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-lighter);
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px var(--color-black-transparent);
+}
+
+.select:focus {
+  border-color: var(--color-blue-accent);
+  box-shadow: 0 0 0 2px var(--color-blue-accent-transparent);
+  outline: none;
+}
+
+.select-container::after {
+  content: '▼';
+  font-size: 10px;
+  color: var(--color-gray);
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* Enhanced Header Styles */
+header {
+  height: 5vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background-color: var(--color-white);
+  box-shadow: 0 2px 8px var(--color-black-transparent);
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--color-gray-dark);
+}
+
+.header-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.separator {
+  color: var(--color-gray-lighter);
+  font-size: 18px;
+}
+
+/* Enhanced File Upload Button */
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-name {
+  font-size: 14px;
+  color: var(--color-gray);
+  font-weight: 500;
+}
+
+.file-upload-button {
+  background-image: var(--svg-url-upload);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px;
+  margin-right: 10px;
+  transition: transform 0.2s ease;
+  border-radius: 50%;
+  padding: 6px;
+  background-color: var(--color-white);
+  box-shadow: 0 2px 4px var(--color-black-transparent);
+}
+
+.file-upload-button:hover {
+  transform: scale(1.1);
+  background-color: var(--color-white-accent);
+}
+
+/* Update the text button styles */
+.text-button {
+  padding: 8px 16px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-lighter);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  box-shadow: 0 1px 3px var(--color-black-transparent);
+}
+
+.text-button:hover:not(:disabled) {
+  background-color: var(--color-white-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px var(--color-black-transparent);
+}
+
+.text-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px var(--color-black-transparent);
+}
+
+.text-button:disabled {
+  background-color: var(--color-white-gray);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Histogram Container Close Button */
+.histogram-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: var(--color-gray);
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: var(--color-gray-lighter);
+  color: var(--color-gray-dark);
+}
+
+.close-button:active {
+  background-color: var(--color-gray-light);
+  color: var(--color-white);
+}

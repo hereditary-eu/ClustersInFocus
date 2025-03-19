@@ -30,6 +30,11 @@ class ShapleyService:
     @classmethod
     def compute_shap_values(cls, model: Union[xgboost.XGBRFRegressor, lgb.LGBMRegressor], X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
         X_numeric = X.select_dtypes(include=['number'])
+
+        # z score normalizaion
+        X_numeric = (X_numeric - X_numeric.mean()) / X_numeric.std()
+        X_numeric = X_numeric.fillna(0)
+
         model.fit(X_numeric, y)
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(X_numeric)

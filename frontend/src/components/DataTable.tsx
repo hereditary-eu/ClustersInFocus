@@ -177,23 +177,46 @@ const DataTable: React.FC<DataTableProps> = ({
     setActiveHistogram(activeHistogram === columnName ? null : columnName);
   };
 
-  // Add helper function to calculate cell background color
+  // Add this memoized function to cache column statistics
+  const columnStats = useMemo(() => {
+    const stats: Record<string, { min: number; max: number; range: number }> = {};
+    
+    // Only process visible columns to save computation
+    columns
+      .filter(col => !hiddenColumns.includes(col))
+      .forEach(col => {
+        const values = data
+          .map(row => row[col])
+          .filter(val => typeof val === 'number');
+        
+        if (values.length > 0) {
+          const min = Math.min(...values);
+          const max = Math.max(...values);
+          stats[col] = {
+            min,
+            max,
+            range: max - min
+          };
+        }
+      });
+    
+    return stats;
+  }, [data, columns, hiddenColumns]);
+
+  // Update the getCellStyle function to use the cached stats
   const getCellStyle = (value: number, columnId: string) => {
     if (viewMode !== 'heatmap' || typeof value !== 'number') return {};
     
-    const columnValues = data
-      .map(row => row[columnId])
-      .filter(val => typeof val === 'number');
+    const stats = columnStats[columnId];
+    if (!stats) return {};
     
-    const min = Math.min(...columnValues);
-    const max = Math.max(...columnValues);
-    const range = max - min;
-    const normalizedValue = range !== 0 ? (value - min) / range : 0.5;
+    const normalizedValue = stats.range !== 0 
+      ? (value - stats.min) / stats.range 
+      : 0.5;
     
     return {
       '--normalized-value': normalizedValue,
     } as React.CSSProperties;
-
   };
 
   // ranked Shapley values
@@ -287,7 +310,6 @@ const DataTable: React.FC<DataTableProps> = ({
               </thead>
               <tbody>
                 {columns.map((col) => {
-                  // Get feature importance data
                   const importance = getFeatureImportance(col);
                   
                   return (
@@ -348,7 +370,16 @@ const DataTable: React.FC<DataTableProps> = ({
           </div>
           {activeHistogram && (
             <div className="histogram-container">
-              <h3>{activeHistogram} Distribution</h3>
+              <div className="histogram-header">
+                <h3>{activeHistogram} Distribution</h3>
+                <button 
+                  className="close-button" 
+                  onClick={() => setActiveHistogram(null)}
+                  aria-label="Close histogram"
+                >
+                  ×
+                </button>
+              </div>
               <Histogram 
                 data={getColumnData(activeHistogram)}
                 variant="big"

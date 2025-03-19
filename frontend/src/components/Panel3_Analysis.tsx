@@ -70,7 +70,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
 
     return (
       <div className="similarity-analysis">
-        Cluster {selectedCluster + 1} of feature pair: {selectedColumns[0]} & {selectedColumns[1]} <br />
+        Cluster {selectedCluster + 1} of feature pair: <i>{selectedColumns.join(' and ')}</i> <br />
         <hr />
         <div className="table-container">
           <table>
@@ -104,7 +104,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
       onClick={(e) => onPanelClick('right', e)}
     >
       <h2>
-        <div className='panel-header-title'>Cluster Similarity Analysis</div>
+        <div className='panel-header-title'>Cluster Similarity Panel</div>
       </h2>
       <div className="analysis-panel">
         {renderSimilarityAnalysis()}

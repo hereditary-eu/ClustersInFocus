@@ -100,8 +100,8 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
         <h3>Customize {algorithm.toUpperCase()} Parameters</h3>
         {renderParamsInputs()}
         <div className="modal-buttons">
-          <button onClick={onClose}>Cancel</button>
-          <button onClick={() => onSave(localParams)}>Save</button>
+          <button className="button button-secondary" onClick={onClose}>Cancel</button>
+          <button className="button button-primary" onClick={() => onSave(localParams)}>Save</button>
         </div>
       </div>
     </div>
@@ -148,23 +148,26 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
 
   return (
     <div className="clustering-controls">
-      <select
-        value={algorithm}
-        onChange={(e) => {
-          const newAlgorithm = e.target.value as ClusteringAlgorithm;
-          setAlgorithm(newAlgorithm);
-          setParams(DEFAULT_PARAMS[newAlgorithm]);
-        }}
-        disabled={isComputing}
-      >
-        <option value="kmeans">K-Means</option>
-        <option value="dbscan">DBSCAN</option>
-      </select>
+      <div className="select-container">
+        <select
+          className="select"
+          value={algorithm}
+          onChange={(e) => {
+            const newAlgorithm = e.target.value as ClusteringAlgorithm;
+            setAlgorithm(newAlgorithm);
+            setParams(DEFAULT_PARAMS[newAlgorithm]);
+          }}
+          disabled={isComputing}
+        >
+          <option value="kmeans">K-Means</option>
+          <option value="dbscan">DBSCAN</option>
+        </select>
+      </div>
 
       <button
         onClick={() => setShowHyperparam(true)}
         disabled={isComputing}
-        className="text-button"
+        className="button button-secondary"
       >
         Configure
       </button>
@@ -172,7 +175,7 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
       <button
         onClick={computeClusters}
         disabled={isComputing}
-        className="text-button"
+        className="button button-primary"
       >
         {isComputing ? `Computing... ${Math.round(progress)}%` : 'Compute Clusters'}
       </button>
@@ -211,7 +214,7 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
             <p>{error}</p>
             <button 
               onClick={() => setError(null)}
-              className="text-button"
+              className="button button-secondary"
             >
               Close
             </button>

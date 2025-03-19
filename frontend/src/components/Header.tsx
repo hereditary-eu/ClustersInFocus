@@ -21,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed,
 
   return (
     <header>
-      <div className="header-title">Data Analysis Dashboard</div>
+      <div className="header-title">Detail-On-Demand Analysis Dashboard</div>
       <div className="header-controls">
         {data && numericColumns.length >= 2 && (
           <>
@@ -30,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed,
               columns={numericColumns}
               onClustersComputed={onClustersComputed}
             />
-            <span className="separator">|</span>
+            <div className="separator">|</div>
             <ComputeShapleyValuesButton
               columns={numericColumns}
               onShapleyValuesComputed={onShapleyValuesComputed}

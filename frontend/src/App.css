@@ -70,6 +70,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
+  table-layout: auto;
 }
 
 th {
@@ -597,7 +598,7 @@ header {
   text-align: center;
   font-size: 2px;
   background: hsl(200, 70%, calc(100% - (var(--normalized-value) * 50%)));
-  border-bottom: 1px solid var(--color-gray-lighter);
+  border-bottom: 1px dotted var(--color-gray-lighter);
 }
 
 /* When not in heatmap mode, restore normal text */
@@ -887,7 +888,7 @@ header {
   align-items: center;
   padding: 0 20px;
   background-color: var(--color-white);
-  box-shadow: 0 2px 8px var(--color-black-transparent);
+  /* box-shadow: 0 2px 8px var(--color-black-transparent); */
 }
 
 .header-title {
@@ -1005,3 +1006,42 @@ header {
   background-color: var(--color-gray-light);
   color: var(--color-white);
 }
+
+/* hover effect for the heatmap rows */
+.hovered-row {
+  z-index: 10;
+  position: relative;
+}
+
+.hovered-cell {
+  height: 14px;
+  font-size: 12px;
+  position: relative;
+}
+
+.hovered-cell-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: left;
+  justify-content: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.heatmap-cell {
+  width: 1px; /* Force all columns to have the same minimum width */
+  min-width: 32px; /* Ensure a reasonable minimum width */
+  box-sizing: border-box;
+}
+
+tbody tr:hover {
+  cursor: pointer;
+}
+/* end: hover effect for the heatmap rows */

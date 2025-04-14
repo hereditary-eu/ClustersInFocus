@@ -42,6 +42,7 @@ const DataTable: React.FC<DataTableProps> = ({
   const [activeHistogram, setActiveHistogram] = useState<string | null>(null);
   const [hoveredColumn, setHoveredColumn] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{ id: string; desc: boolean } | null>(null);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
 
   const handleSort = (columnId: string) => {
     setSortConfig(prev => ({
@@ -268,11 +269,19 @@ const DataTable: React.FC<DataTableProps> = ({
               })}
             </thead>
             <tbody {...getTableBodyProps()}>
-              {rows.map((row) => {
+              {rows.map((row, rowIndex) => {
                 prepareRow(row);
                 const { key, ...rowProps } = row.getRowProps();
+                const isRowHovered = hoveredRowIndex === rowIndex;
+                
                 return (
-                  <tr key={key} {...rowProps}>
+                  <tr 
+                    key={key} 
+                    {...rowProps}
+                    className={isRowHovered && viewMode === 'heatmap' ? 'hovered-row' : ''}
+                    onMouseEnter={() => viewMode === 'heatmap' && setHoveredRowIndex(rowIndex)}
+                    onMouseLeave={() => viewMode === 'heatmap' && setHoveredRowIndex(null)}
+                  >
                     {row.cells.map((cell) => {
                       const { key: cellKey, ...cellProps } = cell.getCellProps();
                       return (
@@ -282,10 +291,19 @@ const DataTable: React.FC<DataTableProps> = ({
                           className={`
                             ${selectedColumns.includes(cell.column.id) ? 'selected' : ''}
                             ${viewMode === 'heatmap' ? 'heatmap-cell' : ''}
+                            ${isRowHovered && viewMode === 'heatmap' ? 'hovered-cell' : ''}
                           `}
                           style={getCellStyle(cell.value, cell.column.id)}
                         >
-                          {viewMode === 'numerical' ? cell.render('Cell') : ''}
+                          {viewMode === 'numerical' ? (
+                            cell.render('Cell')
+                          ) : (
+                            <>
+                              {isRowHovered && viewMode === 'heatmap' ? (
+                                <div className="hovered-cell-content">{cell.render('Cell')}</div>
+                              ) : null}
+                            </>
+                          )}
                         </td>
                       );
                     })}

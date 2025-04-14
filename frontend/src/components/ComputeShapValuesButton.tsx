@@ -32,7 +32,7 @@ export function ComputeShapleyValuesButton({ columns, onShapleyValuesComputed }:
       setIsComputing(false);
       onShapleyValuesComputed(targetColumn);
     } catch (err) {
-      console.error('Error computing Shapley values:', err);
+      console.error('Error computing SHAP values:', err);
       setIsComputing(false);
       
       // Check if this is a network error
@@ -40,7 +40,7 @@ export function ComputeShapleyValuesButton({ columns, onShapleyValuesComputed }:
           (err instanceof Error && err.message.includes('Failed to fetch'))) {
         setError('Unable to connect to the server. Please check that the backend is running or try again later.');
       } else {
-        setError('An error occurred while computing Shapley values. Please try again.');
+        setError('An error occurred while computing SHAP values. Please try again.');
       }
     }
   }, [targetColumn, onShapleyValuesComputed]);
@@ -71,7 +71,7 @@ export function ComputeShapleyValuesButton({ columns, onShapleyValuesComputed }:
         disabled={isComputing || !targetColumn}
         className="button button-primary"
       >
-        {isComputing ? `Computing... ${Math.round(progress)}%` : 'Compute Shapley Values'}
+        {isComputing ? `Computing... ${Math.round(progress)}%` : 'Compute SHAP Values'}
       </button>
 
       {isComputing && (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileUploadButton } from './FileUploadButton';
 import { ComputeClustersButton } from './ComputeClustersButton';
-import { ComputeShapleyValuesButton } from './ComputeShapleyValuesButton';
+import { ComputeShapleyValuesButton } from './ComputeShapValuesButton';
 import { DataRow } from '../services/FileService';
 
 interface HeaderProps {

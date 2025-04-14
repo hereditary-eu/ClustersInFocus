@@ -26,19 +26,25 @@ class ShapleyService:
         else:
             raise ValueError(f"Model {CONFIG.SHAP_MODEL} not supported")
         
+    @classmethod
+    def normalize_data(cls, data: pd.DataFrame) -> pd.DataFrame:
+        numeric_data = data.select_dtypes(include=['number'])
+        # z-score normalization
+        normalized_data = (numeric_data - numeric_data.mean()) / numeric_data.std()
+        normalized_data = normalized_data.fillna(0)
+        
+        # Preserve non-numeric columns
+        for col in data.select_dtypes(exclude=['number']).columns:
+            normalized_data[col] = data[col]
+            
+        return normalized_data
 
     @classmethod
     def compute_shap_values(cls, model: Union[xgboost.XGBRFRegressor, lgb.LGBMRegressor], X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
         X_numeric = X.select_dtypes(include=['number'])
-
-        # z score normalizaion
-        X_numeric = (X_numeric - X_numeric.mean()) / X_numeric.std()
-        X_numeric = X_numeric.fillna(0)
-
         model.fit(X_numeric, y)
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(X_numeric)
-
 
         column_shap_values = np.abs(shap_values).mean(axis=0)
 
@@ -51,16 +57,15 @@ class ShapleyService:
 
         return shap_importance
     
-        
     @classmethod
     def get_shap_values(cls, target_column: str) -> pd.DataFrame:
-
         model = cls.get_shap_model()
 
         data = pd.DataFrame(temp_database['data'])
+        normalized_data = cls.normalize_data(data)
 
-        X = data.drop(columns=[target_column])
-        y = data[target_column]
+        X = normalized_data.drop(columns=[target_column])
+        y = normalized_data[target_column]
 
         shap_importance = cls.compute_shap_values(model, X, y)
         temp_database['shap_values'][target_column] = shap_importance

@@ -3,6 +3,9 @@
 !**/data/.gitkeep
 node_modules/
 
+backend/test_db.py
+
+
 # while cleaning up the css files:
 *.scss
 *.backup

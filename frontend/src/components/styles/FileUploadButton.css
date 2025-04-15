@@ -1,0 +1,199 @@
+.file-name {
+  font-size: 0.9em;
+  color: var(--color-gray);
+}
+
+.file-upload-button {
+  background: var(--svg-url-upload);
+  background-size: contain;
+  width: 24px;
+  height: 24px;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.loading-indicator {
+  margin-right: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.upload-options-dropdown {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  min-width: 200px;
+  z-index: 100;
+}
+
+.upload-option {
+  width: 100%;
+  border: none;
+  border-radius: 4px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.saved-datasets-list {
+  margin-top: 10px;
+}
+
+.saved-datasets-list h4 {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  color: #666;
+  font-weight: 500;
+}
+
+.dataset-option-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.dataset-option {
+  flex-grow: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border: none;
+  background-color: var(--color-white);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dataset-option:hover {
+  background-color: var(--color-white-accent);
+}
+
+.dataset-delete-button {
+  margin-left: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: var(--color-red-accent);
+  color: white;
+  border-radius: 10%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.dataset-delete-button:hover {
+  background-color: var(--color-red-accent-hover);
+}
+
+.no-datasets {
+  font-size: 13px;
+  color: var(--color-gray-light);
+  font-style: italic;
+  margin: 5px 0;
+}
+
+.error-container {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  padding: 4px 8px;
+  background-color: var(--color-red-accent-transparent);
+  border: 1px solid var(--color-red-accent);
+  border-radius: 4px;
+  max-width: 300px;
+}
+
+.error-message {
+  font-size: 13px;
+  color: var(--color-red-accent);
+  flex: 1;
+  margin-right: 8px;
+}
+
+.error-dismiss {
+  background: none;
+  border: none;
+  color: var(--color-red-accent);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.confirm-delete-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-delete-dialog {
+  background-color: var(--color-white);
+  border-radius: 6px;
+  padding: 20px;
+  width: 80%;
+  max-width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-delete-message {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.confirm-delete-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.confirm-delete-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 80px;
+}
+
+.confirm-delete-button.delete {
+  background-color: var(--color-red-accent);
+  color: var(--color-white);
+}
+
+.confirm-delete-button.delete:hover {
+  background-color: var(--color-red-accent-hover);
+}
+
+.confirm-delete-button.cancel {
+  background-color: var(--color-gray-lighter);
+  color: var(--color-gray-dark);
+}
+
+.confirm-delete-button.cancel:hover {
+  background-color: var(--color-gray-light);
+} 

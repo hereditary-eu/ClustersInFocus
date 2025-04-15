@@ -7,6 +7,7 @@ interface Panel3AnalysisProps {
   selectedCluster: number | null;
   selectedColumns: string[];
   onClusterSelect: (cluster: number | null) => void;
+  fileId?: string;
 }
 
 const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
@@ -15,6 +16,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
   selectedCluster,
   selectedColumns,
   onClusterSelect,
+  fileId
 }) => {
   const [similarities, setSimilarities] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -30,13 +32,14 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
     setError(null);
     
     // Fetch similarities when a cluster is selected
-    if (selectedCluster !== null && selectedColumns.length === 2) {
+    if (selectedCluster !== null && selectedColumns.length === 2 && fileId) {
       setLoading(true);
       
       ClusteringService.getClusterSimilarities(
         selectedColumns[0],
         selectedColumns[1],
-        selectedCluster
+        selectedCluster,
+        fileId
       )
         .then(data => {
           setSimilarities(data);
@@ -49,7 +52,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
           setLoading(false);
         });
     }
-  }, [selectedCluster, selectedColumns]);
+  }, [selectedCluster, selectedColumns, fileId]);
 
   const renderSimilarityAnalysis = () => {
     if (loading) {

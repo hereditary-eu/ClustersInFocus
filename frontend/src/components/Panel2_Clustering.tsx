@@ -8,6 +8,7 @@ interface Panel2ClusteringProps {
   expandedPanel: string | null;
   onPanelClick: (panelId: string, event: React.MouseEvent) => void;
   onClusterSelect: (cluster: number | null) => void;
+  fileId?: string;
 }
 
 const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
@@ -16,6 +17,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
   expandedPanel,
   onPanelClick,
   onClusterSelect,
+  fileId
 }) => {
   const [clusterData, setClusterData] = useState<number[] | null>(null);
   const [scatterData, setScatterData] = useState<number[][]>([]);
@@ -24,7 +26,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
 
   useEffect(() => {
     const fetchClusters = async () => {
-      if (selectedColumns.length !== 2) {
+      if (selectedColumns.length !== 2 || !fileId) {
         setClusterData(null);
         setScatterData([]);
         return;
@@ -35,24 +37,48 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
       try {
         // Sort features alphabetically for consistent caching
         const [feature1, feature2] = selectedColumns;
-        const clusterGroups = await ClusteringService.getClustersByFeatures(feature1, feature2);
-
-      if (clusterGroups) {
-        console.log('Retrieved cluster groups:', clusterGroups);
         
-        // Convert cluster groups to array format
-        const clusterArray = new Array(data.length).fill(-1);
-        
-        // Extract all unique cluster IDs
-        const uniqueClusterIds = Object.keys(clusterGroups).map(Number);
-        console.log('Unique cluster IDs:', uniqueClusterIds);
-        
-        // Populate the cluster array
-        Object.entries(clusterGroups).forEach(([clusterId, indices]) => {
-          indices.forEach((index: number) => {
-            clusterArray[index] = Number(clusterId);
-          });
+        // Check if selected columns contain numerical data before making the request
+        const hasNonNumericalValues = data.some(row => {
+          const val1 = row[feature1];
+          const val2 = row[feature2];
+          
+          // Check if any value is non-numeric (and not null)
+          return (val1 !== null && typeof val1 !== 'number' && isNaN(Number(val1))) ||
+                 (val2 !== null && typeof val2 !== 'number' && isNaN(Number(val2)));
         });
+
+        if (hasNonNumericalValues) {
+          console.log('Skipping cluster request for non-numerical columns');
+          setClusterData(null);
+          setScatterData([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        const clusterGroups = await ClusteringService.getClustersByFeatures(
+          feature1, 
+          feature2, 
+          fileId, 
+          data
+        );
+
+        if (clusterGroups) {
+          console.log('Retrieved cluster groups:', clusterGroups);
+          
+          // Convert cluster groups to array format
+          const clusterArray = new Array(data.length).fill(-1);
+          
+          // Extract all unique cluster IDs
+          const uniqueClusterIds = Object.keys(clusterGroups).map(Number);
+          console.log('Unique cluster IDs:', uniqueClusterIds);
+          
+          // Populate the cluster array
+          Object.entries(clusterGroups).forEach(([clusterId, indices]) => {
+            indices.forEach((index: number) => {
+              clusterArray[index] = Number(clusterId);
+            });
+          });
 
           setClusterData(clusterArray);
           setNumClusters(uniqueClusterIds.length);
@@ -81,7 +107,7 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
     };
 
     fetchClusters();
-  }, [data, selectedColumns]);
+  }, [data, selectedColumns, fileId]);
 
   const renderContent = () => {
     if (selectedColumns.length < 2) {

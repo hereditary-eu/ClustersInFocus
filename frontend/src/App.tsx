@@ -12,8 +12,10 @@ const App: React.FC = () => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [isDataTableExpanded, setIsDataTableExpanded] = useState(true);
   const [data, setData] = useState<DataState>({
+    fileName: '',
     csvData: [],
-    columns: []
+    columns: [],
+    fileId: '',
   });
 
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
@@ -26,9 +28,19 @@ const App: React.FC = () => {
     setSelectedColumns(selected.slice().sort());
   };
 
-  const handleFileUpload = (csvData: DataRow[], headers: string[]) => {
-    console.log('Received data:', { rows: csvData.length, headers }); // Debug log
+  const handleFileUpload = (fileName: string, csvData: DataRow[], headers: string[], fileId?: string) => {
+    console.log('Received data:', { fileName, rows: csvData.length, headers}); // Debug log
+    
+    // Reset UI state when loading a new dataset
+    setExpandedPanel(null);
+    setSelectedColumns([]);
+    setSelectedCluster(null);
+    setShapleyValues(null);
+    
+    // Update data state
     setData({
+      fileId: fileId,
+      fileName: fileName,
       csvData: csvData,
       columns: headers
     });
@@ -50,9 +62,9 @@ const App: React.FC = () => {
     setHiddenColumns(prev => prev.filter(col => col !== column));
   };
 
-  const handleShapleyValuesComputed = async (targetColumn: string) => {
+  const handleShapleyValuesComputed = async (targetColumn: string, fileId: string) => {
     try {
-      const values = await ClusteringService.getShapleyValues(targetColumn);
+      const values = await ClusteringService.getShapleyValues(targetColumn, fileId);
       setShapleyValues(values);
     } catch (error) {
       console.error('Error fetching Shapley values:', error);
@@ -106,6 +118,7 @@ const App: React.FC = () => {
               expandedPanel={expandedPanel}
               onPanelClick={handlePanelClick}
               onClusterSelect={setSelectedCluster}
+              fileId={data.fileId}
             />
             <AnalysisPanel
               expandedPanel={expandedPanel}
@@ -113,6 +126,7 @@ const App: React.FC = () => {
               selectedCluster={selectedCluster}
               selectedColumns={selectedColumns}
               onClusterSelect={setSelectedCluster}
+              fileId={data.fileId}
             />
           </div>
         ) : (

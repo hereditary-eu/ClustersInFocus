@@ -1,49 +1,56 @@
 import { useState, useCallback } from 'react';
 import { ClusteringService } from '../services/ClusteringService';
+import { DataRow } from '../types';
 
 interface ComputeShapleyValuesButtonProps {
   columns: string[];
-  onShapleyValuesComputed: (targetColumn: string) => void;
+  onShapleyValuesComputed: (targetColumn: string, fileId: string) => void;
+  fileId?: string;
+  data?: DataRow[];
+  fileName?: string;
 }
 
-export function ComputeShapleyValuesButton({ columns, onShapleyValuesComputed }: ComputeShapleyValuesButtonProps) {
+export function ComputeShapleyValuesButton({ 
+  columns, 
+  onShapleyValuesComputed,
+  fileId,
+  data,
+  fileName
+}: ComputeShapleyValuesButtonProps) {
   const [isComputing, setIsComputing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [targetColumn, setTargetColumn] = useState<string>(columns[0] || '');
   const [error, setError] = useState<string | null>(null);
-  const [targetColumn, setTargetColumn] = useState<string>(columns.length > 0 ? columns[0] : '');
 
   const computeShapleyValues = useCallback(async () => {
-    if (!targetColumn) {
-      setError('Please select a target column');
-      return;
-    }
-
+    if (!targetColumn) return;
+    
     setIsComputing(true);
     setProgress(0);
     setError(null);
     
     try {
-      // Only sending the target column to the backend
       await ClusteringService.computeShapleyValues(
-        targetColumn,
-        setProgress
+        targetColumn, 
+        fileId || '',
+        setProgress,
+        data,
+        fileName
       );
       
       setIsComputing(false);
-      onShapleyValuesComputed(targetColumn);
+      onShapleyValuesComputed(targetColumn, fileId || '');
     } catch (err) {
-      console.error('Error computing SHAP values:', err);
+      console.error('Error computing Shapley values:', err);
       setIsComputing(false);
       
-      // Check if this is a network error
-      if (err instanceof TypeError && err.message.includes('network') || 
-          (err instanceof Error && err.message.includes('Failed to fetch'))) {
-        setError('Unable to connect to the server. Please check that the backend is running or try again later.');
+      if (err instanceof Error) {
+        setError(err.message);
       } else {
-        setError('An error occurred while computing SHAP values. Please try again.');
+        setError('An error occurred while computing Shapley values.');
       }
     }
-  }, [targetColumn, onShapleyValuesComputed]);
+  }, [targetColumn, onShapleyValuesComputed, fileId, data, fileName]);
 
   return (
     <div className="clustering-controls">

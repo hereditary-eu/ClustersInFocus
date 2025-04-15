@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 class KMeansParams(BaseModel):
@@ -14,6 +14,8 @@ class ClusteringRequest(BaseModel):
     columns: List[str]  # Selected columns for clustering
     algorithm: Literal["kmeans", "dbscan"] = "kmeans"
     params: KMeansParams | DBScanParams
+    dataset_id: Optional[str] = None  # Optional dataset ID for persistence
+    filename: Optional[str] = None  # Optional filename for saving dataset if not found
 
 class ClusterGroup(BaseModel):
     cluster_id: int
@@ -33,4 +35,5 @@ class ClusterSimilarity(BaseModel):
 class SimilarityRequest(BaseModel):
     selected_feature1: str
     selected_feature2: str
-    selected_cluster_id: int 
+    selected_cluster_id: int
+    dataset_id: str  # Required to lookup clusters 

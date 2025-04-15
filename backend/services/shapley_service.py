@@ -6,12 +6,6 @@ import pandas as pd
 import numpy as np
 
 from core.config import CONFIG
-from database import temp_database
-
-if 'shap_values' not in temp_database:
-    temp_database['shap_values'] = {}
-
-
 
 class ShapleyService:
     @classmethod
@@ -23,9 +17,15 @@ class ShapleyService:
                 max_depth=CONFIG.SHAP_MODEL_PARAMETERS['xgboost']['max_depth'],
                 random_state=CONFIG.SHAP_MODEL_PARAMETERS['xgboost']['random_state']
             )
+        elif CONFIG.SHAP_MODEL == 'lightgbm':
+            return lgb.LGBMRegressor(
+                n_estimators=CONFIG.SHAP_MODEL_PARAMETERS['lightgbm']['n_estimators'],
+                learning_rate=CONFIG.SHAP_MODEL_PARAMETERS['lightgbm']['learning_rate'],
+                max_depth=CONFIG.SHAP_MODEL_PARAMETERS['lightgbm']['max_depth'],
+                random_state=CONFIG.SHAP_MODEL_PARAMETERS['lightgbm']['random_state']
+            )
         else:
             raise ValueError(f"Model {CONFIG.SHAP_MODEL} not supported")
-        
     @classmethod
     def normalize_data(cls, data: pd.DataFrame) -> pd.DataFrame:
         numeric_data = data.select_dtypes(include=['number'])
@@ -58,17 +58,17 @@ class ShapleyService:
         return shap_importance
     
     @classmethod
-    def get_shap_values(cls, target_column: str) -> pd.DataFrame:
+    def compute_shapley_values_from_df(cls, data_df: pd.DataFrame, target_column: str) -> pd.DataFrame:
+        """Compute Shapley values from a DataFrame."""
         model = cls.get_shap_model()
-
-        data = pd.DataFrame(temp_database['data'])
-        normalized_data = cls.normalize_data(data)
+        normalized_data = cls.normalize_data(data_df)
 
         X = normalized_data.drop(columns=[target_column])
         y = normalized_data[target_column]
 
-        shap_importance = cls.compute_shap_values(model, X, y)
-        temp_database['shap_values'][target_column] = shap_importance
+        # check if X contains any numerical columns
+        if X.select_dtypes(include=['number']).empty:
+            raise ValueError("No numerical columns found in the dataset")
 
-        return shap_importance
+        return cls.compute_shap_values(model, X, y)
 

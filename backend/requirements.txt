@@ -3,11 +3,13 @@ fastapi
 uvicorn
 jinja2
 dotenv
-
+aiosqlite
+sqlalchemy
 
 # logical
 shap
 scikit-learn
 xgboost
 lightgbm
+pandas
 

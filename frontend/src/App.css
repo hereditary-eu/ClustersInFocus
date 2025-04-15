@@ -732,33 +732,6 @@ header {
   align-items: center;
 }
 
-.file-upload-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.file-name {
-  font-size: 0.9em;
-  color: var(--color-gray);
-}
-
-.file-upload-content {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.file-upload-button {
-  background: var(--svg-url-upload);
-  background-size: contain;
-  width: 24px;
-  height: 24px;
-  border: none;
-  cursor: pointer;
-  margin-left: 10px;
-  margin-right: 10px;
-}
 
 /* SHAPLEY VALUES */
 .importance-cell {
@@ -921,23 +894,6 @@ header {
   font-weight: 500;
 }
 
-.file-upload-button {
-  background-image: var(--svg-url-upload);
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  width: 24px;
-  height: 24px;
-  border: none;
-  cursor: pointer;
-  margin-left: 10px;
-  margin-right: 10px;
-  transition: transform 0.2s ease;
-  border-radius: 50%;
-  padding: 6px;
-  background-color: var(--color-white);
-  box-shadow: 0 2px 4px var(--color-black-transparent);
-}
 
 .file-upload-button:hover {
   transform: scale(1.1);

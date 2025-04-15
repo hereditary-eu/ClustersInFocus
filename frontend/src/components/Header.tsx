@@ -2,22 +2,23 @@ import React from 'react';
 import { FileUploadButton } from './FileUploadButton';
 import { ComputeClustersButton } from './ComputeClustersButton';
 import { ComputeShapleyValuesButton } from './ComputeShapValuesButton';
-import { DataRow } from '../services/FileService';
+import { DataRow, DataState } from '../types';
 
 interface HeaderProps {
-  onFileUpload: (data: DataRow[], headers: string[]) => void;
+  onFileUpload: (fileName: string, data: DataRow[], headers: string[], fileId?: string) => void;
   onClustersComputed: () => void;
-  onShapleyValuesComputed: (targetColumn: string) => void;
-  data?: {
-    csvData: DataRow[];
-    columns: string[];
-  };
+  onShapleyValuesComputed: (targetColumn: string, fileId: string) => void;
+  data?: DataState;
 }
 
 const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed, onShapleyValuesComputed }) => {
   const numericColumns = data?.columns.filter(col => 
     data.csvData.length > 0 && typeof data.csvData[0][col] === 'number'
   ) ?? [];
+
+  const handleFileLoaded = (fileName: string, data: DataRow[], headers: string[], fileId?: string) => {
+    onFileUpload(fileName, data, headers, fileId);
+  };
 
   return (
     <header>
@@ -29,15 +30,23 @@ const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed,
               csvData={data.csvData}
               columns={numericColumns}
               onClustersComputed={onClustersComputed}
+              fileId={data.fileId}
+              fileName={data.fileName}
             />
             <div className="separator">|</div>
             <ComputeShapleyValuesButton
               columns={numericColumns}
               onShapleyValuesComputed={onShapleyValuesComputed}
+              fileId={data.fileId}
+              data={data.csvData}
+              fileName={data.fileName}
             />
           </>
         )}
-        <FileUploadButton onFileLoaded={onFileUpload} />
+        <FileUploadButton 
+          onFileLoaded={handleFileLoaded} 
+          onClustersFound={onClustersComputed}
+        />
       </div>
     </header>
   );

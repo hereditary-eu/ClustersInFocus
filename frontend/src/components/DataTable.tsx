@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTable, Column } from 'react-table';
 import Histogram from './Histogram';
 import ColumnMenu from './DataTableColumnHoverMenu';
@@ -43,6 +43,13 @@ const DataTable: React.FC<DataTableProps> = ({
   const [hoveredColumn, setHoveredColumn] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{ id: string; desc: boolean } | null>(null);
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
+
+  // Reset activeHistogram when data changes
+  useEffect(() => {
+    if (activeHistogram) {
+      setActiveHistogram(null);
+    }
+  }, [data]);
 
   const handleSort = (columnId: string) => {
     setSortConfig(prev => ({

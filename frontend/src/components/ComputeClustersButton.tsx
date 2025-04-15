@@ -1,22 +1,6 @@
 import { useState, useCallback } from 'react';
-import { ClusteringService, ClusteringAlgorithm, ClusteringParams, DEFAULT_PARAMS } from '../services/ClusteringService';
-
-interface DataRow {
-  [key: string]: string | number;
-}
-
-interface ComputeClustersButtonProps {
-  csvData: DataRow[];
-  columns: string[];
-  onClustersComputed: () => void;
-}
-
-interface HyperparamModalProps {
-  algorithm: ClusteringAlgorithm;
-  params: ClusteringParams[ClusteringAlgorithm];
-  onClose: () => void;
-  onSave: (params: ClusteringParams[ClusteringAlgorithm]) => void;
-}
+import { ClusteringService, DEFAULT_PARAMS } from '../services/ClusteringService';
+import { ComputeClustersButtonProps, HyperparamModalProps, ClusteringAlgorithm, ClusteringParams } from '../types';
 
 const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, onClose, onSave }) => {
   const [localParams, setLocalParams] = useState(params);
@@ -108,7 +92,7 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
   );
 };
 
-export function ComputeClustersButton({ csvData, columns, onClustersComputed }: ComputeClustersButtonProps) {
+export function ComputeClustersButton({ csvData, columns, onClustersComputed, fileId, fileName }: ComputeClustersButtonProps) {
   const [isComputing, setIsComputing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showHyperparam, setShowHyperparam] = useState(false);
@@ -127,7 +111,9 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
         columns,
         algorithm,
         params,
-        setProgress
+        setProgress,
+        fileId,
+        fileName
       );
       
       setIsComputing(false);
@@ -144,7 +130,7 @@ export function ComputeClustersButton({ csvData, columns, onClustersComputed }: 
         setError('An error occurred while computing clusters. Please try again.');
       }
     }
-  }, [csvData, columns, algorithm, params, onClustersComputed]);
+  }, [csvData, columns, algorithm, params, onClustersComputed, fileId, fileName]);
 
   return (
     <div className="clustering-controls">

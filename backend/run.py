@@ -6,22 +6,25 @@ from fastapi.responses import HTMLResponse
 from pathlib import Path
 
 from core.config import CONFIG
-from routers.shapley import shapley_router
-from routers.clustering import clustering_router
-from routers.debug import debug_router
+from routers import (
+    shapley_router,
+    clustering_router,
+    dataset_router
+)
 
 def create_app() -> FastAPI:
     app = FastAPI(
         title=CONFIG.API_TITLE,
         version=CONFIG.API_VERSION,
         description=CONFIG.API_DESCRIPTION,
+        max_request_size=CONFIG.MAX_REQUEST_SIZE
     )
 
     # Configure CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],  # TODO: Configure this
-        allow_credentials=True,
+        # allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -47,7 +50,7 @@ def create_app() -> FastAPI:
     # adding routers
     app.include_router(shapley_router)
     app.include_router(clustering_router)
-    app.include_router(debug_router)
+    app.include_router(dataset_router)
 
     return app
 

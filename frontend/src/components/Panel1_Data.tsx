@@ -1,23 +1,6 @@
 import React from 'react';
 import DataTable from './DataTable';
-import { ShapleyValueItem, DataRow } from '../types';
-
-
-interface Panel1DataProps {
-  data: DataRow[];
-  columns: string[];
-  expandedPanel: string | null;
-  hiddenColumns: string[];
-  isDataTableExpanded: boolean;
-  dataViewMode: 'numerical' | 'heatmap';
-  onPanelClick: (panelId: string, event: React.MouseEvent) => void;
-  onColumnHide: (column: string) => void;
-  onColumnRestore: (column: string) => void;
-  onColumnSelect: (selected: string[]) => void;
-  setDataViewMode: (mode: 'numerical' | 'heatmap') => void;
-  setIsDataTableExpanded: (expanded: boolean) => void;
-  shapleyValues: ShapleyValueItem[] | null;
-}
+import { Panel1DataProps } from '../types';
 
 const Panel1Data: React.FC<Panel1DataProps> = ({
   data,

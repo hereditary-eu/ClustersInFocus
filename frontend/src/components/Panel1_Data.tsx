@@ -1,6 +1,6 @@
-import React from 'react';
-import DataTable from './DataTable';
-import { Panel1DataProps } from '../types';
+import React from "react";
+import DataTable from "./DataTable";
+import { Panel1DataProps } from "../types";
 
 const Panel1Data: React.FC<Panel1DataProps> = ({
   data,
@@ -18,14 +18,14 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
   shapleyValues,
 }) => {
   return (
-    <div 
-      className={`panel panel-left ${expandedPanel === 'left' ? 'expanded' : ''}`}
-      onClick={(e) => onPanelClick('left', e)}
+    <div
+      className={`panel panel-left ${expandedPanel === "left" ? "expanded" : ""}`}
+      onClick={(e) => onPanelClick("left", e)}
     >
       <h2 className="panel-header-left">
         <div className="panel-header-title">Data</div>
-        <div className='panel-header-options'>
-          {expandedPanel === 'left' && hiddenColumns.length > 0 && (
+        <div className="panel-header-options">
+          {expandedPanel === "left" && hiddenColumns.length > 0 && (
             <div className="hidden-columns-tags">
               {hiddenColumns.map((col) => (
                 <button
@@ -45,20 +45,20 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
           {isDataTableExpanded && (
             <div className="view-mode-switch">
               <button
-                className={`view-mode-button ${dataViewMode === 'numerical' ? 'active' : ''}`}
+                className={`view-mode-button ${dataViewMode === "numerical" ? "active" : ""}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDataViewMode('numerical');
+                  setDataViewMode("numerical");
                 }}
                 title="Show numerical values"
               >
                 123
               </button>
               <button
-                className={`view-mode-button ${dataViewMode === 'heatmap' ? 'active' : ''}`}
+                className={`view-mode-button ${dataViewMode === "heatmap" ? "active" : ""}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDataViewMode('heatmap');
+                  setDataViewMode("heatmap");
                 }}
                 title="Show heatmap"
               >
@@ -66,17 +66,17 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
               </button>
             </div>
           )}
-          <button 
-            className={`toggle-view-button ${isDataTableExpanded ? 'compress-button' : 'expand-button'}`}
+          <button
+            className={`toggle-view-button ${isDataTableExpanded ? "compress-button" : "expand-button"}`}
             onClick={() => setIsDataTableExpanded(!isDataTableExpanded)}
             aria-label={isDataTableExpanded ? "Compress table" : "Expand table"}
             title={isDataTableExpanded ? "Compress table" : "Expand table"}
           />
         </div>
       </h2>
-      
-      <DataTable 
-        data={data} 
+
+      <DataTable
+        data={data}
         columns={columns}
         hiddenColumns={hiddenColumns}
         onColumnHide={onColumnHide}
@@ -86,7 +86,7 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
         viewMode={dataViewMode}
         menuOptions={{
           canSort: true,
-          canHide: true
+          canHide: true,
         }}
         shapleyValues={shapleyValues}
       />
@@ -94,4 +94,4 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
   );
 };
 
-export default Panel1Data; 
+export default Panel1Data;

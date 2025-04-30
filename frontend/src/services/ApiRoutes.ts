@@ -1,4 +1,4 @@
-const BASE_API_URL = 'http://localhost:8000';
+const BASE_API_URL = "http://localhost:8000";
 
 export const API_ROUTES = {
   dataset: {
@@ -14,7 +14,7 @@ export const API_ROUTES = {
     getByFeatures: `${BASE_API_URL}/clustering/get_by_features`,
     getAllFeaturePairs: `${BASE_API_URL}/clustering/get_all_clustered_feature_pairs`,
   },
-  
+
   shapley: {
     compute: `${BASE_API_URL}/shapley/compute_shap_values`,
     getValues: `${BASE_API_URL}/shapley/get_shapley_values`,

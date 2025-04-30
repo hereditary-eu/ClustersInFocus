@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ClusteringService } from '../services/ClusteringService';
+import React, { useEffect, useState } from "react";
+import { ClusteringService } from "../services/ClusteringService";
 
 interface Panel3AnalysisProps {
   expandedPanel: string | null;
@@ -16,7 +16,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
   selectedCluster,
   selectedColumns,
   onClusterSelect,
-  fileId
+  fileId,
 }) => {
   const [similarities, setSimilarities] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -30,23 +30,18 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
     // Clear previous similarities when selection changes
     setSimilarities([]);
     setError(null);
-    
+
     // Fetch similarities when a cluster is selected
     if (selectedCluster !== null && selectedColumns.length === 2 && fileId) {
       setLoading(true);
-      
-      ClusteringService.getClusterSimilarities(
-        selectedColumns[0],
-        selectedColumns[1],
-        selectedCluster,
-        fileId
-      )
-        .then(data => {
+
+      ClusteringService.getClusterSimilarities(selectedColumns[0], selectedColumns[1], selectedCluster, fileId)
+        .then((data) => {
           setSimilarities(data);
         })
-        .catch(err => {
-          console.error('Error fetching similarities:', err);
-          setError('Failed to load similarity data');
+        .catch((err) => {
+          console.error("Error fetching similarities:", err);
+          setError("Failed to load similarity data");
         })
         .finally(() => {
           setLoading(false);
@@ -58,11 +53,11 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
     if (loading) {
       return <p>Loading similarity data...</p>;
     }
-    
+
     if (error) {
       return <p className="error-message">{error}</p>;
     }
-    
+
     if (selectedCluster === null || selectedColumns.length !== 2) {
       return <p>Select a cluster point to view similarity analysis</p>;
     }
@@ -73,7 +68,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
 
     return (
       <div className="similarity-analysis">
-        Cluster {selectedCluster + 1} of feature pair: <i>{selectedColumns.join(' and ')}</i> <br />
+        Cluster {selectedCluster + 1} of feature pair: <i>{selectedColumns.join(" and ")}</i> <br />
         <hr />
         <div className="table-container">
           <table>
@@ -102,18 +97,16 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
   };
 
   return (
-    <div 
-      className={`panel panel-right ${expandedPanel === 'right' ? 'expanded' : ''}`}
-      onClick={(e) => onPanelClick('right', e)}
+    <div
+      className={`panel panel-right ${expandedPanel === "right" ? "expanded" : ""}`}
+      onClick={(e) => onPanelClick("right", e)}
     >
       <h2>
-        <div className='panel-header-title'>Cluster Similarity Panel</div>
+        <div className="panel-header-title">Cluster Similarity Panel</div>
       </h2>
-      <div className="analysis-panel">
-        {renderSimilarityAnalysis()}
-      </div>
+      <div className="analysis-panel">{renderSimilarityAnalysis()}</div>
     </div>
   );
-}; 
+};
 
 export default Panel3Analysis;

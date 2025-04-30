@@ -5,7 +5,6 @@ node_modules/
 
 backend/test_db.py
 
-
 # while cleaning up the css files:
 *.scss
 *.backup
@@ -13,9 +12,8 @@ backend/test_db.py
 # large csv for performance testing
 train.csv
 
-
 venv/
-
+.venv
 
 # pycache
 *.pyc

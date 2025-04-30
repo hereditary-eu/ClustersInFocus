@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ColumnMenuProps {
   column: string;
@@ -11,36 +11,31 @@ interface ColumnMenuProps {
   onHide?: (column: string) => void;
 }
 
-const ColumnMenu: React.FC<ColumnMenuProps> = ({ 
-  column, 
-  sortConfig, 
+const ColumnMenu: React.FC<ColumnMenuProps> = ({
+  column,
+  sortConfig,
   menuOptions = {
     canSort: true,
-    canHide: true
+    canHide: true,
   },
   onSort,
-  onHide 
+  onHide,
 }) => {
   return (
     <div className="column-dropdown" onClick={(e) => e.stopPropagation()}>
       {menuOptions.canSort && onSort && (
-        <div 
+        <div
           className="dropdown-item"
           onClick={(e) => {
             e.stopPropagation();
             onSort(column);
           }}
         >
-          <span>
-            {sortConfig?.id === column 
-              ? (sortConfig.desc ? 'Sort ASC ↑' : 'Sort DESC ↓')
-              : 'Sort ⇅'
-            }
-          </span>
+          <span>{sortConfig?.id === column ? (sortConfig.desc ? "Sort ASC ↑" : "Sort DESC ↓") : "Sort ⇅"}</span>
         </div>
       )}
       {menuOptions.canHide && onHide && (
-        <div 
+        <div
           className="dropdown-item"
           onClick={(e) => {
             e.stopPropagation();
@@ -54,4 +49,4 @@ const ColumnMenu: React.FC<ColumnMenuProps> = ({
   );
 };
 
-export default ColumnMenu; 
+export default ColumnMenu;

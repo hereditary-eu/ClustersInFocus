@@ -1,8 +1,8 @@
-import React from 'react';
-import { FileUploadButton } from './FileUploadButton';
-import { ComputeClustersButton } from './ComputeClustersButton';
-import { ComputeShapleyValuesButton } from './ComputeShapValuesButton';
-import { DataRow, DataState } from '../types';
+import React from "react";
+import { FileUploadButton } from "./FileUploadButton";
+import { ComputeClustersButton } from "./ComputeClustersButton";
+import { ComputeShapleyValuesButton } from "./ComputeShapValuesButton";
+import { DataRow, DataState } from "../types";
 
 interface HeaderProps {
   onFileUpload: (fileName: string, data: DataRow[], headers: string[], fileId?: string) => void;
@@ -12,9 +12,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed, onShapleyValuesComputed }) => {
-  const numericColumns = data?.columns.filter(col => 
-    data.csvData.length > 0 && typeof data.csvData[0][col] === 'number'
-  ) ?? [];
+  const numericColumns =
+    data?.columns.filter((col) => data.csvData.length > 0 && typeof data.csvData[0][col] === "number") ?? [];
 
   const handleFileLoaded = (fileName: string, data: DataRow[], headers: string[], fileId?: string) => {
     onFileUpload(fileName, data, headers, fileId);
@@ -43,10 +42,7 @@ const Header: React.FC<HeaderProps> = ({ onFileUpload, data, onClustersComputed,
             />
           </>
         )}
-        <FileUploadButton 
-          onFileLoaded={handleFileLoaded} 
-          onClustersFound={onClustersComputed}
-        />
+        <FileUploadButton onFileLoaded={handleFileLoaded} onClustersFound={onClustersComputed} />
       </div>
     </header>
   );

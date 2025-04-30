@@ -1,8 +1,8 @@
 // Basic data types
 export interface DataRow {
-    [key: string]: string | number | null;  // Each row is an object with string keys and string/number/null values
-  }
-  
+  [key: string]: string | number | null; // Each row is an object with string keys and string/number/null values
+}
+
 export interface DataState {
   fileId?: string;
   fileName?: string;
@@ -10,18 +10,18 @@ export interface DataState {
   columns: string[];
 }
 
-export type ColumnType = 'number' | 'string' | 'mixed';
+export type ColumnType = "number" | "string" | "mixed";
 
-export type PanelId = 'left' | 'middle' | 'right';
+export type PanelId = "left" | "middle" | "right";
 
 // Shapley values
 export interface ShapleyValueItem {
-    feature: string;
-    'SHAP Value': number;
+  feature: string;
+  "SHAP Value": number;
 }
 
 // Clustering types
-export type ClusteringAlgorithm = 'kmeans' | 'dbscan';
+export type ClusteringAlgorithm = "kmeans" | "dbscan";
 
 export interface ClusteringParams {
   kmeans: {
@@ -50,7 +50,7 @@ export interface ClusteringResult {
 // Dataset related types
 export interface DatasetInfo {
   name: string;
-  hash?: string;  // Optional as hash is added after backend computation
+  hash?: string; // Optional as hash is added after backend computation
 }
 
 export interface ServerDataset {
@@ -70,7 +70,7 @@ export interface ApiClientError extends Error {
   response?: Response;
 }
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 // Component Props
 export interface FileUploadButtonProps {
@@ -99,12 +99,12 @@ export interface Panel1DataProps {
   expandedPanel: string | null;
   hiddenColumns: string[];
   isDataTableExpanded: boolean;
-  dataViewMode: 'numerical' | 'heatmap';
+  dataViewMode: "numerical" | "heatmap";
   onPanelClick: (panelId: string, event: React.MouseEvent) => void;
   onColumnHide: (column: string) => void;
   onColumnRestore: (column: string) => void;
   onColumnSelect: (selected: string[]) => void;
-  setDataViewMode: (mode: 'numerical' | 'heatmap') => void;
+  setDataViewMode: (mode: "numerical" | "heatmap") => void;
   setIsDataTableExpanded: (expanded: boolean) => void;
   shapleyValues: ShapleyValueItem[] | null;
 }
@@ -142,7 +142,7 @@ export interface DataTableProps {
   onColumnRestore: (column: string) => void;
   onColumnSelect: (selectedColumns: string[]) => void;
   isExpanded: boolean;
-  viewMode: 'numerical' | 'heatmap';
+  viewMode: "numerical" | "heatmap";
   menuOptions?: {
     canSort?: boolean;
     canHide?: boolean;

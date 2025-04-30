@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { ClusteringService } from '../services/ClusteringService';
-import { DataRow } from '../types';
+import { useState, useCallback } from "react";
+import { ClusteringService } from "../services/ClusteringService";
+import { DataRow } from "../types";
 
 interface ComputeShapleyValuesButtonProps {
   columns: string[];
@@ -10,44 +10,38 @@ interface ComputeShapleyValuesButtonProps {
   fileName?: string;
 }
 
-export function ComputeShapleyValuesButton({ 
-  columns, 
+export function ComputeShapleyValuesButton({
+  columns,
   onShapleyValuesComputed,
   fileId,
   data,
-  fileName
+  fileName,
 }: ComputeShapleyValuesButtonProps) {
   const [isComputing, setIsComputing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [targetColumn, setTargetColumn] = useState<string>(columns[0] || '');
+  const [targetColumn, setTargetColumn] = useState<string>(columns[0] || "");
   const [error, setError] = useState<string | null>(null);
 
   const computeShapleyValues = useCallback(async () => {
     if (!targetColumn) return;
-    
+
     setIsComputing(true);
     setProgress(0);
     setError(null);
-    
+
     try {
-      await ClusteringService.computeShapleyValues(
-        targetColumn, 
-        fileId || '',
-        setProgress,
-        data,
-        fileName
-      );
-      
+      await ClusteringService.computeShapleyValues(targetColumn, fileId || "", setProgress, data, fileName);
+
       setIsComputing(false);
-      onShapleyValuesComputed(targetColumn, fileId || '');
+      onShapleyValuesComputed(targetColumn, fileId || "");
     } catch (err) {
-      console.error('Error computing Shapley values:', err);
+      console.error("Error computing Shapley values:", err);
       setIsComputing(false);
-      
+
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('An error occurred while computing Shapley values.');
+        setError("An error occurred while computing Shapley values.");
       }
     }
   }, [targetColumn, onShapleyValuesComputed, fileId, data, fileName]);
@@ -64,7 +58,7 @@ export function ComputeShapleyValuesButton({
           {columns.length === 0 ? (
             <option value="">No columns available</option>
           ) : (
-            columns.map(column => (
+            columns.map((column) => (
               <option key={column} value={column}>
                 {column}
               </option>
@@ -73,12 +67,8 @@ export function ComputeShapleyValuesButton({
         </select>
       </div>
 
-      <button
-        onClick={computeShapleyValues}
-        disabled={isComputing || !targetColumn}
-        className="button button-primary"
-      >
-        {isComputing ? `Computing... ${Math.round(progress)}%` : 'Compute SHAP Values'}
+      <button onClick={computeShapleyValues} disabled={isComputing || !targetColumn} className="button button-primary">
+        {isComputing ? `Computing... ${Math.round(progress)}%` : "Compute SHAP Values"}
       </button>
 
       {isComputing && (
@@ -86,10 +76,7 @@ export function ComputeShapleyValuesButton({
           <div className="clustering-modal-content">
             <h3>Computing Shapley Values</h3>
             <div className="clustering-progress-bar-container">
-              <div 
-                className="clustering-progress-bar"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="clustering-progress-bar" style={{ width: `${progress}%` }} />
             </div>
             <p>{Math.round(progress)}%</p>
           </div>
@@ -101,10 +88,7 @@ export function ComputeShapleyValuesButton({
           <div className="clustering-modal-content error-modal">
             <h3>Error</h3>
             <p>{error}</p>
-            <button 
-              onClick={() => setError(null)}
-              className="button button-secondary"
-            >
+            <button onClick={() => setError(null)} className="button button-secondary">
               Close
             </button>
           </div>

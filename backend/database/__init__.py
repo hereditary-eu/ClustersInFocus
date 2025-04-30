@@ -9,6 +9,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -17,5 +18,6 @@ def get_db():
         db.close()
 
 
-from database.models import Dataset, ClusterGroup, Cluster, ShapleyValue # Import models to create tables
-Base.metadata.create_all(bind=engine) # Create tables
+from database.models import Dataset, ClusterGroup, Cluster, ShapleyValue  # Import models to create tables
+
+Base.metadata.create_all(bind=engine)  # Create tables

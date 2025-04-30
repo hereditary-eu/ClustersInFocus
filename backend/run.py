@@ -6,18 +6,15 @@ from fastapi.responses import HTMLResponse
 from pathlib import Path
 
 from core.config import CONFIG
-from routers import (
-    shapley_router,
-    clustering_router,
-    dataset_router
-)
+from routers import shapley_router, clustering_router, dataset_router
+
 
 def create_app() -> FastAPI:
     app = FastAPI(
         title=CONFIG.API_TITLE,
         version=CONFIG.API_VERSION,
         description=CONFIG.API_DESCRIPTION,
-        max_request_size=CONFIG.MAX_REQUEST_SIZE
+        max_request_size=CONFIG.MAX_REQUEST_SIZE,
     )
 
     # Configure CORS
@@ -44,7 +41,7 @@ def create_app() -> FastAPI:
                 "request": request,
                 "title": CONFIG.API_TITLE,
                 "version": CONFIG.API_VERSION,
-            }
+            },
         )
 
     # adding routers
@@ -54,12 +51,14 @@ def create_app() -> FastAPI:
 
     return app
 
+
 app = create_app()
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
-        "run:app", 
-        host=CONFIG.HOST, 
-        port=CONFIG.PORT, 
-        reload=True  # auto-reload on code changes
+        "run:app",
+        host=CONFIG.HOST,
+        port=CONFIG.PORT,
+        reload=True,  # auto-reload on code changes
     )

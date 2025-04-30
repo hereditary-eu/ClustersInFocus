@@ -1,0 +1,8 @@
+services:
+  backend:
+    image: clusters-in-focus-backend
+    build: backend/
+
+  frontend:
+    image: clusters-in-focus-frontend
+    build: frontend/

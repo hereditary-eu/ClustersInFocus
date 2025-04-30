@@ -4,13 +4,13 @@ WORKDIR /app
 
 # Install system dependencies required by LightGBM
 RUN apt-get update && apt-get install -y \
-    libgomp1 \
-    build-essential \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+  libgomp1 build-essential && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install --upgrade --break-system-packages pip poetry poetry-plugin-export
+COPY ./pyproject.toml /app/pyproject.toml
+COPY ./poetry.lock /app/poetry.lock
+RUN poetry export -f requirements.txt >requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
 
 COPY . .
 

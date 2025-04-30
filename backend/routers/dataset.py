@@ -31,7 +31,7 @@ async def upload_data(request: CSVDataRequest, db: Session = Depends(get_db)) ->
             logger.info(f"Sanitizing dataset with {len(request.data)} rows")
             df = sanitize_and_parse_dataset(request.data)
             sanitized_data = dataframe_to_dict_list(df)
-            logger.info(f"Successfully sanitized dataset")
+            logger.info("Successfully sanitized dataset")
         except Exception as e:
             logger.error(f"Error sanitizing data: {str(e)}")
             raise HTTPException(status_code=422, detail=f"Error processing dataset: {str(e)}")

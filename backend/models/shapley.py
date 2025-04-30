@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict, Optional, Any, Union
-import pandas as pd
+from typing import List, Dict, Optional, Union
 
 
 class ShapValuesRequest(BaseModel):

@@ -2,7 +2,11 @@ services:
   backend:
     image: clusters-in-focus-backend
     build: backend/
+    ports:
+      - 8000:8000
 
   frontend:
     image: clusters-in-focus-frontend
     build: frontend/
+    ports:
+      - 80:80

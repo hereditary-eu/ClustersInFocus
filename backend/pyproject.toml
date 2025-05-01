@@ -1,7 +1,7 @@
 [project]
 name = "clusters-in-focus-backend"
 version = "0.1.0"
-description = "Backend for Clusters in Focus: Detail-On-Demand Analysis Dashboard"
+description = "Backend for Clusters in Focus: A Simple and Robust Detail-On-Demand Dashboard"
 authors = [{ name = "Lukas Schilcher" }, { name = "Peter Waldert" }]
 license = { text = "MIT" }
 requires-python = ">=3.12"

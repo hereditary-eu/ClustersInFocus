@@ -1,6 +1,13 @@
 # ParkinsonDataVisualization
 
-Welcome to the code behind the _Clusters in Focus: Detail-On-Demand Analysis Dashboard_!
+Welcome to the code behind _Clusters in Focus: A Simple and Robust Detail-On-Demand Dashboard_!
+
+To run the application:
+
+```bash
+docker compose build
+docker compose up
+```
 
 ## Dataset
 

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useState } from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface HistogramProps {
   data: number[];
-  variant?: 'tiny' | 'big';
+  variant?: "tiny" | "big";
   width?: number;
   height?: number;
   initialBins?: number;
@@ -16,19 +16,19 @@ interface HistogramProps {
   title?: string;
 }
 
-const Histogram: React.FC<HistogramProps> = ({ 
+const Histogram: React.FC<HistogramProps> = ({
   data,
-  variant = 'big',
-  width = variant === 'tiny' ? 100 : undefined,
-  height = variant === 'tiny' ? 30 : 300,
+  variant = "big",
+  width = variant === "tiny" ? 100 : undefined,
+  height = variant === "tiny" ? 30 : 300,
   initialBins = 10,
-  showControls = variant === 'big',
-  showAxes = variant === 'big',
-  showTooltip = variant === 'big',
-  showGrid = variant === 'big',
-  barColor = '#8884d8',
+  showControls = variant === "big",
+  showAxes = variant === "big",
+  showTooltip = variant === "big",
+  showGrid = variant === "big",
+  barColor = "#8884d8",
   animated = false,
-  title
+  title,
 }) => {
   const [bins, setBins] = useState(initialBins);
   const binOptions = [2, 5, 10, 15, 20, 25, 30];
@@ -44,7 +44,7 @@ const Histogram: React.FC<HistogramProps> = ({
   const histogramData = Array.from({ length: bins }, (_, i) => {
     const lowerBound = min + i * binWidth;
     const upperBound = min + (i + 1) * binWidth;
-    
+
     // Simplify bin labels for better display
     let binLabel;
     if (max < 0.1) {
@@ -58,7 +58,7 @@ const Histogram: React.FC<HistogramProps> = ({
       const decimals = max < 1 ? 3 : max < 10 ? 2 : max < 100 ? 1 : 0;
       binLabel = `${lowerBound.toFixed(decimals)}`;
     }
-    
+
     return {
       bin: binLabel,
       fullLabel: `${lowerBound.toFixed(3)} - ${upperBound.toFixed(3)}`,
@@ -76,12 +76,15 @@ const Histogram: React.FC<HistogramProps> = ({
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="custom-tooltip" style={{ 
-          backgroundColor: 'var(--color-white-transparent)', 
-          padding: '10px', 
-          border: '1px solid var(--color-gray-light)',
-          borderRadius: '4px'
-        }}>
+        <div
+          className="custom-tooltip"
+          style={{
+            backgroundColor: "var(--color-white-transparent)",
+            padding: "10px",
+            border: "1px solid var(--color-gray-light)",
+            borderRadius: "4px",
+          }}
+        >
           <p className="label">{`Range: ${payload[0].payload.fullLabel}`}</p>
           <p className="desc">{`Count: ${payload[0].value}`}</p>
         </div>
@@ -93,19 +96,15 @@ const Histogram: React.FC<HistogramProps> = ({
   return (
     <div className="histogram-wrapper">
       {title && (
-        <div className="histogram-title" style={{ textAlign: 'center', marginBottom: '10px' }}>
+        <div className="histogram-title" style={{ textAlign: "center", marginBottom: "10px" }}>
           <strong>{title}</strong>
         </div>
       )}
       {showControls && (
         <div className="histogram-controls">
           <label>Bin Count: </label>
-          <select 
-            value={bins} 
-            onChange={(e) => setBins(Number(e.target.value))}
-            className="bin-select"
-          >
-            {binOptions.map(option => (
+          <select value={bins} onChange={(e) => setBins(Number(e.target.value))} className="bin-select">
+            {binOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
@@ -114,53 +113,40 @@ const Histogram: React.FC<HistogramProps> = ({
         </div>
       )}
       {width ? (
-        <BarChart 
+        <BarChart
           width={width}
           height={height}
           data={histogramData}
-          margin={variant === 'big' ? { top: 20, right: 30, bottom: 20, left: 20 } : { top: 0, right: 0, bottom: 0, left: 0 }}
+          margin={
+            variant === "big" ? { top: 20, right: 30, bottom: 20, left: 20 } : { top: 0, right: 0, bottom: 0, left: 0 }
+          }
         >
           {showGrid && <CartesianGrid strokeDasharray="3 3" />}
           {showAxes && (
-            <XAxis 
-              dataKey="bin" 
-              angle={-45}
-              textAnchor="end"
-              height={60}
-              interval={0}
-              tick={{ fontSize: 10 }}
-            />
+            <XAxis dataKey="bin" angle={-45} textAnchor="end" height={60} interval={0} tick={{ fontSize: 10 }} />
           )}
           {showAxes && <YAxis />}
           {showTooltip && <Tooltip content={<CustomTooltip />} />}
-          <Bar 
-            dataKey="count" 
-            fill={barColor}
-            isAnimationActive={animated}
-            id={`histogram-${variant}-${Date.now()}`}
-          />
+          <Bar dataKey="count" fill={barColor} isAnimationActive={animated} id={`histogram-${variant}-${Date.now()}`} />
         </BarChart>
       ) : (
         <ResponsiveContainer width="100%" height={height}>
-          <BarChart 
+          <BarChart
             data={histogramData}
-            margin={variant === 'big' ? { top: 20, right: 30, bottom: 20, left: 20 } : { top: 0, right: 0, bottom: 0, left: 0 }}
+            margin={
+              variant === "big"
+                ? { top: 20, right: 30, bottom: 20, left: 20 }
+                : { top: 0, right: 0, bottom: 0, left: 0 }
+            }
           >
             {showGrid && <CartesianGrid strokeDasharray="3 3" />}
             {showAxes && (
-              <XAxis 
-                dataKey="bin" 
-                angle={-45}
-                textAnchor="end" 
-                height={60}
-                interval={0}
-                tick={{ fontSize: 10 }}
-              />
+              <XAxis dataKey="bin" angle={-45} textAnchor="end" height={60} interval={0} tick={{ fontSize: 10 }} />
             )}
             {showAxes && <YAxis />}
             {showTooltip && <Tooltip content={<CustomTooltip />} />}
-            <Bar 
-              dataKey="count" 
+            <Bar
+              dataKey="count"
               fill={barColor}
               isAnimationActive={animated}
               id={`histogram-${variant}-${Date.now()}`}
@@ -172,4 +158,4 @@ const Histogram: React.FC<HistogramProps> = ({
   );
 };
 
-export default Histogram; 
+export default Histogram;

@@ -4,14 +4,12 @@ node_modules/
 
 backend/test_db.py
 
-
 # while cleaning up the css files:
 *.scss
 *.backup
 
 # large csv for performance testing
 train.csv
-
 
 venv/
 paper/
@@ -22,3 +20,4 @@ __pycache__/
 
 # notes files
 **/notes.md
+**/CLAUDE.md

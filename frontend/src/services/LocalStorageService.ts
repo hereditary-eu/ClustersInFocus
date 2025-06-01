@@ -15,7 +15,7 @@
 //   static updateDatasetHash(name: string, hash: string): void {
 //     const datasetKey = this.DATASET_PREFIX + name;
 //     const datasetJson = localStorage.getItem(datasetKey);
-    
+
 //     if (datasetJson) {
 //       const dataset: DatasetInfo = JSON.parse(datasetJson);
 //       dataset.hash = hash;
@@ -46,7 +46,7 @@
 
 //   static getAllDatasets(): DatasetInfo[] {
 //     const datasets: DatasetInfo[] = [];
-    
+
 //     for (let i = 0; i < localStorage.length; i++) {
 //       const key = localStorage.key(i);
 //       if (key?.startsWith(this.DATASET_PREFIX)) {
@@ -56,7 +56,7 @@
 //         }
 //       }
 //     }
-    
+
 //     return datasets;
 //   }
 
@@ -67,7 +67,7 @@
 //   /**
 //    * Synchronize localStorage with the server by removing datasets that no longer exist on the server.
 //    * This helps maintain consistency when datasets are deleted by other clients.
-//    * 
+//    *
 //    * @param getAllDatasetsFn Function to get all datasets from the server
 //    */
 //   static async synchronizeWithServer(
@@ -77,10 +77,10 @@
 //       // Get all datasets from the server
 //       const serverDatasets = await getAllDatasetsFn();
 //       const serverDatasetIds = new Set(serverDatasets.map(d => d.id));
-      
+
 //       // Get all datasets from localStorage
 //       const localDatasets = this.getAllDatasets();
-      
+
 //       // Remove datasets from localStorage that no longer exist on the server
 //       for (const dataset of localDatasets) {
 //         if (dataset.hash && !serverDatasetIds.has(dataset.hash)) {
@@ -92,4 +92,4 @@
 //       console.error('Error synchronizing with server:', error);
 //     }
 //   }
-// } 
+// }

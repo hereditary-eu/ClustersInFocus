@@ -39,5 +39,8 @@
   },
   "resolutions": {
     "rollup": "npm:@rollup/wasm-node@*"
+  },
+  "prettier": {
+    "printWidth": 120
   }
 }

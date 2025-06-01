@@ -1,0 +1,31 @@
+[project]
+name = "clusters-in-focus-backend"
+version = "0.1.0"
+description = "Backend for Clusters in Focus: Detail-On-Demand Analysis Dashboard"
+authors = [{ name = "Lukas Schilcher" }, { name = "Peter Waldert" }]
+license = { text = "MIT" }
+requires-python = ">=3.12"
+dependencies = [
+  # structural
+  "fastapi",
+  "uvicorn",
+  "jinja2",
+  "dotenv",
+  "aiosqlite",
+  "sqlalchemy",
+
+  # logical
+  "shap",
+  "scikit-learn",
+  "xgboost",
+  "lightgbm",
+  "pandas",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"

@@ -15,12 +15,11 @@
 #     return temp_database
 
 
-
 # @debug_router.get("/temp_database/structure")
 # async def get_temp_database_structure():
 #     """Return the structure of the temp database."""
 #     return get_database_structure(temp_database)
-    
+
 # def get_database_structure(data):
 #     """Extract the structure of the data without including all values."""
 #     if isinstance(data, dict):
@@ -36,15 +35,15 @@
 #     else:
 #         # For simple values, just return the type
 #         return f"({type(data).__name__})"
-    
+
 
 # @debug_router.get("/temp_database/{key}")
 # async def get_temp_database_item(key: str):
 #     """Return a specific key from the temp database.
-    
+
 #     Args:
 #         key: The key to retrieve from the temp database
-    
+
 #     Returns:
 #         The value associated with the key, or an error if the key doesn't exist
 #     """

@@ -1,4 +1,3 @@
-# keep data folder, but ignore all files in it
 **/data/*
 !**/data/.gitkeep
 node_modules/
@@ -15,7 +14,7 @@ train.csv
 
 
 venv/
-
+paper/
 
 # pycache
 *.pyc
@@ -23,4 +22,3 @@ __pycache__/
 
 # notes files
 **/notes.md
-**/CLAUDE.md

@@ -594,11 +594,11 @@ header {
 /* HEATMAP */
 .heatmap-cell {
   height: 2px;
-  padding: 0px 2px;
+  /* padding: 0px 2px; */
   text-align: center;
   font-size: 2px;
   background: hsl(200, 70%, calc(100% - (var(--normalized-value) * 50%)));
-  border-bottom: 1px dotted var(--color-gray-lighter);
+  /* border-bottom: 1px dotted var(--color-gray-lighter); */
 }
 
 /* When not in heatmap mode, restore normal text */

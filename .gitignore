@@ -13,6 +13,7 @@ train.csv
 
 venv/
 paper/
+sources/
 
 # pycache
 *.pyc
@@ -21,3 +22,4 @@ __pycache__/
 # notes files
 **/notes.md
 **/CLAUDE.md
+.claude

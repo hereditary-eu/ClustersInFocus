@@ -13,6 +13,7 @@ export const API_ROUTES = {
     similarities: `${BASE_API_URL}/clustering/similarities`,
     getByFeatures: `${BASE_API_URL}/clustering/get_by_features`,
     getAllFeaturePairs: `${BASE_API_URL}/clustering/get_all_clustered_feature_pairs`,
+    similarityMatrix: `${BASE_API_URL}/clustering/similarity_matrix`,
   },
 
   shapley: {

@@ -193,4 +193,28 @@ export class ClusteringService {
       return null;
     }
   }
+
+  static async getSimilarityMatrix(datasetId: string): Promise<{
+    cluster_identifiers: Array<{
+      id: string;
+      feature1: string;
+      feature2: string;
+      cluster_id: number;
+      display_name: string;
+    }>;
+    similarities: number[][];
+    stats: {
+      min_similarity: number;
+      max_similarity: number;
+      size: number;
+    };
+  } | null> {
+    try {
+      const url = `${API_ROUTES.clustering.similarityMatrix}?dataset_id=${datasetId}`;
+      return await ApiClient.get(url);
+    } catch (error) {
+      console.error("Error fetching similarity matrix:", error);
+      return null;
+    }
+  }
 }

@@ -160,3 +160,59 @@ class ClusteringService:
                     )
 
         return sorted(results, key=lambda x: x["similarity"], reverse=True)
+
+    @staticmethod
+    def compute_similarity_matrix(all_clusters: Dict[str, Dict[str, Dict[int, List[int]]]]) -> Dict[str, Any]:
+        """
+        Compute a comprehensive similarity matrix for all clusters of all feature pairs.
+        Returns optimized data structure for matrix visualization.
+        """
+        # Create a list of all cluster identifiers (feature_pair, cluster_id)
+        cluster_identifiers = []
+        cluster_points_map = {}
+        
+        for feat1, feature_pairs in all_clusters.items():
+            for feat2, clusters in feature_pairs.items():
+                for cluster_id, cluster_points in clusters.items():
+                    identifier = f"{feat1}_{feat2}_{cluster_id}"
+                    cluster_identifiers.append({
+                        "id": identifier,
+                        "feature1": feat1,
+                        "feature2": feat2,
+                        "cluster_id": cluster_id,
+                        "display_name": f"{feat1} & {feat2} (C{cluster_id})"
+                    })
+                    cluster_points_map[identifier] = cluster_points
+        
+        # Compute similarity matrix
+        n = len(cluster_identifiers)
+        similarities = []
+        min_similarity = 1.0
+        max_similarity = 0.0
+        
+        for i in range(n):
+            row = []
+            for j in range(n):
+                if i == j:
+                    similarity = 1.0  # Self-similarity
+                else:
+                    cluster1_points = cluster_points_map[cluster_identifiers[i]["id"]]
+                    cluster2_points = cluster_points_map[cluster_identifiers[j]["id"]]
+                    similarity = ClusteringService._calculate_jaccard_index(cluster1_points, cluster2_points)
+                
+                row.append(similarity)
+                if i != j:  # Ignore self-similarity for min/max calculation
+                    min_similarity = min(min_similarity, similarity)
+                    max_similarity = max(max_similarity, similarity)
+            
+            similarities.append(row)
+        
+        return {
+            "cluster_identifiers": cluster_identifiers,
+            "similarities": similarities,
+            "stats": {
+                "min_similarity": min_similarity,
+                "max_similarity": max_similarity,
+                "size": n
+            }
+        }

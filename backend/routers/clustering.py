@@ -141,3 +141,22 @@ async def get_clusters_by_features_endpoint(
     except Exception as e:
         logger.error(f"Error retrieving clusters: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@clustering_router.get("/similarity_matrix")
+async def get_cluster_similarity_matrix(dataset_id: str, db: Session = Depends(get_db)):
+    """
+    Get a comprehensive similarity matrix for all clusters of all feature pairs.
+    Returns data optimized for matrix visualization.
+    """
+    try:
+        clusters = get_all_clusters(db, dataset_id)
+        if not clusters:
+            raise HTTPException(status_code=400, detail="No clusters found. Please compute clusters first.")
+        
+        matrix_data = ClusteringService.compute_similarity_matrix(clusters)
+        return matrix_data
+
+    except Exception as e:
+        logger.error(f"Error computing similarity matrix: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

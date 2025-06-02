@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ClusteringService } from "../services/ClusteringService";
+import ClusterSimilarityMatrix from "./ClusterSimilarityMatrix";
 
 interface Panel3AnalysisProps {
   expandedPanel: string | null;
@@ -21,10 +22,37 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
   const [similarities, setSimilarities] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"similarity" | "matrix">("similarity");
+  const [panelDimensions, setPanelDimensions] = useState({ width: 400, height: 300 });
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     onClusterSelect(null);
   }, [selectedColumns, onClusterSelect]);
+
+  // Dynamic resizing effect
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (panelRef.current) {
+        const rect = panelRef.current.getBoundingClientRect();
+        setPanelDimensions({
+          width: rect.width,
+          height: rect.height - 120, // Account for header and controls
+        });
+      }
+    };
+
+    updateDimensions();
+
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (panelRef.current) {
+      resizeObserver.observe(panelRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [expandedPanel]);
 
   useEffect(() => {
     // Clear previous similarities when selection changes
@@ -98,13 +126,46 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
 
   return (
     <div
+      ref={panelRef}
       className={`panel panel-right ${expandedPanel === "right" ? "expanded" : ""}`}
       onClick={(e) => onPanelClick("right", e)}
     >
-      <h2>
+      <h2 className="panel-header-left">
         <div className="panel-header-title">Cluster Similarity Panel</div>
+        <div className="panel-header-options">
+          <div className="view-mode-switch">
+            <button
+              className={`view-mode-button ${viewMode === "similarity" ? "active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setViewMode("similarity");
+              }}
+              title="Show cluster similarity analysis"
+            >
+              List
+            </button>
+            <button
+              className={`view-mode-button ${viewMode === "matrix" ? "active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setViewMode("matrix");
+              }}
+              title="Show similarity matrix"
+            >
+              Matrix
+            </button>
+          </div>
+        </div>
       </h2>
-      <div className="analysis-panel">{renderSimilarityAnalysis()}</div>
+      <div className="analysis-panel">
+        {viewMode === "similarity" ? renderSimilarityAnalysis() : (
+          <ClusterSimilarityMatrix
+            fileId={fileId}
+            width={panelDimensions.width}
+            height={panelDimensions.height}
+          />
+        )}
+      </div>
     </div>
   );
 };

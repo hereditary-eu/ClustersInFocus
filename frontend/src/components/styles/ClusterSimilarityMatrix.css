@@ -11,6 +11,9 @@
   border-bottom: 1px solid var(--border-color);
   font-weight: 500;
   font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .matrix-viewport {
@@ -73,7 +76,7 @@
   justify-content: flex-start;
   align-items: center;
   text-align: left;
-  padding-left: 8px;
+  padding-left: 4px;
 }
 
 .matrix-column-header {
@@ -167,15 +170,89 @@
   padding: 20px;
 }
 
-.matrix-stats {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: var(--bg-tooltip);
-  padding: 4px 8px;
+.matrix-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.matrix-control-button {
+  background: none;
+  border: 1px solid var(--color-gray-lighter);
   border-radius: 4px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  z-index: 10;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.matrix-control-button:hover {
+  background-color: var(--color-gray-lighter);
+}
+
+.restore-button {
+  color: var(--color-red-accent);
+}
+
+.restore-button:hover {
+  background-color: var(--color-red-accent-transparent);
+}
+
+.matrix-config-panel {
+  padding: 12px;
+  background-color: var(--color-white-accent);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.config-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.config-group label {
+  font-weight: 500;
+  color: var(--color-gray-dark);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.config-select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-gray-lighter);
+  border-radius: 4px;
+  background-color: var(--color-white);
+  font-size: 12px;
+}
+
+.cluster-button {
+  padding: 6px 12px;
+  background-color: var(--color-blue-accent);
+  color: var(--color-white);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.cluster-button:hover:not(:disabled) {
+  background-color: var(--color-blue-accent-hover);
+}
+
+.cluster-button:disabled {
+  background-color: var(--color-gray-light);
+  cursor: not-allowed;
+}
+
+.reorder-indicator {
+  font-style: italic;
+  color: var(--color-blue-accent);
+  font-weight: 600;
 }

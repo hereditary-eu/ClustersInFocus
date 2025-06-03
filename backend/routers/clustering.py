@@ -144,7 +144,10 @@ async def get_clusters_by_features_endpoint(
 
 
 @clustering_router.get("/similarity_matrix")
-async def get_cluster_similarity_matrix(dataset_id: str, db: Session = Depends(get_db)):
+async def get_cluster_similarity_matrix(
+    dataset_id: str,
+    db: Session = Depends(get_db)
+):
     """
     Get a comprehensive similarity matrix for all clusters of all feature pairs.
     Returns data optimized for matrix visualization.
@@ -159,4 +162,31 @@ async def get_cluster_similarity_matrix(dataset_id: str, db: Session = Depends(g
 
     except Exception as e:
         logger.error(f"Error computing similarity matrix: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@clustering_router.post("/similarity_matrix/reorder")
+async def reorder_similarity_matrix(
+    dataset_id: str,
+    linkage_method: str = Query("average", description="Linkage method: single, complete, average, ward"),
+    db: Session = Depends(get_db)
+):
+    """
+    Reorder similarity matrix using agglomerative clustering to group similar clusters together.
+    """
+    try:
+        clusters = get_all_clusters(db, dataset_id)
+        if not clusters:
+            raise HTTPException(status_code=400, detail="No clusters found. Please compute clusters first.")
+        
+        # Get original matrix data with disjoint filtering if requested
+        matrix_data = ClusteringService.compute_similarity_matrix(clusters)
+        
+        # Reorder using agglomerative clustering
+        reordered_matrix = ClusteringService.reorder_similarity_matrix(matrix_data, linkage_method)
+        
+        return reordered_matrix
+
+    except Exception as e:
+        logger.error(f"Error reordering similarity matrix: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

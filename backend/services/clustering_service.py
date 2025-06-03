@@ -2,6 +2,8 @@ from typing import Dict, List, Any, Literal, Union
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans, DBSCAN
+from scipy.cluster.hierarchy import linkage, fcluster
+from scipy.spatial.distance import squareform
 from models.clustering import KMeansParams, DBScanParams
 from utils.logger import get_logger
 
@@ -161,8 +163,11 @@ class ClusteringService:
 
         return sorted(results, key=lambda x: x["similarity"], reverse=True)
 
+
     @staticmethod
-    def compute_similarity_matrix(all_clusters: Dict[str, Dict[str, Dict[int, List[int]]]]) -> Dict[str, Any]:
+    def compute_similarity_matrix(
+        all_clusters: Dict[str, Dict[str, Dict[int, List[int]]]]
+    ) -> Dict[str, Any]:
         """
         Compute a comprehensive similarity matrix for all clusters of all feature pairs.
         Returns optimized data structure for matrix visualization.
@@ -196,6 +201,7 @@ class ClusteringService:
                 if i == j:
                     similarity = 1.0  # Self-similarity
                 else:
+                    # Compute similarity between clusters (filtering already applied above if needed)
                     cluster1_points = cluster_points_map[cluster_identifiers[i]["id"]]
                     cluster2_points = cluster_points_map[cluster_identifiers[j]["id"]]
                     similarity = ClusteringService._calculate_jaccard_index(cluster1_points, cluster2_points)
@@ -216,3 +222,63 @@ class ClusteringService:
                 "size": n
             }
         }
+
+    @staticmethod
+    def reorder_similarity_matrix(
+        matrix_data: Dict[str, Any], 
+        linkage_method: str = "average"
+    ) -> Dict[str, Any]:
+        """
+        Reorder similarity matrix using agglomerative clustering.
+        Returns the matrix with reordered rows/columns to group similar clusters together.
+        """
+        try:
+            similarities = matrix_data["similarities"]
+            cluster_identifiers = matrix_data["cluster_identifiers"]
+            n = len(similarities)
+            
+            if n <= 1:
+                return matrix_data  # Cannot cluster single item
+            
+            # Convert similarity matrix to distance matrix (1 - similarity)
+            distance_matrix = np.zeros((n, n))
+            for i in range(n):
+                for j in range(n):
+                    if i != j:
+                        distance_matrix[i][j] = 1.0 - similarities[i][j]
+                    else:
+                        distance_matrix[i][j] = 0.0
+            
+            # Convert to condensed distance matrix for linkage
+            condensed_distances = squareform(distance_matrix, checks=False)
+            
+            # Perform hierarchical clustering
+            linkage_matrix = linkage(condensed_distances, method=linkage_method)
+            
+            # Get the optimal leaf ordering (dendrogram order)
+            from scipy.cluster.hierarchy import leaves_list
+            optimal_order = leaves_list(linkage_matrix)
+            
+            # Reorder the similarity matrix and cluster identifiers
+            reordered_similarities = []
+            reordered_identifiers = []
+            
+            for i in optimal_order:
+                reordered_identifiers.append(cluster_identifiers[i])
+                reordered_row = []
+                for j in optimal_order:
+                    reordered_row.append(similarities[i][j])
+                reordered_similarities.append(reordered_row)
+            
+            return {
+                "cluster_identifiers": reordered_identifiers,
+                "similarities": reordered_similarities,
+                "stats": matrix_data["stats"],
+                "reorder_indices": optimal_order.tolist(),
+                "linkage_method": linkage_method
+            }
+            
+        except Exception as e:
+            logger.error(f"Error reordering similarity matrix: {str(e)}")
+            # Return original matrix if reordering fails
+            return matrix_data

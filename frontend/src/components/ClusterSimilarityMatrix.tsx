@@ -134,8 +134,12 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
   height,
 }) => {
   const [matrixData, setMatrixData] = useState<SimilarityMatrixData | null>(null);
+  const [originalMatrixData, setOriginalMatrixData] = useState<SimilarityMatrixData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfig, setShowConfig] = useState<boolean>(false);
+  const [linkageMethod, setLinkageMethod] = useState<string>("average");
+  const [isReordered, setIsReordered] = useState<boolean>(false);
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
     x: 0,
@@ -157,6 +161,8 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
         const data = await ClusteringService.getSimilarityMatrix(fileId);
         if (data) {
           setMatrixData(data);
+          setOriginalMatrixData(data); // Save original for restore functionality
+          setIsReordered(false);
         } else {
           setError("No similarity matrix data available");
         }
@@ -196,6 +202,55 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
     setTooltip(prev => ({ ...prev, visible: false }));
   }, []);
 
+  const handleReorderMatrix = async () => {
+    if (!fileId) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Apply reordering
+      const reorderedData = await ClusteringService.reorderSimilarityMatrix(fileId, linkageMethod);
+      if (reorderedData) {
+        setMatrixData(reorderedData);
+        setIsReordered(true);
+        setShowConfig(false);
+      } else {
+        setError("Failed to reorder matrix");
+      }
+    } catch (err) {
+      console.error("Error reordering matrix:", err);
+      setError("Failed to reorder similarity matrix");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRestoreOriginal = async () => {
+    if (!fileId) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Reload the original matrix data
+      const data = await ClusteringService.getSimilarityMatrix(fileId);
+      if (data) {
+        setMatrixData(data);
+        setOriginalMatrixData(data);
+        setIsReordered(false);
+        setShowConfig(false);
+      } else {
+        setError("Failed to restore original matrix");
+      }
+    } catch (err) {
+      console.error("Error restoring original matrix:", err);
+      setError("Failed to restore original matrix");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const cellData = useMemo<CellData | null>(() => {
     if (!matrixData) return null;
     
@@ -230,6 +285,16 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
     );
   }
 
+  if (matrixData.cluster_identifiers.length === 0) {
+    return (
+      <div className="cluster-similarity-matrix-container">
+        <div className="matrix-empty">
+          No clusters found. Please compute clusters first.
+        </div>
+      </div>
+    );
+  }
+
   const gridSize = matrixData.cluster_identifiers.length + 1; // +1 for headers
   
   // Calculate dynamic dimensions
@@ -245,11 +310,62 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
   return (
     <div className="cluster-similarity-matrix-container">
       <div className="matrix-header">
-        Cluster Similarity Matrix ({matrixData.stats.size} clusters)
         <div className="matrix-stats">
-          Range: {(matrixData.stats.min_similarity * 100).toFixed(1)}% - {(matrixData.stats.max_similarity * 100).toFixed(1)}%
+          {matrixData.stats.size} clusters, Range: {(matrixData.stats.min_similarity * 100).toFixed(1)}% - {(matrixData.stats.max_similarity * 100).toFixed(1)}%
+          {isReordered && (
+            <span className="reorder-indicator"> (Reordered)</span>
+          )}
+        </div>
+        <div className="matrix-controls">
+          <button
+            className="matrix-control-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowConfig(!showConfig);
+            }}
+            title="Configure clustering"
+          >
+            ⚙️
+          </button>
+          {isReordered && (
+            <button
+              className="matrix-control-button restore-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRestoreOriginal();
+              }}
+              title="Restore original matrix"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
+      
+      {showConfig && (
+        <div className="matrix-config-panel">
+          <div className="config-group">
+            <label>Linkage Method:</label>
+            <select
+              value={linkageMethod}
+              onChange={(e) => setLinkageMethod(e.target.value)}
+              className="config-select"
+            >
+              <option value="single">Single</option>
+              <option value="complete">Complete</option>
+              <option value="average">Average</option>
+              <option value="ward">Ward</option>
+            </select>
+          </div>
+          <button
+            className="cluster-button"
+            onClick={handleReorderMatrix}
+            disabled={loading}
+          >
+{loading ? "Clustering..." : "Cluster"}
+          </button>
+        </div>
+      )}
       
       <div className="matrix-viewport">
         <Grid

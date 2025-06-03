@@ -14,6 +14,7 @@ export const API_ROUTES = {
     getByFeatures: `${BASE_API_URL}/clustering/get_by_features`,
     getAllFeaturePairs: `${BASE_API_URL}/clustering/get_all_clustered_feature_pairs`,
     similarityMatrix: `${BASE_API_URL}/clustering/similarity_matrix`,
+    reorderMatrix: `${BASE_API_URL}/clustering/similarity_matrix/reorder`,
   },
 
   shapley: {

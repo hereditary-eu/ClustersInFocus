@@ -217,4 +217,33 @@ export class ClusteringService {
       return null;
     }
   }
+
+  static async reorderSimilarityMatrix(
+    datasetId: string, 
+    linkageMethod: string = "average"
+  ): Promise<{
+    cluster_identifiers: Array<{
+      id: string;
+      feature1: string;
+      feature2: string;
+      cluster_id: number;
+      display_name: string;
+    }>;
+    similarities: number[][];
+    stats: {
+      min_similarity: number;
+      max_similarity: number;
+      size: number;
+    };
+    reorder_indices?: number[];
+    linkage_method?: string;
+  } | null> {
+    try {
+      const url = `${API_ROUTES.clustering.reorderMatrix}?dataset_id=${datasetId}&linkage_method=${linkageMethod}`;
+      return await ApiClient.post(url, {});
+    } catch (error) {
+      console.error("Error reordering similarity matrix:", error);
+      return null;
+    }
+  }
 }

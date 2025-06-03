@@ -23,6 +23,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"similarity" | "matrix">("similarity");
+  const [filterHighSimilarity, setFilterHighSimilarity] = useState<boolean>(false);
   const [panelDimensions, setPanelDimensions] = useState({ width: 400, height: 300 });
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -77,6 +78,15 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
     }
   }, [selectedCluster, selectedColumns, fileId]);
 
+  // Filter similarities based on the filter checkbox
+  const getFilteredSimilarities = () => {
+    if (!filterHighSimilarity) {
+      return similarities;
+    }
+    // Filter to only show similarities above 50%
+    return similarities.filter(sim => sim.similarity > 0.5);
+  };
+
   const renderSimilarityAnalysis = () => {
     if (loading) {
       return <p>Loading similarity data...</p>;
@@ -94,9 +104,25 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
       return <p>No similarity data available</p>;
     }
 
+    const filteredSimilarities = getFilteredSimilarities();
+
     return (
       <div className="similarity-analysis">
-        Cluster {selectedCluster + 1} of feature pair: <i>{selectedColumns.join(" and ")}</i> <br />
+        <div className="similarity-header">
+          <div className="cluster-info">
+            Cluster {selectedCluster + 1} of feature pair: <i>{selectedColumns.join(" and ")}</i>
+          </div>
+          <div className="similarity-controls">
+            <label className="filter-checkbox">
+              <input
+                type="checkbox"
+                checked={filterHighSimilarity}
+                onChange={(e) => setFilterHighSimilarity(e.target.checked)}
+              />
+              Show only high similarity (&gt; 50%)
+            </label>
+          </div>
+        </div>
         <hr />
         <div className="table-container">
           <table>
@@ -109,16 +135,27 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
               </tr>
             </thead>
             <tbody>
-              {similarities.map((sim, idx) => (
-                <tr key={idx}>
-                  <td>{sim.feature1}</td>
-                  <td>{sim.feature2}</td>
-                  <td>{sim.cluster_id + 1}</td>
-                  <td>{(sim.similarity * 100).toFixed(1)}%</td>
+              {filteredSimilarities.length > 0 ? (
+                filteredSimilarities.map((sim, idx) => (
+                  <tr key={idx}>
+                    <td>{sim.feature1}</td>
+                    <td>{sim.feature2}</td>
+                    <td>{sim.cluster_id + 1}</td>
+                    <td>{(sim.similarity * 100).toFixed(1)}%</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', fontStyle: 'italic' }}>
+                    No clusters match the current filter criteria
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
+        </div>
+        <div className="similarity-stats">
+          Showing {filteredSimilarities.length} of {similarities.length} similar clusters
         </div>
       </div>
     );

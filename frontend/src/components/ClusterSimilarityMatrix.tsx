@@ -170,10 +170,9 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
       setLoading(true);
       setError(null);
       try {
-        // Get numeric columns only for feature pairs
-        const numericColumns = allColumns.filter((col) => {
-          // Basic numeric check - in real implementation this should be more robust
-          return true; // For now, include all columns
+        const numericColumns = allColumns.filter(() => {
+          // WIP: check if column is numeric
+          return true;
         });
 
         const data = await ClusteringService.getFeaturePairSimilarityMatrix(

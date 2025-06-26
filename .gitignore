@@ -3,6 +3,7 @@
 node_modules/
 
 backend/test_db.py
+backend/debug_reordering.py
 
 # while cleaning up the css files:
 *.scss

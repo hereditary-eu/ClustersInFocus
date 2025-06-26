@@ -3,14 +3,8 @@ import { VariableSizeGrid as Grid } from "react-window";
 import { ClusteringService } from "../services/ClusteringService";
 import "./styles/ClusterSimilarityMatrix.css";
 
-interface SimilarityMatrixData {
-  cluster_identifiers: Array<{
-    id: string;
-    feature1: string;
-    feature2: string;
-    cluster_id: number;
-    display_name: string;
-  }>;
+interface FeaturePairMatrixData {
+  features: string[];
   similarities: number[][];
   stats: {
     min_similarity: number;
@@ -23,12 +17,16 @@ interface ClusterSimilarityMatrixProps {
   fileId?: string;
   width: number;
   height: number;
+  selectedCluster: number | null;
+  selectedColumns: string[];
+  allColumns: string[];
 }
 
 interface CellData {
-  matrixData: SimilarityMatrixData;
+  featurePairMatrixData: FeaturePairMatrixData;
   onCellHover: (rowIndex: number, colIndex: number, event: React.MouseEvent) => void;
   onCellLeave: () => void;
+  colorRangeMode: "min-max" | "full";
 }
 
 interface TooltipState {
@@ -52,46 +50,44 @@ const MatrixCell = React.memo<{
   style: React.CSSProperties;
   data: CellData;
 }>(({ columnIndex, rowIndex, style, data }) => {
-  const { matrixData, onCellHover, onCellLeave } = data;
+  const { featurePairMatrixData, onCellHover, onCellLeave, colorRangeMode } = data;
 
   // Header cells
   if (rowIndex === 0 && columnIndex === 0) {
     // Corner cell
     return (
       <div style={style} className="matrix-header-cell matrix-corner-cell">
-        Clusters
+        Features
       </div>
     );
   }
 
   if (rowIndex === 0) {
     // Column header
-    const clusterIndex = columnIndex - 1;
-    const cluster = matrixData.cluster_identifiers[clusterIndex];
-    const displayName = cluster ? `${cluster.feature1} & ${cluster.feature2} (C${cluster.cluster_id})` : "";
+    const featureIndex = columnIndex - 1;
+    const feature = featurePairMatrixData.features[featureIndex];
     return (
       <div
         style={style}
         className="matrix-header-cell matrix-column-header"
-        title={cluster?.display_name}
+        title={feature}
       >
-        {displayName}
+        {feature}
       </div>
     );
   }
 
   if (columnIndex === 0) {
     // Row header
-    const clusterIndex = rowIndex - 1;
-    const cluster = matrixData.cluster_identifiers[clusterIndex];
-    const displayName = cluster ? `${cluster.feature1} & ${cluster.feature2} (C${cluster.cluster_id})` : "";
+    const featureIndex = rowIndex - 1;
+    const feature = featurePairMatrixData.features[featureIndex];
     return (
       <div
         style={style}
         className="matrix-header-cell matrix-row-header"
-        title={cluster?.display_name}
+        title={feature}
       >
-        {displayName}
+        {feature}
       </div>
     );
   }
@@ -99,13 +95,20 @@ const MatrixCell = React.memo<{
   // Data cell
   const dataRowIndex = rowIndex - 1;
   const dataColIndex = columnIndex - 1;
-  const similarity = matrixData.similarities[dataRowIndex]?.[dataColIndex] ?? 0;
+  const similarity = featurePairMatrixData.similarities[dataRowIndex]?.[dataColIndex] ?? 0;
   const isDiagonal = dataRowIndex === dataColIndex;
 
-  // Calculate normalized value (same approach as Panel1 heatmap)
-  const normalizedValue = matrixData.stats.max_similarity !== matrixData.stats.min_similarity
-    ? (similarity - matrixData.stats.min_similarity) / (matrixData.stats.max_similarity - matrixData.stats.min_similarity)
-    : 0.5;
+  // Calculate normalized value based on color range mode
+  let normalizedValue: number;
+  if (colorRangeMode === "full") {
+    // Use full 0-100% range
+    normalizedValue = similarity;
+  } else {
+    // Use min-max range
+    normalizedValue = featurePairMatrixData.stats.max_similarity !== featurePairMatrixData.stats.min_similarity
+      ? (similarity - featurePairMatrixData.stats.min_similarity) / (featurePairMatrixData.stats.max_similarity - featurePairMatrixData.stats.min_similarity)
+      : 0.5;
+  }
 
   const cellStyle = {
     ...style,
@@ -132,14 +135,17 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
   fileId,
   width,
   height,
+  selectedCluster,
+  selectedColumns,
+  allColumns,
 }) => {
-  const [matrixData, setMatrixData] = useState<SimilarityMatrixData | null>(null);
-  const [originalMatrixData, setOriginalMatrixData] = useState<SimilarityMatrixData | null>(null);
+  const [featurePairMatrixData, setFeaturePairMatrixData] = useState<FeaturePairMatrixData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState<boolean>(false);
-  const [linkageMethod, setLinkageMethod] = useState<string>("average");
-  const [isReordered, setIsReordered] = useState<boolean>(false);
+  const [aggregationMethod, setAggregationMethod] = useState<string>("max");
+  const [colorRangeMode, setColorRangeMode] = useState<"min-max" | "full">("min-max");
+  const [reorderMethod, setReorderMethod] = useState<"none" | "optimal" | "average">("none");
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
     x: 0,
@@ -149,8 +155,14 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
 
   useEffect(() => {
     if (!fileId) {
-      setMatrixData(null);
+      setFeaturePairMatrixData(null);
       setError(null);
+      return;
+    }
+
+    // Only fetch data if a cluster is selected
+    if (selectedCluster === null || selectedColumns.length !== 2) {
+      setFeaturePairMatrixData(null);
       return;
     }
 
@@ -158,113 +170,84 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
       setLoading(true);
       setError(null);
       try {
-        const data = await ClusteringService.getSimilarityMatrix(fileId);
+        // Get numeric columns only for feature pairs
+        const numericColumns = allColumns.filter((col) => {
+          // Basic numeric check - in real implementation this should be more robust
+          return true; // For now, include all columns
+        });
+
+        const data = await ClusteringService.getFeaturePairSimilarityMatrix(
+          fileId,
+          selectedColumns[0],
+          selectedColumns[1],
+          selectedCluster,
+          numericColumns,
+          aggregationMethod,
+          reorderMethod
+        );
+        
         if (data) {
-          setMatrixData(data);
-          setOriginalMatrixData(data); // Save original for restore functionality
-          setIsReordered(false);
+          setFeaturePairMatrixData(data);
         } else {
-          setError("No similarity matrix data available");
+          setError("No feature pair similarity data available. Please ensure clusters have been computed for the selected feature pair.");
         }
       } catch (err) {
-        console.error("Error fetching similarity matrix:", err);
-        setError("Failed to load similarity matrix");
+        console.error("Error fetching feature pair similarity matrix:", err);
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        if (errorMessage.includes("not found for feature pair")) {
+          setError("Selected cluster not found. The selected cluster may not exist for this feature pair, or clusters may need to be recomputed.");
+        } else {
+          setError(`Failed to load feature pair similarity matrix: ${errorMessage}`);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchMatrixData();
-  }, [fileId]);
+  }, [fileId, selectedCluster, selectedColumns, allColumns, aggregationMethod, reorderMethod]);
 
   const handleCellHover = useCallback((rowIndex: number, colIndex: number, event: React.MouseEvent) => {
-    if (!matrixData) return;
+    if (!featurePairMatrixData) return;
 
-    const similarity = matrixData.similarities[rowIndex]?.[colIndex];
-    const rowCluster = matrixData.cluster_identifiers[rowIndex];
-    const colCluster = matrixData.cluster_identifiers[colIndex];
+    const similarity = featurePairMatrixData.similarities[rowIndex]?.[colIndex];
+    const rowFeature = featurePairMatrixData.features[rowIndex];
+    const colFeature = featurePairMatrixData.features[colIndex];
 
-    if (similarity !== undefined && rowCluster && colCluster) {
+    if (similarity !== undefined && rowFeature && colFeature) {
       setTooltip({
         visible: true,
         x: event.clientX + 10,
         y: event.clientY - 60,
         content: {
-          rowCluster: rowCluster.display_name,
-          colCluster: colCluster.display_name,
+          rowCluster: rowFeature,
+          colCluster: colFeature,
           similarity: `${(similarity * 100).toFixed(1)}%`
         },
       });
     }
-  }, [matrixData]);
+  }, [featurePairMatrixData]);
 
   const handleCellLeave = useCallback(() => {
     setTooltip(prev => ({ ...prev, visible: false }));
   }, []);
 
-  const handleReorderMatrix = async () => {
-    if (!fileId) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Apply reordering
-      const reorderedData = await ClusteringService.reorderSimilarityMatrix(fileId, linkageMethod);
-      if (reorderedData) {
-        setMatrixData(reorderedData);
-        setIsReordered(true);
-        setShowConfig(false);
-      } else {
-        setError("Failed to reorder matrix");
-      }
-    } catch (err) {
-      console.error("Error reordering matrix:", err);
-      setError("Failed to reorder similarity matrix");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRestoreOriginal = async () => {
-    if (!fileId) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Reload the original matrix data
-      const data = await ClusteringService.getSimilarityMatrix(fileId);
-      if (data) {
-        setMatrixData(data);
-        setOriginalMatrixData(data);
-        setIsReordered(false);
-        setShowConfig(false);
-      } else {
-        setError("Failed to restore original matrix");
-      }
-    } catch (err) {
-      console.error("Error restoring original matrix:", err);
-      setError("Failed to restore original matrix");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const cellData = useMemo<CellData | null>(() => {
-    if (!matrixData) return null;
+    if (!featurePairMatrixData) return null;
     
     return {
-      matrixData,
+      featurePairMatrixData,
       onCellHover: handleCellHover,
       onCellLeave: handleCellLeave,
+      colorRangeMode,
     };
-  }, [matrixData, handleCellHover, handleCellLeave]);
+  }, [featurePairMatrixData, handleCellHover, handleCellLeave, colorRangeMode]);
 
   if (loading) {
     return (
       <div className="cluster-similarity-matrix-container">
-        <div className="matrix-loading">Loading similarity matrix...</div>
+        <div className="matrix-loading">Loading feature pair similarity matrix...</div>
       </div>
     );
   }
@@ -277,7 +260,19 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
     );
   }
 
-  if (!matrixData || !cellData) {
+  // Show message when no cluster is selected
+  if (selectedCluster === null || selectedColumns.length !== 2) {
+    return (
+      <div className="cluster-similarity-matrix-container">
+        <div className="matrix-empty">
+          <p>Select a cluster point in the visualization to view feature pair similarities.</p>
+          <p>This will show how the selected cluster compares across different feature combinations.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!featurePairMatrixData || !cellData) {
     return (
       <div className="cluster-similarity-matrix-container">
         <div className="matrix-empty">No similarity matrix data available. Please compute clusters first.</div>
@@ -285,17 +280,17 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
     );
   }
 
-  if (matrixData.cluster_identifiers.length === 0) {
+  if (featurePairMatrixData.features.length === 0) {
     return (
       <div className="cluster-similarity-matrix-container">
         <div className="matrix-empty">
-          No clusters found. Please compute clusters first.
+          No features found for similarity comparison.
         </div>
       </div>
     );
   }
 
-  const gridSize = matrixData.cluster_identifiers.length + 1; // +1 for headers
+  const gridSize = featurePairMatrixData.features.length + 1; // +1 for headers
   
   // Calculate dynamic dimensions
   const getColumnWidth = (index: number) => (index === 0 ? ROW_HEADER_WIDTH : CELL_SIZE);
@@ -311,10 +306,10 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
     <div className="cluster-similarity-matrix-container">
       <div className="matrix-header">
         <div className="matrix-stats">
-          {matrixData.stats.size} clusters, Range: {(matrixData.stats.min_similarity * 100).toFixed(1)}% - {(matrixData.stats.max_similarity * 100).toFixed(1)}%
-          {isReordered && (
-            <span className="reorder-indicator"> (Reordered)</span>
-          )}
+          Feature Pair Matrix for Cluster {selectedCluster! + 1} ({selectedColumns[0]}, {selectedColumns[1]}): {featurePairMatrixData.features.length} features, 
+          {/* Range: {(featurePairMatrixData.stats.min_similarity * 100).toFixed(1)}% - {(featurePairMatrixData.stats.max_similarity * 100).toFixed(1)}% */}
+          <span className="aggregation-indicator"> Aggregation: {aggregationMethod.toUpperCase()}, </span>
+          <span className="color-range-indicator"> Color Range: {colorRangeMode === "full" ? "0-100%" : "Min-Max"}</span>
         </div>
         <div className="matrix-controls">
           <button
@@ -323,47 +318,62 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
               e.stopPropagation();
               setShowConfig(!showConfig);
             }}
-            title="Configure clustering"
+            title="Configure matrix options"
           >
             ⚙️
           </button>
-          {isReordered && (
-            <button
-              className="matrix-control-button restore-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRestoreOriginal();
-              }}
-              title="Restore original matrix"
-            >
-              ✕
-            </button>
-          )}
         </div>
       </div>
       
       {showConfig && (
         <div className="matrix-config-panel">
-          <div className="config-group">
-            <label>Linkage Method:</label>
-            <select
-              value={linkageMethod}
-              onChange={(e) => setLinkageMethod(e.target.value)}
-              className="config-select"
-            >
-              <option value="single">Single</option>
-              <option value="complete">Complete</option>
-              <option value="average">Average</option>
-              <option value="ward">Ward</option>
-            </select>
+          <div className="config-section">
+            <h4>Aggregation</h4>
+            <div className="config-group">
+              <label>Aggregation Method:</label>
+              <select
+                value={aggregationMethod}
+                onChange={(e) => setAggregationMethod(e.target.value)}
+                className="config-select"
+              >
+                <option value="max">Maximum</option>
+                <option value="avg">Average</option>
+                <option value="min">Minimum</option>
+                <option value="median">Median</option>
+              </select>
+            </div>
           </div>
-          <button
-            className="cluster-button"
-            onClick={handleReorderMatrix}
-            disabled={loading}
-          >
-{loading ? "Clustering..." : "Cluster"}
-          </button>
+
+          <div className="config-section">
+            <h4>Color Scale</h4>
+            <div className="config-group">
+              <label>Color Range:</label>
+              <select
+                value={colorRangeMode}
+                onChange={(e) => setColorRangeMode(e.target.value as "min-max" | "full")}
+                className="config-select"
+              >
+                <option value="min-max">Min-Max Range</option>
+                <option value="full">Full Range (0-100%)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="config-section">
+            <h4>Matrix Ordering</h4>
+            <div className="config-group">
+              <label>Reorder Method:</label>
+              <select
+                value={reorderMethod}
+                onChange={(e) => setReorderMethod(e.target.value as "none" | "optimal" | "average")}
+                className="config-select"
+              >
+                <option value="none">Original Order</option>
+                <option value="optimal">Optimal Leaf Ordering</option>
+                <option value="average">Average Similarity</option>
+              </select>
+            </div>
+          </div>
         </div>
       )}
       

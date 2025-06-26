@@ -127,6 +127,7 @@ const App: React.FC = () => {
               selectedColumns={selectedColumns}
               onClusterSelect={setSelectedCluster}
               fileId={data.fileId}
+              allColumns={data.columns}
             />
           </div>
         ) : (

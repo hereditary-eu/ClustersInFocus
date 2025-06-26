@@ -162,11 +162,12 @@
 
 .matrix-empty {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  /* align-items: center; */
+  /* justify-content: center; */
+  flex-direction: column;
   height: 100%;
   color: var(--text-secondary);
-  text-align: center;
+  /* text-align: center; */
   padding: 20px;
 }
 
@@ -199,13 +200,36 @@
 }
 
 .matrix-config-panel {
-  padding: 12px;
+  padding: 16px;
   background-color: var(--color-white-accent);
   border-bottom: 1px solid var(--border-color);
   display: flex;
-  gap: 16px;
-  align-items: center;
+  gap: 24px;
   font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.config-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+}
+
+.config-section h4 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-gray-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.aggregation-indicator,
+.color-range-indicator {
+  font-weight: 600;
+  color: var(--color-blue-accent);
 }
 
 .config-group {
@@ -230,29 +254,3 @@
   font-size: 12px;
 }
 
-.cluster-button {
-  padding: 6px 12px;
-  background-color: var(--color-blue-accent);
-  color: var(--color-white);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-}
-
-.cluster-button:hover:not(:disabled) {
-  background-color: var(--color-blue-accent-hover);
-}
-
-.cluster-button:disabled {
-  background-color: var(--color-gray-light);
-  cursor: not-allowed;
-}
-
-.reorder-indicator {
-  font-style: italic;
-  color: var(--color-blue-accent);
-  font-weight: 600;
-}

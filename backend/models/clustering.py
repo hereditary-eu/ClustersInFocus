@@ -44,3 +44,13 @@ class SimilarityRequest(BaseModel):
     selected_feature2: str
     selected_cluster_id: int
     dataset_id: str  # Required to lookup clusters
+
+
+class FeaturePairMatrixRequest(BaseModel):
+    dataset_id: str
+    selected_feature1: str
+    selected_feature2: str
+    selected_cluster_id: int
+    features: List[str]  # List of all features to include in the matrix
+    aggregation: Literal["max", "avg", "min", "median"] = "max"  # Aggregation strategy
+    reorder_method: Literal["none", "optimal", "average"] = "none"  # Matrix reordering method

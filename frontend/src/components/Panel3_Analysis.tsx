@@ -9,6 +9,7 @@ interface Panel3AnalysisProps {
   selectedColumns: string[];
   onClusterSelect: (cluster: number | null) => void;
   fileId?: string;
+  allColumns: string[];
 }
 
 const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
@@ -18,6 +19,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
   selectedColumns,
   onClusterSelect,
   fileId,
+  allColumns,
 }) => {
   const [similarities, setSimilarities] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -200,6 +202,9 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
             fileId={fileId}
             width={panelDimensions.width}
             height={panelDimensions.height}
+            selectedCluster={selectedCluster}
+            selectedColumns={selectedColumns}
+            allColumns={allColumns}
           />
         )}
       </div>

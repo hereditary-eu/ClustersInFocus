@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install system dependencies required by LightGBM
+# system dependencies required by LightGBM/XGBoost
 RUN apt-get update && apt-get install -y \
   libgomp1 build-essential && apt-get clean && rm -rf /var/lib/apt/lists/*
 

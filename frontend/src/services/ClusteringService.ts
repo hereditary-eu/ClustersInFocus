@@ -193,4 +193,40 @@ export class ClusteringService {
       return null;
     }
   }
+
+
+  static async getFeaturePairSimilarityMatrix(
+    datasetId: string,
+    selectedFeature1: string,
+    selectedFeature2: string,
+    selectedClusterId: number,
+    features: string[],
+    aggregation: string = "max",
+    reorderMethod: string = "none"
+  ): Promise<{
+    features: string[];
+    similarities: number[][];
+    stats: {
+      min_similarity: number;
+      max_similarity: number;
+      size: number;
+    };
+  } | null> {
+    try {
+      const requestData = {
+        dataset_id: datasetId,
+        selected_feature1: selectedFeature1,
+        selected_feature2: selectedFeature2,
+        selected_cluster_id: selectedClusterId,
+        features: features,
+        aggregation: aggregation,
+        reorder_method: reorderMethod,
+      };
+
+      return await ApiClient.post(`${API_ROUTES.clustering.featurePairMatrix}`, requestData);
+    } catch (error) {
+      console.error("Error fetching feature pair similarity matrix:", error);
+      return null;
+    }
+  }
 }

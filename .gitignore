@@ -1,9 +1,9 @@
-# keep data folder, but ignore all files in it
 **/data/*
 !**/data/.gitkeep
 node_modules/
 
 backend/test_db.py
+backend/debug_reordering.py
 
 # while cleaning up the css files:
 *.scss
@@ -13,7 +13,8 @@ backend/test_db.py
 train.csv
 
 venv/
-.venv
+paper/
+sources/
 
 # pycache
 *.pyc
@@ -22,3 +23,4 @@ __pycache__/
 # notes files
 **/notes.md
 **/CLAUDE.md
+.claude

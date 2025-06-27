@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from utils import get_logger
-from models.clustering import ClusteringRequest, ClusteringResult, SimilarityRequest, ClusterSimilarity
+from models.clustering import ClusteringRequest, ClusteringResult, SimilarityRequest, ClusterSimilarity, FeaturePairMatrixRequest
 from services.clustering_service import ClusteringService
 from typing import List, Dict, Optional
 from database import get_db
@@ -140,4 +140,37 @@ async def get_clusters_by_features_endpoint(
 
     except Exception as e:
         logger.error(f"Error retrieving clusters: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
+@clustering_router.post("/feature_pair_matrix")
+async def get_feature_pair_similarity_matrix(
+    request: FeaturePairMatrixRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Get similarity matrix for a selected cluster across all feature pairs.
+    Shows how the selected cluster compares to other clusters for each feature pair combination.
+    """
+    try:
+        clusters = get_all_clusters(db, request.dataset_id)
+        if not clusters:
+            raise HTTPException(status_code=400, detail="No clusters found. Please compute clusters first.")
+        
+        matrix_data = ClusteringService.compute_feature_pair_similarity_matrix(
+            clusters=clusters,
+            selected_feature1=request.selected_feature1,
+            selected_feature2=request.selected_feature2,
+            selected_cluster_id=request.selected_cluster_id,
+            features=request.features,
+            aggregation=request.aggregation,
+            reorder_method=request.reorder_method
+        )
+        
+        return matrix_data
+
+    except Exception as e:
+        logger.error(f"Error computing feature pair similarity matrix: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

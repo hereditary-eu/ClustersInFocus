@@ -1,20 +1,28 @@
 # clustering ops namespace
 
-from fastapi import APIRouter, HTTPException, Query, Depends
-from utils import get_logger
-from models.clustering import ClusteringRequest, ClusteringResult, SimilarityRequest, ClusterSimilarity, FeaturePairMatrixRequest
-from services.clustering_service import ClusteringService
-from typing import List, Dict, Optional
-from database import get_db
+from typing import Dict, List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
 from database.db_service import (
-    get_dataset_data,
-    save_clusters,
+    create_dataset,
     get_all_clusters,
     get_clusters_by_features,
-    create_dataset,
+    get_dataset_data,
+    save_clusters,
 )
-from sqlalchemy.orm import Session
-from utils.data_utils import sanitize_and_parse_dataset, dataframe_to_dict_list, get_numeric_columns
+from database.models import get_db
+from models.clustering import (
+    ClusteringRequest,
+    ClusteringResult,
+    ClusterSimilarity,
+    FeaturePairMatrixRequest,
+    SimilarityRequest,
+)
+from services.clustering_service import ClusteringService
+from utils import get_logger
+from utils.data_utils import dataframe_to_dict_list, get_numeric_columns, sanitize_and_parse_dataset
 
 logger = get_logger(__name__)
 clustering_router = APIRouter(prefix="/clustering", tags=["clustering"])
@@ -143,13 +151,8 @@ async def get_clusters_by_features_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-
 @clustering_router.post("/feature_pair_matrix")
-async def get_feature_pair_similarity_matrix(
-    request: FeaturePairMatrixRequest,
-    db: Session = Depends(get_db)
-):
+async def get_feature_pair_similarity_matrix(request: FeaturePairMatrixRequest, db: Session = Depends(get_db)):
     """
     Get similarity matrix for a selected cluster across all feature pairs.
     Shows how the selected cluster compares to other clusters for each feature pair combination.
@@ -158,7 +161,7 @@ async def get_feature_pair_similarity_matrix(
         clusters = get_all_clusters(db, request.dataset_id)
         if not clusters:
             raise HTTPException(status_code=400, detail="No clusters found. Please compute clusters first.")
-        
+
         matrix_data = ClusteringService.compute_feature_pair_similarity_matrix(
             clusters=clusters,
             selected_feature1=request.selected_feature1,
@@ -166,9 +169,9 @@ async def get_feature_pair_similarity_matrix(
             selected_cluster_id=request.selected_cluster_id,
             features=request.features,
             aggregation=request.aggregation,
-            reorder_method=request.reorder_method
+            reorder_method=request.reorder_method,
         )
-        
+
         return matrix_data
 
     except Exception as e:

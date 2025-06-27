@@ -86,7 +86,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
       return similarities;
     }
     // Filter to only show similarities above 50%
-    return similarities.filter(sim => sim.similarity > 0.5);
+    return similarities.filter((sim) => sim.similarity > 0.5);
   };
 
   const renderSimilarityAnalysis = () => {
@@ -148,7 +148,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', fontStyle: 'italic' }}>
+                  <td colSpan={4} style={{ textAlign: "center", fontStyle: "italic" }}>
                     No clusters match the current filter criteria
                   </td>
                 </tr>
@@ -197,7 +197,9 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
         </div>
       </h2>
       <div className="analysis-panel">
-        {viewMode === "similarity" ? renderSimilarityAnalysis() : (
+        {viewMode === "similarity" ? (
+          renderSimilarityAnalysis()
+        ) : (
           <ClusterSimilarityMatrix
             fileId={fileId}
             width={panelDimensions.width}

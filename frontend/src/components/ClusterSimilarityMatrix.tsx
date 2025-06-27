@@ -67,11 +67,7 @@ const MatrixCell = React.memo<{
     const featureIndex = columnIndex - 1;
     const feature = featurePairMatrixData.features[featureIndex];
     return (
-      <div
-        style={style}
-        className="matrix-header-cell matrix-column-header"
-        title={feature}
-      >
+      <div style={style} className="matrix-header-cell matrix-column-header" title={feature}>
         {feature}
       </div>
     );
@@ -82,11 +78,7 @@ const MatrixCell = React.memo<{
     const featureIndex = rowIndex - 1;
     const feature = featurePairMatrixData.features[featureIndex];
     return (
-      <div
-        style={style}
-        className="matrix-header-cell matrix-row-header"
-        title={feature}
-      >
+      <div style={style} className="matrix-header-cell matrix-row-header" title={feature}>
         {feature}
       </div>
     );
@@ -105,9 +97,11 @@ const MatrixCell = React.memo<{
     normalizedValue = similarity;
   } else {
     // Use min-max range
-    normalizedValue = featurePairMatrixData.stats.max_similarity !== featurePairMatrixData.stats.min_similarity
-      ? (similarity - featurePairMatrixData.stats.min_similarity) / (featurePairMatrixData.stats.max_similarity - featurePairMatrixData.stats.min_similarity)
-      : 0.5;
+    normalizedValue =
+      featurePairMatrixData.stats.max_similarity !== featurePairMatrixData.stats.min_similarity
+        ? (similarity - featurePairMatrixData.stats.min_similarity) /
+          (featurePairMatrixData.stats.max_similarity - featurePairMatrixData.stats.min_similarity)
+        : 0.5;
   }
 
   const cellStyle = {
@@ -122,9 +116,7 @@ const MatrixCell = React.memo<{
       onMouseEnter={(e) => !isDiagonal && onCellHover(dataRowIndex, dataColIndex, e)}
       onMouseLeave={onCellLeave}
     >
-      {!isDiagonal && (
-        <div className="similarity-matrix-heatmap-cell" />
-      )}
+      {!isDiagonal && <div className="similarity-matrix-heatmap-cell" />}
     </div>
   );
 });
@@ -182,19 +174,23 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
           selectedCluster,
           numericColumns,
           aggregationMethod,
-          reorderMethod
+          reorderMethod,
         );
-        
+
         if (data) {
           setFeaturePairMatrixData(data);
         } else {
-          setError("No feature pair similarity data available. Please ensure clusters have been computed for the selected feature pair.");
+          setError(
+            "No feature pair similarity data available. Please ensure clusters have been computed for the selected feature pair.",
+          );
         }
       } catch (err) {
         console.error("Error fetching feature pair similarity matrix:", err);
         const errorMessage = err instanceof Error ? err.message : "Unknown error";
         if (errorMessage.includes("not found for feature pair")) {
-          setError("Selected cluster not found. The selected cluster may not exist for this feature pair, or clusters may need to be recomputed.");
+          setError(
+            "Selected cluster not found. The selected cluster may not exist for this feature pair, or clusters may need to be recomputed.",
+          );
         } else {
           setError(`Failed to load feature pair similarity matrix: ${errorMessage}`);
         }
@@ -206,35 +202,37 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
     fetchMatrixData();
   }, [fileId, selectedCluster, selectedColumns, allColumns, aggregationMethod, reorderMethod]);
 
-  const handleCellHover = useCallback((rowIndex: number, colIndex: number, event: React.MouseEvent) => {
-    if (!featurePairMatrixData) return;
+  const handleCellHover = useCallback(
+    (rowIndex: number, colIndex: number, event: React.MouseEvent) => {
+      if (!featurePairMatrixData) return;
 
-    const similarity = featurePairMatrixData.similarities[rowIndex]?.[colIndex];
-    const rowFeature = featurePairMatrixData.features[rowIndex];
-    const colFeature = featurePairMatrixData.features[colIndex];
+      const similarity = featurePairMatrixData.similarities[rowIndex]?.[colIndex];
+      const rowFeature = featurePairMatrixData.features[rowIndex];
+      const colFeature = featurePairMatrixData.features[colIndex];
 
-    if (similarity !== undefined && rowFeature && colFeature) {
-      setTooltip({
-        visible: true,
-        x: event.clientX + 10,
-        y: event.clientY - 60,
-        content: {
-          rowCluster: rowFeature,
-          colCluster: colFeature,
-          similarity: `${(similarity * 100).toFixed(1)}%`
-        },
-      });
-    }
-  }, [featurePairMatrixData]);
+      if (similarity !== undefined && rowFeature && colFeature) {
+        setTooltip({
+          visible: true,
+          x: event.clientX + 10,
+          y: event.clientY - 60,
+          content: {
+            rowCluster: rowFeature,
+            colCluster: colFeature,
+            similarity: `${(similarity * 100).toFixed(1)}%`,
+          },
+        });
+      }
+    },
+    [featurePairMatrixData],
+  );
 
   const handleCellLeave = useCallback(() => {
-    setTooltip(prev => ({ ...prev, visible: false }));
+    setTooltip((prev) => ({ ...prev, visible: false }));
   }, []);
-
 
   const cellData = useMemo<CellData | null>(() => {
     if (!featurePairMatrixData) return null;
-    
+
     return {
       featurePairMatrixData,
       onCellHover: handleCellHover,
@@ -282,22 +280,20 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
   if (featurePairMatrixData.features.length === 0) {
     return (
       <div className="cluster-similarity-matrix-container">
-        <div className="matrix-empty">
-          No features found for similarity comparison.
-        </div>
+        <div className="matrix-empty">No features found for similarity comparison.</div>
       </div>
     );
   }
 
   const gridSize = featurePairMatrixData.features.length + 1; // +1 for headers
-  
+
   // Calculate dynamic dimensions
   const getColumnWidth = (index: number) => (index === 0 ? ROW_HEADER_WIDTH : CELL_SIZE);
   const getRowHeight = (index: number) => (index === 0 ? COLUMN_HEADER_HEIGHT : CELL_SIZE);
-  
+
   const totalWidth = ROW_HEADER_WIDTH + (gridSize - 1) * CELL_SIZE;
   const totalHeight = COLUMN_HEADER_HEIGHT + (gridSize - 1) * CELL_SIZE;
-  
+
   const gridWidth = Math.min(width, totalWidth);
   const gridHeight = Math.min(height - 40, totalHeight); // -40 for header
 
@@ -305,10 +301,14 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
     <div className="cluster-similarity-matrix-container">
       <div className="matrix-header">
         <div className="matrix-stats">
-          Feature Pair Matrix for Cluster {selectedCluster! + 1} ({selectedColumns[0]}, {selectedColumns[1]}): {featurePairMatrixData.features.length} features, 
+          Feature Pair Matrix for Cluster {selectedCluster! + 1} ({selectedColumns[0]}, {selectedColumns[1]}):{" "}
+          {featurePairMatrixData.features.length} features,
           {/* Range: {(featurePairMatrixData.stats.min_similarity * 100).toFixed(1)}% - {(featurePairMatrixData.stats.max_similarity * 100).toFixed(1)}% */}
           <span className="aggregation-indicator"> Aggregation: {aggregationMethod.toUpperCase()}, </span>
-          <span className="color-range-indicator"> Color Range: {colorRangeMode === "full" ? "0-100%" : "Min-Max"}</span>
+          <span className="color-range-indicator">
+            {" "}
+            Color Range: {colorRangeMode === "full" ? "0-100%" : "Min-Max"}
+          </span>
         </div>
         <div className="matrix-controls">
           <button
@@ -323,7 +323,7 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
           </button>
         </div>
       </div>
-      
+
       {showConfig && (
         <div className="matrix-config-panel">
           <div className="config-section">
@@ -375,7 +375,7 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
           </div>
         </div>
       )}
-      
+
       <div className="matrix-viewport">
         <Grid
           className="matrix-grid"
@@ -399,9 +399,15 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
             top: tooltip.y,
           }}
         >
-          <div className="tooltip-line"><strong>Row:</strong> {tooltip.content.rowCluster}</div>
-          <div className="tooltip-line"><strong>Col:</strong> {tooltip.content.colCluster}</div>
-          <div className="tooltip-line"><strong>Similarity:</strong> {tooltip.content.similarity}</div>
+          <div className="tooltip-line">
+            <strong>Row:</strong> {tooltip.content.rowCluster}
+          </div>
+          <div className="tooltip-line">
+            <strong>Col:</strong> {tooltip.content.colCluster}
+          </div>
+          <div className="tooltip-line">
+            <strong>Similarity:</strong> {tooltip.content.similarity}
+          </div>
         </div>
       )}
     </div>

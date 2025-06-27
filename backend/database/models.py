@@ -1,6 +1,23 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, JSON
-from sqlalchemy.orm import relationship
-from database import Base
+from sqlalchemy import JSON, Column, Float, ForeignKey, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+
+from core.config import CONFIG
+
+engine = create_engine(CONFIG.SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+Base.metadata.create_all(bind=engine)  # Create tables
 
 
 class Dataset(Base):

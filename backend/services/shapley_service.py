@@ -1,9 +1,10 @@
+from typing import Union
+
+import lightgbm as lgb
+import numpy as np
+import pandas as pd
 import shap
 import xgboost
-import lightgbm as lgb
-from typing import Union
-import pandas as pd
-import numpy as np
 
 from core.config import CONFIG
 

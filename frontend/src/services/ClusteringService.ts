@@ -194,7 +194,6 @@ export class ClusteringService {
     }
   }
 
-
   static async getFeaturePairSimilarityMatrix(
     datasetId: string,
     selectedFeature1: string,
@@ -202,7 +201,7 @@ export class ClusteringService {
     selectedClusterId: number,
     features: string[],
     aggregation: string = "max",
-    reorderMethod: string = "none"
+    reorderMethod: string = "none",
   ): Promise<{
     features: string[];
     similarities: number[][];

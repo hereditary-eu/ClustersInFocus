@@ -1,12 +1,14 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+#!/usr/bin/env python
 from pathlib import Path
 
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
 from core.config import CONFIG
-from routers import shapley_router, clustering_router, dataset_router
+from routers import clustering, dataset, shapley
 
 
 def create_app() -> FastAPI:
@@ -45,9 +47,9 @@ def create_app() -> FastAPI:
         )
 
     # adding routers
-    app.include_router(shapley_router)
-    app.include_router(clustering_router)
-    app.include_router(dataset_router)
+    app.include_router(shapley.shapley_router)
+    app.include_router(clustering.clustering_router)
+    app.include_router(dataset.dataset_router)
 
     return app
 

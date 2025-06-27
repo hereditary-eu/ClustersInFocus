@@ -1,12 +1,13 @@
 import json
-from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from database.db_service import create_dataset, get_dataset_data, get_shapley_values, save_shapley_values
+from database.models import get_db
 from models.shapley import ShapValuesRequest
 from services.shapley_service import ShapleyService
-from database import get_db
-from database.db_service import get_dataset_data, save_shapley_values, get_shapley_values, create_dataset
 from utils import get_logger
 from utils.data_utils import sanitize_and_parse_dataset
 

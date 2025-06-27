@@ -49,7 +49,7 @@
 .table-container {
   width: 100%;
   height: 70vh;
-  margin: 20px auto;
+  margin: 20px auto 0;
   overflow-x: auto;
   overflow-y: auto;
   border-radius: 8px;
@@ -108,7 +108,7 @@ th.selected {
 .panels-container {
   display: flex;
   gap: 20px;
-  height: 100%;
+  /* height: 100%; */
   overflow: hidden; /* Prevent container scrolling */
 }
 
@@ -581,10 +581,10 @@ header {
 
 /* HEATMAP */
 .heatmap-cell {
-  height: 2px;
+  height: calc(485px / 195);
   /* padding: 0px 2px; */
   text-align: center;
-  font-size: 2px;
+  font-size: 3px;
   background: hsl(200, 70%, calc(100% - (var(--normalized-value) * 50%)));
   /* border-bottom: 1px dotted var(--color-gray-lighter); */
 }

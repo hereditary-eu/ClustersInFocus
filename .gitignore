@@ -13,6 +13,7 @@ backend/debug_reordering.py
 train.csv
 
 venv/
+.venv
 paper/
 sources/
 

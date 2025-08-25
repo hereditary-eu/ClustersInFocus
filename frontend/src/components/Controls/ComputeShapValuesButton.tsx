@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { ClusteringService } from "../../services/ClusteringService";
 import { DataRow } from "../../types";
 import { toast } from "../../stores/useToastStore";
+import "../UI/Modal.css";
 
 interface ComputeShapleyValuesButtonProps {
   columns: string[];
@@ -70,13 +71,17 @@ export function ComputeShapleyValuesButton({
       </button>
 
       {isComputing && (
-        <div className="clustering-modal">
-          <div className="clustering-modal-content">
-            <h3>Computing Shapley Values</h3>
-            <div className="clustering-progress-bar-container">
-              <div className="clustering-progress-bar" style={{ width: `${progress}%` }} />
+        <div className="modal-overlay">
+          <div className="modal-content modal-progress">
+            <div className="modal-header">
+              <h3 className="modal-title">Computing Shapley Values</h3>
             </div>
-            <p>{Math.round(progress)}%</p>
+            <div className="modal-body">
+              <div className="progress-bar-container">
+                <div className="progress-bar" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="progress-text">{Math.round(progress)}%</p>
+            </div>
           </div>
         </div>
       )}

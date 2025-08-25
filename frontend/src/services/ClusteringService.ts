@@ -31,7 +31,7 @@ export class ClusteringService {
     fileName?: string,
   ): Promise<void> {
     try {
-      onProgress(25); // 25%, todo: add actual progress (websocket?)
+      onProgress(25); // Initial progress
 
       const requestData = {
         data: csvData,
@@ -51,9 +51,11 @@ export class ClusteringService {
         filename: fileName, // Include filename for saving if dataset doesn't exist
       };
 
+      onProgress(60); // Processing data
+      
       await ApiClient.post(API_ROUTES.clustering.compute, requestData);
 
-      onProgress(100); // 100%, todo: add actual progress (websocket?)
+      onProgress(100); // Complete
     } catch (error) {
       throw error;
     }
@@ -169,6 +171,8 @@ export class ClusteringService {
         filename: fileName, // Include filename for saving if dataset doesn't exist
       };
 
+      onProgress(60); // Processing data
+      
       await ApiClient.post(API_ROUTES.shapley.compute, requestData);
 
       onProgress(100); // Complete

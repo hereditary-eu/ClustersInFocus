@@ -1,5 +1,7 @@
 import React from "react";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useAppStore } from "../../stores/useAppStore";
+import { isNumericDataPoint } from "../../utils/validation";
 
 interface ScatterplotClusteredProps {
   data: number[][];
@@ -8,8 +10,6 @@ interface ScatterplotClusteredProps {
   k: number;
   width?: string | number;
   height?: number;
-  onPointClick: (cluster: number) => void;
-  onPanelClick: (panelId: string, event: React.MouseEvent) => void;
 }
 
 const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
@@ -19,18 +19,15 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   k,
   width = "100%",
   height = 400,
-  onPointClick,
-  onPanelClick,
 }) => {
+  const setSelectedCluster = useAppStore(state => state.setSelectedCluster);
+  const setExpandedPanel = useAppStore(state => state.setExpandedPanel);
   // Early return if data is missing or empty
   if (!data || data.length === 0) return <p>No data available</p>;
 
-  console.log(`ScatterplotClustered rendering with k=${k}, data length: ${data.length}`);
 
   // Check if any data point has non-numerical values
-  const hasNonNumericalValues = data.some(
-    (point) => typeof point[0] !== "number" || isNaN(point[0]) || typeof point[1] !== "number" || isNaN(point[1]),
-  );
+  const hasNonNumericalValues = data.some(point => !isNumericDataPoint(point));
 
   if (hasNonNumericalValues) {
     return <p>Please select numerical columns only</p>;
@@ -41,11 +38,9 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
     .filter((id) => id !== -1 && id !== undefined)
     .sort((a, b) => a - b);
 
-  console.log("Actual cluster IDs in data:", actualClusterIds);
 
   // Use the maximum of k and actual unique clusters to ensure we have enough colors
   const numClusters = Math.max(k, actualClusterIds.length);
-  console.log(`Using ${numClusters} clusters for visualization`);
 
   // Transform data into the format Recharts expects and separate by clusters
   const clusterData = actualClusterIds.map((clusterId) =>
@@ -62,15 +57,8 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   const colors = Array.from({ length: numClusters }, (_, i) => `hsl(${(i * 360) / numClusters}, 70%, 50%)`);
 
   const handleClick = (clusterIndex: number) => {
-    console.log(`Clicked on cluster ${clusterIndex}`);
-    onPointClick(clusterIndex);
-    // Create a synthetic mouse event
-    const event = new MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      view: window,
-    });
-    onPanelClick("right", event as unknown as React.MouseEvent);
+    setSelectedCluster(clusterIndex);
+    setExpandedPanel("right");
   };
 
   return (

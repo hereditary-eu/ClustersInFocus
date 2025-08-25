@@ -1,26 +1,31 @@
 import React from "react";
-import DataTable from "./DataTable";
-import { Panel1DataProps } from "../types";
+import DataTable from "../DataVisualization/DataTable/DataTable";
+import { useAppStore } from "../../stores/useAppStore";
 
-const Panel1Data: React.FC<Panel1DataProps> = ({
-  data,
-  columns,
-  expandedPanel,
-  hiddenColumns,
-  isDataTableExpanded,
-  dataViewMode,
-  onPanelClick,
-  onColumnHide,
-  onColumnRestore,
-  onColumnSelect,
-  setDataViewMode,
-  setIsDataTableExpanded,
-  shapleyValues,
-}) => {
+const Panel1Data: React.FC = () => {
+  const data = useAppStore(state => state.data);
+  const shapleyValues = useAppStore(state => state.shapleyValues);
+  const expandedPanel = useAppStore(state => state.expandedPanel);
+  const hiddenColumns = useAppStore(state => state.hiddenColumns);
+  const isDataTableExpanded = useAppStore(state => state.isDataTableExpanded);
+  const dataViewMode = useAppStore(state => state.dataViewMode);
+  const setExpandedPanel = useAppStore(state => state.setExpandedPanel);
+  const addHiddenColumn = useAppStore(state => state.addHiddenColumn);
+  const removeHiddenColumn = useAppStore(state => state.removeHiddenColumn);
+  const setDataViewMode = useAppStore(state => state.setDataViewMode);
+  const setIsDataTableExpanded = useAppStore(state => state.setIsDataTableExpanded);
+  const setSelectedColumns = useAppStore(state => state.setSelectedColumns);
+
+  const handlePanelClick = (panelId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (expandedPanel !== panelId) {
+      setExpandedPanel(panelId);
+    }
+  };
   return (
     <div
       className={`panel panel-left ${expandedPanel === "left" ? "expanded" : ""}`}
-      onClick={(e) => onPanelClick("left", e)}
+      onClick={(e) => handlePanelClick("left", e)}
     >
       <h2 className="panel-header-left">
         <div className="panel-header-title">Data</div>
@@ -33,7 +38,7 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
                   className="column-tag"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onColumnRestore(col);
+                    removeHiddenColumn(col);
                   }}
                   title="Click to restore column"
                 >
@@ -76,12 +81,12 @@ const Panel1Data: React.FC<Panel1DataProps> = ({
       </h2>
 
       <DataTable
-        data={data}
-        columns={columns}
+        data={data.csvData}
+        columns={data.columns}
         hiddenColumns={hiddenColumns}
-        onColumnHide={onColumnHide}
-        onColumnRestore={onColumnRestore}
-        onColumnSelect={onColumnSelect}
+        onColumnHide={addHiddenColumn}
+        onColumnRestore={removeHiddenColumn}
+        onColumnSelect={setSelectedColumns}
         isExpanded={isDataTableExpanded}
         viewMode={dataViewMode}
         menuOptions={{

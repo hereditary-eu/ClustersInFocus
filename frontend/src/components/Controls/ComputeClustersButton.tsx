@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
-import { ClusteringService, DEFAULT_PARAMS } from "../services/ClusteringService";
-import { ComputeClustersButtonProps, HyperparamModalProps, ClusteringAlgorithm, ClusteringParams } from "../types";
+import { ClusteringService, DEFAULT_PARAMS } from "../../services/ClusteringService";
+import { ComputeClustersButtonProps, HyperparamModalProps, ClusteringAlgorithm, ClusteringParams } from "../../types";
+import { toast } from "../../stores/useToastStore";
 
 const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, onClose, onSave }) => {
   const [localParams, setLocalParams] = useState(params);
@@ -116,12 +117,10 @@ export function ComputeClustersButton({
   const [showHyperparam, setShowHyperparam] = useState(false);
   const [algorithm, setAlgorithm] = useState<ClusteringAlgorithm>("kmeans");
   const [params, setParams] = useState<ClusteringParams[typeof algorithm]>(DEFAULT_PARAMS.kmeans);
-  const [error, setError] = useState<string | null>(null);
 
   const computeClusters = useCallback(async () => {
     setIsComputing(true);
     setProgress(0);
-    setError(null);
 
     try {
       await ClusteringService.computeFeaturePairsClusters(
@@ -136,8 +135,8 @@ export function ComputeClustersButton({
 
       setIsComputing(false);
       onClustersComputed();
+      toast.success("Clusters computed successfully!");
     } catch (err) {
-      console.error("Error computing clusters:", err);
       setIsComputing(false);
 
       // Check if this is a network error
@@ -145,9 +144,9 @@ export function ComputeClustersButton({
         (err instanceof TypeError && err.message.includes("network")) ||
         (err instanceof Error && err.message.includes("Failed to fetch"))
       ) {
-        setError("Unable to connect to the server. Please check that the backend is running or try again later.");
+        toast.error("Unable to connect to the server. Please check that the backend is running or try again later.");
       } else {
-        setError("An error occurred while computing clusters. Please try again.");
+        toast.error("An error occurred while computing clusters. Please try again.");
       }
     }
   }, [csvData, columns, algorithm, params, onClustersComputed, fileId, fileName]);
@@ -202,17 +201,6 @@ export function ComputeClustersButton({
         />
       )}
 
-      {error && (
-        <div className="clustering-modal">
-          <div className="clustering-modal-content error-modal">
-            <h3>Connection Error</h3>
-            <p>{error}</p>
-            <button onClick={() => setError(null)} className="button button-secondary">
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { RequestOptions, ApiClientError } from "../types";
 
 export class ApiClient {
-  private static sanitizeRequestData(data: any): any {
+  private static sanitizeRequestData(data: unknown): unknown {
     if (data === null || data === undefined || typeof data !== "object") {
       return data;
     }
@@ -10,7 +10,7 @@ export class ApiClient {
       return data.map((item) => this.sanitizeRequestData(item));
     }
 
-    const sanitized: Record<string, any> = {};
+    const sanitized: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(data)) {
       if (value === null) {
@@ -47,17 +47,6 @@ export class ApiClient {
     };
 
     try {
-      console.log(
-        `${method} request to ${url}`,
-        sanitizedBody
-          ? {
-              bodyPreview:
-                typeof sanitizedBody === "object"
-                  ? "Object with keys: " + Object.keys(sanitizedBody).join(", ")
-                  : typeof sanitizedBody,
-            }
-          : "No body",
-      );
 
       const response = await fetch(url, requestOptions);
 
@@ -73,10 +62,8 @@ export class ApiClient {
       }
 
       const data = await response.json();
-      console.log(`Response from ${url}:`, data ? { previewType: typeof data } : "No data");
       return data as T;
     } catch (error) {
-      console.error("API request error:", error);
       throw error;
     }
   }
@@ -85,11 +72,11 @@ export class ApiClient {
     return this.request<T>(url, { method: "GET", headers });
   }
 
-  static post<T>(url: string, body: any, headers?: Record<string, string>): Promise<T> {
+  static post<T>(url: string, body: unknown, headers?: Record<string, string>): Promise<T> {
     return this.request<T>(url, { method: "POST", body, headers });
   }
 
-  static put<T>(url: string, body: any, headers?: Record<string, string>): Promise<T> {
+  static put<T>(url: string, body: unknown, headers?: Record<string, string>): Promise<T> {
     return this.request<T>(url, { method: "PUT", body, headers });
   }
 
@@ -97,7 +84,7 @@ export class ApiClient {
     return this.request<T>(url, { method: "DELETE", headers });
   }
 
-  static patch<T>(url: string, body: any, headers?: Record<string, string>): Promise<T> {
+  static patch<T>(url: string, body: unknown, headers?: Record<string, string>): Promise<T> {
     return this.request<T>(url, { method: "PATCH", body, headers });
   }
 }

@@ -55,7 +55,6 @@ export class ClusteringService {
 
       onProgress(100); // 100%, todo: add actual progress (websocket?)
     } catch (error) {
-      console.error("Error computing clusters:", error);
       throw error;
     }
   }
@@ -94,7 +93,6 @@ export class ClusteringService {
         similarity: item.similarity,
       }));
     } catch (error) {
-      console.error("Error getting similarities:", error);
       throw error;
     }
   }
@@ -103,7 +101,7 @@ export class ClusteringService {
     feature1: string,
     feature2: string,
     datasetId: string,
-    data?: Record<string, any>[],
+    data?: DataRow[],
   ): Promise<Record<number, number[]> | null> {
     try {
       // Check if both features are numeric if data is provided
@@ -119,7 +117,6 @@ export class ClusteringService {
 
             // If any non-null value is not a number, return false
             if (typeof value !== "number" && isNaN(Number(value))) {
-              console.log(`Column ${column} contains non-numeric value: ${value}`);
               return false;
             }
           }
@@ -128,7 +125,6 @@ export class ClusteringService {
 
         // Check both columns
         if (!isNumericColumn(feature1) || !isNumericColumn(feature2)) {
-          console.log(`Skipping cluster request for non-numeric columns: ${feature1}, ${feature2}`);
           return null;
         }
       }
@@ -137,7 +133,6 @@ export class ClusteringService {
       const url = `${API_ROUTES.clustering.getByFeatures}?dataset_id=${datasetId}&feature1=${feature1}&feature2=${feature2}`;
       return await ApiClient.get<Record<number, number[]> | null>(url);
     } catch (error) {
-      console.error("Error fetching clusters:", error);
       return null;
     }
   }
@@ -153,7 +148,6 @@ export class ClusteringService {
 
       return response && response.length > 0 ? response : null;
     } catch (error) {
-      console.error("Error checking for existing clusters:", error);
       return null;
     }
   }
@@ -179,7 +173,6 @@ export class ClusteringService {
 
       onProgress(100); // Complete
     } catch (error) {
-      console.error("Error computing Shapley values:", error);
       throw error;
     }
   }
@@ -189,7 +182,6 @@ export class ClusteringService {
       const url = `${API_ROUTES.shapley.getValues}/${datasetId}/${targetColumn}`;
       return await ApiClient.get<ShapleyValueItem[] | null>(url);
     } catch (error) {
-      console.error("Error fetching Shapley values:", error);
       return null;
     }
   }
@@ -224,7 +216,6 @@ export class ClusteringService {
 
       return await ApiClient.post(`${API_ROUTES.clustering.featurePairMatrix}`, requestData);
     } catch (error) {
-      console.error("Error fetching feature pair similarity matrix:", error);
       return null;
     }
   }

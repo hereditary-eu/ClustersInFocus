@@ -4,7 +4,7 @@ import { API_ROUTES } from "./ApiRoutes";
 import { DataRow } from "../types";
 
 export class FileService {
-  private static inferColumnType(values: any[]): "number" | "string" {
+  private static inferColumnType(values: unknown[]): "number" | "string" {
     const nonEmptyValues = values.filter((v) => v !== null && v !== "");
 
     const isNumeric = nonEmptyValues.every((value) => {
@@ -32,9 +32,8 @@ export class FileService {
           }
 
           try {
-            console.log("CSV parse result:", result);
 
-            const rawData = result.data as Record<string, any>[];
+            const rawData = result.data as Record<string, unknown>[];
             const headers = Object.keys(rawData[0]);
 
             if (headers.length === 0) {
@@ -42,14 +41,12 @@ export class FileService {
               return;
             }
 
-            console.log(`Found headers: ${headers.join(", ")}`);
 
             // Determine column types
             const columnTypes: Record<string, "number" | "string"> = {};
             headers.forEach((header) => {
               const columnValues = rawData.map((row) => row[header]);
               columnTypes[header] = this.inferColumnType(columnValues);
-              console.log(`Column "${header}" inferred as type: ${columnTypes[header]}`);
             });
 
             // Filter and format data
@@ -62,10 +59,10 @@ export class FileService {
                 return hasValues;
               })
               .map((row, index) => {
-                const newRow: Record<string, any> = {};
+                const newRow: Record<string, unknown> = {};
 
                 headers.forEach((header) => {
-                  let value = row[header];
+                  const value = row[header];
 
                   // Explicitly handle null and undefined values
                   if (value === null || value === undefined || value === "") {
@@ -78,9 +75,6 @@ export class FileService {
                     // Handle numeric values
                     const numValue = Number(value);
                     if (isNaN(numValue)) {
-                      console.warn(
-                        `Row ${index}, Column "${header}": Non-numeric value "${value}" in numeric column, setting to null`,
-                      );
                       newRow[header] = null;
                     } else {
                       newRow[header] = numValue;
@@ -100,11 +94,9 @@ export class FileService {
               return;
             }
 
-            console.log(`Processed ${formattedData.length} rows of data`);
 
             // Check one row as sample for logging
             if (formattedData.length > 0) {
-              console.log("Sample row:", formattedData[0]);
             }
 
             try {
@@ -118,18 +110,15 @@ export class FileService {
                 fileId: file_id,
               });
             } catch (error) {
-              console.error("Error uploading data to server:", error);
               reject(error);
             }
           } catch (error) {
-            console.error("Error processing CSV data:", error);
             reject(
               new Error(`Failed to process CSV data: ${error instanceof Error ? error.message : "Unknown error"}`),
             );
           }
         },
         error: (error) => {
-          console.error("Error parsing CSV:", error);
           reject(error);
         },
       });
@@ -140,7 +129,7 @@ export class FileService {
     try {
       // Sanitize data to ensure compatibility with backend validation
       const sanitizedData = data.map((row) => {
-        const sanitizedRow: Record<string, any> = {};
+        const sanitizedRow: Record<string, unknown> = {};
 
         // Process each field to ensure valid types
         Object.entries(row).forEach(([key, value]) => {
@@ -167,10 +156,6 @@ export class FileService {
         return sanitizedRow;
       });
 
-      console.log("Sending sanitized data to server:", {
-        rowCount: sanitizedData.length,
-        sampleRow: sanitizedData.length > 0 ? sanitizedData[0] : "No data",
-      });
 
       const response = await ApiClient.post<{ message: string; dataset_id: string }>(API_ROUTES.dataset.upload, {
         data: sanitizedData,
@@ -178,7 +163,6 @@ export class FileService {
       });
       return { file_id: response.dataset_id };
     } catch (error) {
-      console.error("Error uploading data:", error);
       throw error;
     }
   }
@@ -195,7 +179,6 @@ export class FileService {
 
       return response;
     } catch (error) {
-      console.error("Error retrieving dataset:", error);
       throw error;
     }
   }
@@ -209,7 +192,6 @@ export class FileService {
         message: response.message || "Dataset deleted successfully",
       };
     } catch (error) {
-      console.error("Error deleting dataset:", error);
 
       // Return structured error
       return {
@@ -225,7 +207,6 @@ export class FileService {
 
       return response.datasets;
     } catch (error) {
-      console.error("Error retrieving all datasets:", error);
       return [];
     }
   }

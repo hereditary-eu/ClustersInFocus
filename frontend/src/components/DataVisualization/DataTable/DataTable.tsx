@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useTable, Column } from "react-table";
-import Histogram from "./Histogram";
+import Histogram from "../Histogram";
 import ColumnMenu from "./DataTableColumnHoverMenu";
-import { ShapleyValueItem } from "../types";
+import { ShapleyValueItem, DataRow } from "../../../types";
 
 interface DataTableProps {
-  data: any[];
+  data: DataRow[];
   columns: string[];
   hiddenColumns: string[];
   onColumnHide: (column: string) => void;
@@ -48,7 +48,7 @@ const DataTable: React.FC<DataTableProps> = ({
     if (activeHistogram) {
       setActiveHistogram(null);
     }
-  }, [data]);
+  }, [data, activeHistogram]);
 
   const handleSort = (columnId: string) => {
     setSortConfig((prev) => ({
@@ -57,12 +57,12 @@ const DataTable: React.FC<DataTableProps> = ({
     }));
   };
 
-  const handleHideColumn = (columnId: string) => {
+  const handleHideColumn = useCallback((columnId: string) => {
     onColumnHide(columnId);
-  };
+  }, [onColumnHide]);
 
   // Determine column type based on data
-  const getColumnType = (columnId: string): ColumnType => {
+  const getColumnType = useCallback((columnId: string): ColumnType => {
     const values = data.map((row) => row[columnId]);
     const hasNumbers = values.some((val) => typeof val === "number");
     const hasStrings = values.some((val) => typeof val === "string");
@@ -70,10 +70,10 @@ const DataTable: React.FC<DataTableProps> = ({
     if (hasNumbers && !hasStrings) return "number";
     if (hasStrings && !hasNumbers) return "string";
     return "mixed";
-  };
+  }, [data]);
 
   // Custom sort function
-  const sortData = (a: any, b: any, columnId: string): number => {
+  const sortData = useCallback((a: DataRow, b: DataRow, columnId: string): number => {
     const columnType = getColumnType(columnId);
     const aValue = a[columnId];
     const bValue = b[columnId];
@@ -88,7 +88,7 @@ const DataTable: React.FC<DataTableProps> = ({
         return Number(aValue) - Number(bValue);
       case "string":
         return String(aValue).localeCompare(String(bValue));
-      case "mixed":
+      case "mixed": {
         // For mixed types, try to convert to numbers if possible
         const aNum = Number(aValue);
         const bNum = Number(bValue);
@@ -96,10 +96,11 @@ const DataTable: React.FC<DataTableProps> = ({
           return aNum - bNum;
         }
         return String(aValue).localeCompare(String(bValue));
+      }
       default:
         return 0;
     }
-  };
+  }, [data, getColumnType]);
 
   // Sort the data based on current sort config
   const sortedData = useMemo(() => {
@@ -109,7 +110,7 @@ const DataTable: React.FC<DataTableProps> = ({
       const sortOrder = sortConfig.desc ? -1 : 1;
       return sortData(a, b, sortConfig.id) * sortOrder;
     });
-  }, [data, sortConfig]);
+  }, [data, sortConfig, sortData]);
 
   // Format columns for react-table
   const expandedTableColumns = useMemo<Column[]>(
@@ -139,13 +140,13 @@ const DataTable: React.FC<DataTableProps> = ({
           ),
           accessor: col,
           id: col,
-          sortType: (rowA: any, rowB: any) => sortData(rowA, rowB, col),
+          sortType: (rowA: DataRow, rowB: DataRow) => sortData(rowA, rowB, col),
         })),
-    [columns, hiddenColumns, hoveredColumn, sortConfig, menuOptions],
+    [columns, hiddenColumns, hoveredColumn, sortConfig, menuOptions, handleHideColumn, sortData],
   );
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
-    columns: expandedTableColumns as readonly Column<any>[],
+    columns: expandedTableColumns as readonly Column<DataRow>[],
     data: sortedData,
   });
 

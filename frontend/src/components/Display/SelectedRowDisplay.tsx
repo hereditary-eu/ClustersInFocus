@@ -1,7 +1,8 @@
 import React from "react";
+import { DataRow } from "../../types";
 
 interface SelectedRowDisplayProps {
-  row: any;
+  row: DataRow;
   columns: string[];
   onClear: () => void;
 }

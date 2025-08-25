@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ScatterplotClustered from "./ScatterplotClustered";
 import { ClusteringService } from "../services/ClusteringService";
 
-interface Panel2ClusteringProps {
+interface Panel2SelectionProps {
   data: Record<string, any>[];
   selectedColumns: string[];
   expandedPanel: string | null;
@@ -11,7 +11,7 @@ interface Panel2ClusteringProps {
   fileId?: string;
 }
 
-const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
+const Panel2Selection: React.FC<Panel2SelectionProps> = ({
   data,
   selectedColumns,
   expandedPanel,
@@ -168,11 +168,11 @@ const Panel2Clustering: React.FC<Panel2ClusteringProps> = ({
       onClick={(e) => onPanelClick("middle", e)}
     >
       <h2>
-        <div className="panel-header-middle-title">Visualization</div>
+        <div className="panel-header-middle-title">Selection</div>
       </h2>
       {renderContent()}
     </div>
   );
 };
 
-export default Panel2Clustering;
+export default Panel2Selection;

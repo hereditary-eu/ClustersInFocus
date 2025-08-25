@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Panel1Data from "./components/Panel1_Data";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import ClusteringPanel from "./components/Panel2_Clustering";
-import AnalysisPanel from "./components/Panel3_Analysis";
+import SelectionPanel from "./components/Panel2_Selection";
+import ClusterSimilarityPanel from "./components/Panel3_ClusterSimilarity";
 import { ClusteringService } from "./services/ClusteringService";
 import { ShapleyValueItem, DataState, DataRow } from "./types";
 
@@ -112,7 +112,7 @@ const App: React.FC = () => {
               setIsDataTableExpanded={setIsDataTableExpanded}
               shapleyValues={shapleyValues}
             />
-            <ClusteringPanel
+            <SelectionPanel
               data={data.csvData}
               selectedColumns={selectedColumns}
               expandedPanel={expandedPanel}
@@ -120,7 +120,7 @@ const App: React.FC = () => {
               onClusterSelect={setSelectedCluster}
               fileId={data.fileId}
             />
-            <AnalysisPanel
+            <ClusterSimilarityPanel
               expandedPanel={expandedPanel}
               onPanelClick={handlePanelClick}
               selectedCluster={selectedCluster}

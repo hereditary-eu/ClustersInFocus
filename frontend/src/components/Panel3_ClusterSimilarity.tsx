@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { ClusteringService } from "../services/ClusteringService";
 import ClusterSimilarityMatrix from "./ClusterSimilarityMatrix";
 
-interface Panel3AnalysisProps {
+interface Panel3ClusterSimilarityProps {
   expandedPanel: string | null;
   onPanelClick: (panelId: string, event: React.MouseEvent) => void;
   selectedCluster: number | null;
@@ -12,7 +12,7 @@ interface Panel3AnalysisProps {
   allColumns: string[];
 }
 
-const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
+const Panel3ClusterSimilarity: React.FC<Panel3ClusterSimilarityProps> = ({
   expandedPanel,
   onPanelClick,
   selectedCluster,
@@ -170,7 +170,7 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
       onClick={(e) => onPanelClick("right", e)}
     >
       <h2 className="panel-header-left">
-        <div className="panel-header-title">Cluster Similarity Panel</div>
+        <div className="panel-header-title">Cluster Similarity</div>
         <div className="panel-header-options">
           <div className="view-mode-switch">
             <button
@@ -214,4 +214,4 @@ const Panel3Analysis: React.FC<Panel3AnalysisProps> = ({
   );
 };
 
-export default Panel3Analysis;
+export default Panel3ClusterSimilarity;

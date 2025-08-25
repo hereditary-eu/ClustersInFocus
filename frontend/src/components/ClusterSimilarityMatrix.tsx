@@ -373,6 +373,19 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({
               </select>
             </div>
           </div>
+
+          <div className="config-section">
+            <h4>Similarity Color Scale</h4>
+            <div className="config-group">
+              <div className="colorbar-container">
+                <div className="colorbar-gradient"></div>
+                <div className="colorbar-labels">
+                  <span className="colorbar-label-left">Low</span>
+                  <span className="colorbar-label-right">High</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

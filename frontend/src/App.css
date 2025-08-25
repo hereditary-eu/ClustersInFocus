@@ -114,7 +114,10 @@ th.selected {
 
 .panel {
   flex: 1;
-  padding: 15px;
+  padding-top: 0px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+  padding-right: 15px;
   border-radius: 8px;
   overflow: auto;
   position: relative;

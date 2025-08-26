@@ -16,6 +16,7 @@ venv/
 .venv
 paper/
 sources/
+stuff/
 
 # pycache
 *.pyc

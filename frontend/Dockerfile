@@ -4,7 +4,7 @@ WORKDIR /app
 
 # did not include package-lock.json as there was some cross-platform compatibility issue
 COPY package.json ./
-RUN npm i
+RUN npm install --ignore-platform
 
 COPY . .
 RUN npm run build

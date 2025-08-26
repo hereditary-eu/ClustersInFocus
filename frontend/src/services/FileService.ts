@@ -50,7 +50,7 @@ export class FileService {
             });
 
             // Filter and format data
-            const formattedData = rawData
+            const formattedData: DataRow[] = rawData
               .filter((row) => {
                 // Skip rows with all empty values
                 const hasValues = Object.values(row).some(
@@ -58,8 +58,8 @@ export class FileService {
                 );
                 return hasValues;
               })
-              .map((row, index) => {
-                const newRow: Record<string, unknown> = {};
+              .map((row) => {
+                const newRow: DataRow = {};
 
                 headers.forEach((header) => {
                   const value = row[header];

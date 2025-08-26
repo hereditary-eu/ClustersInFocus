@@ -73,7 +73,7 @@ const Histogram: React.FC<HistogramProps> = ({
   });
 
   // Custom tooltip to show the full range
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { binStart: number; binEnd: number; count: number } }> }) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { bin: string; fullLabel: string; count: number }; value: number }> }) => {
     if (active && payload && payload.length) {
       return (
         <div

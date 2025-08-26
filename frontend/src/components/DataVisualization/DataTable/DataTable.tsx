@@ -45,10 +45,8 @@ const DataTable: React.FC<DataTableProps> = ({
 
   // Reset activeHistogram when data changes
   useEffect(() => {
-    if (activeHistogram) {
-      setActiveHistogram(null);
-    }
-  }, [data, activeHistogram]);
+    setActiveHistogram(null);
+  }, [data]);
 
   const handleSort = (columnId: string) => {
     setSortConfig((prev) => ({
@@ -163,7 +161,8 @@ const DataTable: React.FC<DataTableProps> = ({
   };
 
   const getColumnData = (columnName: string): number[] => {
-    return data.map((row) => row[columnName]).filter((value) => !isNaN(value));
+    return data.map((row) => row[columnName])
+      .filter((value): value is number => typeof value === 'number' && !isNaN(value));
   };
 
   // Helper function to check if a column is numerical

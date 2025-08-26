@@ -161,7 +161,7 @@ const Panel3ClusterSimilarity: React.FC = () => {
       className={`panel panel-right ${expandedPanel === "right" ? "expanded" : ""}`}
       onClick={(e) => handlePanelClick("right", e)}
     >
-      <h2 className="panel-header-left">
+      <h2 className="panel-header">
         <div className="panel-header-title">Cluster Similarity</div>
         <div className="panel-header-options">
           <div className="view-mode-switch">

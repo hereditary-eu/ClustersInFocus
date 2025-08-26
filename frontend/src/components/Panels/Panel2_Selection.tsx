@@ -135,7 +135,7 @@ const Panel2Selection: React.FC = () => {
       className={`panel panel-middle ${expandedPanel === "middle" ? "expanded" : ""}`}
       onClick={(e) => handlePanelClick("middle", e)}
     >
-      <h2>
+      <h2 className="panel-header">
         <div className="panel-header-middle-title">Selection</div>
       </h2>
       {renderContent()}

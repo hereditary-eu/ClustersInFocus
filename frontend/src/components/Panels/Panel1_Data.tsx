@@ -27,7 +27,7 @@ const Panel1Data: React.FC = () => {
       className={`panel panel-left ${expandedPanel === "left" ? "expanded" : ""}`}
       onClick={(e) => handlePanelClick("left", e)}
     >
-      <h2 className="panel-header-left">
+      <h2 className="panel-header">
         <div className="panel-header-title">Data</div>
         <div className="panel-header-options">
           {expandedPanel === "left" && hiddenColumns.length > 0 && (

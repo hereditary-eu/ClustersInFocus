@@ -61,7 +61,7 @@ export interface ServerDataset {
 // API Client types
 export interface RequestOptions {
   method?: HttpMethod;
-  body?: any;
+  body?: unknown;
   headers?: Record<string, string>;
 }
 
@@ -135,7 +135,7 @@ export interface HeaderProps {
 }
 
 export interface DataTableProps {
-  data: any[];
+  data: DataRow[];
   columns: string[];
   hiddenColumns: string[];
   onColumnHide: (column: string) => void;

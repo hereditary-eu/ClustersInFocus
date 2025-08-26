@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
-import { ClusteringService } from "../services/ClusteringService";
-import { DataRow } from "../types";
+import { ClusteringService } from "../../services/ClusteringService";
+import { DataRow } from "../../types";
+import { toast } from "../../stores/useToastStore";
+import "../UI/Modal.css";
 
 interface ComputeShapleyValuesButtonProps {
   columns: string[];
@@ -20,28 +22,25 @@ export function ComputeShapleyValuesButton({
   const [isComputing, setIsComputing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [targetColumn, setTargetColumn] = useState<string>(columns[0] || "");
-  const [error, setError] = useState<string | null>(null);
 
   const computeShapleyValues = useCallback(async () => {
     if (!targetColumn) return;
 
     setIsComputing(true);
     setProgress(0);
-    setError(null);
-
     try {
       await ClusteringService.computeShapleyValues(targetColumn, fileId || "", setProgress, data, fileName);
 
       setIsComputing(false);
       onShapleyValuesComputed(targetColumn, fileId || "");
+      toast.success("Shapley values computed successfully!");
     } catch (err) {
-      console.error("Error computing Shapley values:", err);
       setIsComputing(false);
 
       if (err instanceof Error) {
-        setError(err.message);
+        toast.error(err.message);
       } else {
-        setError("An error occurred while computing Shapley values.");
+        toast.error("An error occurred while computing Shapley values.");
       }
     }
   }, [targetColumn, onShapleyValuesComputed, fileId, data, fileName]);
@@ -72,28 +71,21 @@ export function ComputeShapleyValuesButton({
       </button>
 
       {isComputing && (
-        <div className="clustering-modal">
-          <div className="clustering-modal-content">
-            <h3>Computing Shapley Values</h3>
-            <div className="clustering-progress-bar-container">
-              <div className="clustering-progress-bar" style={{ width: `${progress}%` }} />
+        <div className="modal-overlay">
+          <div className="modal-content modal-progress">
+            <div className="modal-header">
+              <h3 className="modal-title">Computing Shapley Values</h3>
             </div>
-            <p>{Math.round(progress)}%</p>
+            <div className="modal-body">
+              <div className="progress-bar-container">
+                <div className="progress-bar" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="progress-text">{Math.round(progress)}%</p>
+            </div>
           </div>
         </div>
       )}
 
-      {error && (
-        <div className="clustering-modal">
-          <div className="clustering-modal-content error-modal">
-            <h3>Error</h3>
-            <p>{error}</p>
-            <button onClick={() => setError(null)} className="button button-secondary">
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

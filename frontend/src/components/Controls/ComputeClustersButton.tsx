@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
-import { ClusteringService, DEFAULT_PARAMS } from "../services/ClusteringService";
-import { ComputeClustersButtonProps, HyperparamModalProps, ClusteringAlgorithm, ClusteringParams } from "../types";
+import { ClusteringService, DEFAULT_PARAMS } from "../../services/ClusteringService";
+import { ComputeClustersButtonProps, HyperparamModalProps, ClusteringAlgorithm, ClusteringParams } from "../../types";
+import { toast } from "../../stores/useToastStore";
+import "../UI/Modal.css";
 
 const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, onClose, onSave }) => {
   const [localParams, setLocalParams] = useState(params);
@@ -9,10 +11,11 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
     switch (algorithm) {
       case "kmeans":
         return (
-          <div className="params-inputs">
-            <div className="param-group">
-              <label htmlFor="k">Number of Clusters (k):</label>
+          <>
+            <div className="config-section">
+              <label className="config-label" htmlFor="k">Number of Clusters (k)</label>
               <input
+                className="config-input"
                 type="number"
                 id="k"
                 min="2"
@@ -26,9 +29,10 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
                 }
               />
             </div>
-            <div className="param-group">
-              <label htmlFor="maxIterations">Max Iterations:</label>
+            <div className="config-section">
+              <label className="config-label" htmlFor="maxIterations">Max Iterations</label>
               <input
+                className="config-input"
                 type="number"
                 id="maxIterations"
                 min="100"
@@ -43,14 +47,15 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
                 }
               />
             </div>
-          </div>
+          </>
         );
       case "dbscan":
         return (
-          <div className="params-inputs">
-            <div className="param-group">
-              <label htmlFor="eps">Epsilon (eps):</label>
+          <>
+            <div className="config-section">
+              <label className="config-label" htmlFor="eps">Epsilon (eps)</label>
               <input
+                className="config-input"
                 type="number"
                 id="eps"
                 min="0.1"
@@ -65,9 +70,10 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
                 }
               />
             </div>
-            <div className="param-group">
-              <label htmlFor="minSamples">Min Samples:</label>
+            <div className="config-section">
+              <label className="config-label" htmlFor="minSamples">Min Samples</label>
               <input
+                className="config-input"
                 type="number"
                 id="minSamples"
                 min="2"
@@ -81,21 +87,28 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
                 }
               />
             </div>
-          </div>
+          </>
         );
     }
   };
 
   return (
-    <div className="hyperparam-modal">
-      <div className="hyperparam-modal-content">
-        <h3>Customize {algorithm.toUpperCase()} Parameters</h3>
-        {renderParamsInputs()}
-        <div className="modal-buttons">
-          <button className="button button-secondary" onClick={onClose}>
+    <div className="modal-overlay">
+      <div className="modal-content modal-config">
+        <div className="modal-header">
+          <h3 className="modal-title">Customize {algorithm.toUpperCase()} Parameters</h3>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
+        </div>
+        <div className="modal-body">
+          {renderParamsInputs()}
+        </div>
+        <div className="modal-footer">
+          <button className="modal-button modal-button--secondary" onClick={onClose}>
             Cancel
           </button>
-          <button className="button button-primary" onClick={() => onSave(localParams)}>
+          <button className="modal-button modal-button--primary" onClick={() => onSave(localParams)}>
             Save
           </button>
         </div>
@@ -116,12 +129,10 @@ export function ComputeClustersButton({
   const [showHyperparam, setShowHyperparam] = useState(false);
   const [algorithm, setAlgorithm] = useState<ClusteringAlgorithm>("kmeans");
   const [params, setParams] = useState<ClusteringParams[typeof algorithm]>(DEFAULT_PARAMS.kmeans);
-  const [error, setError] = useState<string | null>(null);
 
   const computeClusters = useCallback(async () => {
     setIsComputing(true);
     setProgress(0);
-    setError(null);
 
     try {
       await ClusteringService.computeFeaturePairsClusters(
@@ -136,8 +147,8 @@ export function ComputeClustersButton({
 
       setIsComputing(false);
       onClustersComputed();
+      toast.success("Clusters computed successfully!");
     } catch (err) {
-      console.error("Error computing clusters:", err);
       setIsComputing(false);
 
       // Check if this is a network error
@@ -145,9 +156,9 @@ export function ComputeClustersButton({
         (err instanceof TypeError && err.message.includes("network")) ||
         (err instanceof Error && err.message.includes("Failed to fetch"))
       ) {
-        setError("Unable to connect to the server. Please check that the backend is running or try again later.");
+        toast.error("Unable to connect to the server. Please check that the backend is running or try again later.");
       } else {
-        setError("An error occurred while computing clusters. Please try again.");
+        toast.error("An error occurred while computing clusters. Please try again.");
       }
     }
   }, [csvData, columns, algorithm, params, onClustersComputed, fileId, fileName]);
@@ -179,13 +190,17 @@ export function ComputeClustersButton({
       </button>
 
       {isComputing && (
-        <div className="clustering-modal">
-          <div className="clustering-modal-content">
-            <h3>Computing Clusters</h3>
-            <div className="clustering-progress-bar-container">
-              <div className="clustering-progress-bar" style={{ width: `${progress}%` }} />
+        <div className="modal-overlay">
+          <div className="modal-content modal-progress">
+            <div className="modal-header">
+              <h3 className="modal-title">Computing Clusters</h3>
             </div>
-            <p>{Math.round(progress)}%</p>
+            <div className="modal-body">
+              <div className="progress-bar-container">
+                <div className="progress-bar" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="progress-text">{Math.round(progress)}%</p>
+            </div>
           </div>
         </div>
       )}
@@ -202,17 +217,6 @@ export function ComputeClustersButton({
         />
       )}
 
-      {error && (
-        <div className="clustering-modal">
-          <div className="clustering-modal-content error-modal">
-            <h3>Connection Error</h3>
-            <p>{error}</p>
-            <button onClick={() => setError(null)} className="button button-secondary">
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -20,14 +20,13 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   width = "100%",
   height = 400,
 }) => {
-  const setSelectedCluster = useAppStore(state => state.setSelectedCluster);
-  const setExpandedPanel = useAppStore(state => state.setExpandedPanel);
+  const setSelectedCluster = useAppStore((state) => state.setSelectedCluster);
+  const setExpandedPanel = useAppStore((state) => state.setExpandedPanel);
   // Early return if data is missing or empty
   if (!data || data.length === 0) return <p>No data available</p>;
 
-
   // Check if any data point has non-numerical values
-  const hasNonNumericalValues = data.some(point => !isNumericDataPoint(point));
+  const hasNonNumericalValues = data.some((point) => !isNumericDataPoint(point));
 
   if (hasNonNumericalValues) {
     return <p>Please select numerical columns only</p>;
@@ -37,7 +36,6 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
   const actualClusterIds = Array.from(new Set(data.map((point) => point[2])))
     .filter((id) => id !== -1 && id !== undefined)
     .sort((a, b) => a - b);
-
 
   // Use the maximum of k and actual unique clusters to ensure we have enough colors
   const numClusters = Math.max(k, actualClusterIds.length);
@@ -50,7 +48,7 @@ const ScatterplotClustered: React.FC<ScatterplotClusteredProps> = ({
         x: point[0],
         y: point[1],
         cluster: clusterId, // Explicitly store cluster index
-      })),
+      }))
   );
 
   // Generate different colors for all clusters

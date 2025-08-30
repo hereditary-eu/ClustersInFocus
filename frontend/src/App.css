@@ -164,7 +164,7 @@ th.selected {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 5px;
+  margin-bottom: -4px;
   padding-bottom: 5px;
   border-bottom: 2px solid var(--color-black);
   flex-shrink: 0;
@@ -469,14 +469,12 @@ th.selected {
   margin-top: 12px;
 }
 
-
 /* compute clusters */
 
 .visualize-clusters-container {
   display: flex;
   flex-direction: column;
 }
-
 
 .clustering-results {
   display: grid;
@@ -557,7 +555,7 @@ header {
 
 /* HEATMAP */
 .heatmap-cell {
-  height: calc(485px / 195);
+  height: calc(440px / 195);
   /* padding: 0px 2px; */
   text-align: center;
   font-size: 3px;
@@ -616,7 +614,6 @@ header {
   gap: 10px;
   align-items: center;
 }
-
 
 .text-button {
   padding: 5px 10px;

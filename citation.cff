@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Schilcher"
+  given-names: "Lukas"
+  orcid: "https://orcid.org/0009-0007-1051-2877"
+- family-names: "Waldert"
+  given-names: "Peter"
+  orcid: "https://orcid.org/0009-0004-8459-7381"
+- family-names: "Kantz"
+  given-names: "Benedikt"
+  orcid: "https://orcid.org/0000-0003-3294-8421"
+- family-names: "Schreck"
+  given-names: "Tobias"
+  orcid: "https://orcid.org/0000-0003-0778-8665"
+title: "Clusters in Focus: A Simple and Robust Detail-On-Demand Dashboard for Patient Data"
+version: 1.0.0
+doi: 10.2312/vcbm.20251250
+date-released: 2025-10-02
+url: "https://github.com/hereditary-eu/ClustersInFocus"

@@ -10,7 +10,18 @@ Available on the [EG Digital Library](https://diglib.eg.org/items/3d093c70-1cde-
 
 ![Clusters in Focus Preview](./screenshot.png)
 
-Exploring tabular datasets to understand how different feature pairs partition data into meaningful cohorts is crucial in domains such as biomarker discovery, yet comparing clusters across multiple feature pair projections is challenging. We introduce Clusters in Focus, an interactive visual analytics dashboard designed to address this gap. Clusters in Focus employs a threepanel coordinated view: a Data Panel offers multiple perspectives (tabular, heatmap, condensed with histograms / SHAP values) for initial data exploration; a Selection Panel displays the 2D clustering (K-Means/DBSCAN) for a user-selected feature pair; and a novel Cluster Similarity Panel featuring two switchable views for comparing clusters. A ranked list enables the identification of top-matching feature pairs, while an interactive similarity matrix with reordering capabilities allows for the discovery of global structural patterns and groups of related features. This dual-view design supports both focused querying and broad visual exploration. A use case on a Parkinson's disease speech dataset demonstrates the tool's effectiveness in revealing relationships between different feature pairs characterizing the same patient subgroup.
+Exploring tabular datasets to understand how different feature pairs partition data into meaningful cohorts is crucial in domains such as biomarker discovery, yet comparing clusters across multiple feature pair projections is challenging.
+We introduce _Clusters in Focus_, an interactive visual analytics dashboard designed to address this gap.
+
+<!-- \definecolor{panelonecolor}{HTML}{7593e6} -->
+<!-- \definecolor{paneltwocolor}{HTML}{9ee5a1} -->
+<!-- \definecolor{panelthreecolor}{HTML}{f3db70} -->
+
+Clusters in Focus employs a three-panel coordinated view: a <span style="color: #7593e6">Data Panel</span> offers multiple perspectives (tabular, heatmap, condensed with histograms / SHAP values) for initial data exploration; a <span style="color: #9ee5a1">Selection Panel</span> displays the 2D clustering (K-Means / DBSCAN) for a user-selected feature pair; and a novel <span style="color: #f3db70">Cluster Similarity Panel</span> featuring two switchable views for comparing clusters.
+A ranked list enables the identification of top-matching feature pairs, while an interactive similarity matrix with reordering capabilities allows for the discovery of global structural patterns and groups of related features.
+This dual-view design supports both focused querying and broad visual exploration.
+
+A use case on a Parkinson's disease speech dataset demonstrates the tool's effectiveness in revealing relationships between different feature pairs characterizing the same patient subgroup.
 
 To run the application:
 
@@ -25,12 +36,12 @@ You should now be able to see the interface.
 On the top right dropdown, select `parkinsonsdata.csv`, which should already be available within the pre-loaded database.
 
 You should now be able to see a tabular view of the data.
-In order to get to the heatmap view, click on the list icon in the top-right corner of _Panel 1_ (the data panel).
+In order to get to the heatmap view, click on the list icon in the top-right corner of <span style="color: #7593e6">Panel 1</span> (the <span style="color: #7593e6">Data Panel</span>).
 
 Now for example, select the two columns `MDVP:FO(HZ)` and `MDVP:FLO(HZ)`.
-_Panel 2_ should display a scatter plot of all entries within the dataset across these two features.
+<span style="color: #9ee5a1">Panel 2</span> should display a scatter plot of all entries within the dataset across these two features.
 
-Click on one of the data points to open _Panel 3_ and you will be presented with a similarity analysis of all other possible clusters within the same dataset which share a high overlap of entries.
+Click on one of the data points to open <span style="color: #f3db70">Panel 3</span> and you will be presented with a similarity analysis of all other possible clusters within the same dataset which share a high overlap of entries.
 This similarity is based on the Jaccard Index $J \in [0, 1]$, which measures the overlap in data point membership
 
 $$J = \frac{\left| C_{AB} \cap C_{XY:k} \right|}{\left| C_{AB} \cup C_{XY:k} \right|}.$$

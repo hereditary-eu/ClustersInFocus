@@ -29,7 +29,9 @@ Now for example, select the two columns `MDVP:FO(HZ)` and `MDVP:FLO(HZ)`.
 _Panel 2_ should display a scatter plot of all entries within the dataset across these two features.
 
 Click on one of the data points to open _Panel 3_ and you will be presented with a similarity analysis of all other possible clusters within the same dataset which share a high overlap of entries.
-This similarity is based on the Jaccard Index $J \in [0, 1]$, which measures the overlap in data point membership $$J = \frac{\left| C_{AB} \cap C_{XY:k} \right|}{\left| C_{AB} \cup C_{XY:k} \right|}\,.$$
+This similarity is based on the Jaccard Index $J \in [0, 1]$, which measures the overlap in data point membership
+
+$$J = \frac{\left| C_{AB} \cap C_{XY:k} \right|}{\left| C_{AB} \cup C_{XY:k} \right|}.$$
 
 You can switch between a list and matrix view, again on the top right.
 The colored intensities there correspond to a high Jaccard Index, enabling a robust workflow for cluster re-identification.

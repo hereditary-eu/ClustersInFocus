@@ -1,5 +1,7 @@
 # Clusters in Focus
 
+[![Published under DOI 10.2312/vcbm.20251250](https://zenodo.org/badge/doi/10.2312/vcbm.20251250.svg)](https://doi.org/10.2312/vcbm.20251250)
+
 Welcome to the code behind _Clusters in Focus: A Simple and Robust Detail-On-Demand Dashboard for Patient Data_!
 This work was presented at the EG [VCBM 2025](https://conferences.eg.org/vcbm2025/) at TU Delft.
 

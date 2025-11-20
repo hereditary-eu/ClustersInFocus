@@ -1,0 +1,40 @@
+default:
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+
+stages:
+  - build
+  - test
+  - release
+  - deploy
+
+variables:
+  # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  CONTAINER_FRONTEND_IMAGE: $CI_REGISTRY_IMAGE:frontend_$CI_COMMIT_REF_SLUG
+  CONTAINER_BACKEND_IMAGE: $CI_REGISTRY_IMAGE:backend_$CI_COMMIT_REF_SLUG
+
+build-frontend:
+  stage: build
+  script:
+    - docker build --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $CONTAINER_FRONTEND_IMAGE --pull -t $CONTAINER_FRONTEND_IMAGE ./frontend
+    - docker push $CONTAINER_FRONTEND_IMAGE
+
+build-backend:
+  stage: build
+  script:
+    - docker build --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $CONTAINER_BACKEND_IMAGE --pull -t $CONTAINER_BACKEND_IMAGE ./backend
+    - docker push $CONTAINER_BACKEND_IMAGE
+
+# deploy:
+#   stage: deploy
+#   script:
+#     - ./deploy.sh
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "main"
+#   environment: production

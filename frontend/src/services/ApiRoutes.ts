@@ -1,4 +1,4 @@
-const BASE_API_URL = "http://localhost:8000";
+const BASE_API_URL = import.meta.env.CIF_API_BASE_URL || "http://localhost:8000";
 
 export const API_ROUTES = {
   dataset: {

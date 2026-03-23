@@ -1,0 +1,36 @@
+.wrapper {}
+
+.wrapper :global(svg) {
+  display: block;
+  border-radius: 2px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.binSelect {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-gray-lighter);
+  background-color: var(--color-white);
+  cursor: pointer;
+}
+
+.customTooltip {
+  background-color: var(--color-white-transparent);
+  padding: 10px;
+  border: 1px solid var(--color-gray-light);
+  border-radius: 4px;
+}
+
+.tooltipLine {
+  margin: 0;
+}

@@ -1,0 +1,49 @@
+:root {
+  --color-white: #fff;
+  --color-white-accent: #f1f1f1;
+  --color-white-gray: #f3f3f3;
+
+  --color-white-transparent: #ffffffa6;
+  --color-white-half-transparent: #ffffff8f;
+  --color-white-accent-transparent: #ffffff42;
+  --color-black-transparent: #0000001a;
+  --color-black-half-transparent: #0000008f;
+  --color-gray-lighter-transparent: #e0e0e08f;
+
+  --color-bg-panel1: #7593e640;
+  --color-bg-panel2: #9ee5a140;
+  --color-bg-panel3: #f3db7040;
+
+  --color-gray-dark: #333333;
+  --color-gray: #666666;
+  --color-gray-light: #999999;
+  --color-gray-lighter: #e0e0e0;
+
+  --color-blue-accent: #007bff;
+  --color-blue-accent-hover: #0056b3;
+  --color-blue-accent-active: #004098;
+  --color-blue-accent-transparent: #007bff20;
+
+  --color-red-accent: #ff0000;
+  --color-red-accent-hover: #cc0000;
+  --color-red-accent-active: #990000;
+  --color-red-accent-transparent: #ff000020;
+
+  --color-table-rows-odd: #f9f9f9;
+  --color-table-rows-even: var(--color-white);
+  --color-table-rows-hover: #f1f1f1;
+
+  --svg-url-compress: url("../assets/compress.svg");
+  --svg-url-expand: url("../assets/expand.svg");
+  --svg-url-upload: url("../assets/file-upload.svg");
+}
+
+html,
+body,
+#root {
+  height: 100vh;
+}
+
+body {
+  margin: 0;
+}

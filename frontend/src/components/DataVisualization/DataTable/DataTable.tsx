@@ -3,13 +3,13 @@ import { useTable, Column } from "react-table";
 import Histogram from "../Histogram";
 import ColumnMenu from "./DataTableColumnHoverMenu";
 import { ShapleyValueItem, DataRow } from "../../../types";
+import styles from "./DataTable.module.css";
 
 interface DataTableProps {
   data: DataRow[];
   columns: string[];
   hiddenColumns: string[];
   onColumnHide: (column: string) => void;
-  onColumnRestore: (column: string) => void;
   onColumnSelect: (selectedColumns: string[]) => void;
   isExpanded: boolean;
   viewMode: "numerical" | "heatmap";
@@ -20,7 +20,6 @@ interface DataTableProps {
   shapleyValues?: ShapleyValueItem[] | null;
 }
 
-// Add type definition for column types
 type ColumnType = "number" | "string" | "mixed";
 
 const DataTable: React.FC<DataTableProps> = ({
@@ -42,8 +41,8 @@ const DataTable: React.FC<DataTableProps> = ({
   const [hoveredColumn, setHoveredColumn] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{ id: string; desc: boolean } | null>(null);
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
+  const visibleColumns = useMemo(() => columns.filter((col) => !hiddenColumns.includes(col)), [columns, hiddenColumns]);
 
-  // Reset activeHistogram when data changes
   useEffect(() => {
     setActiveHistogram(null);
   }, [data]);
@@ -59,24 +58,54 @@ const DataTable: React.FC<DataTableProps> = ({
     onColumnHide(columnId);
   }, [onColumnHide]);
 
-  // Determine column type based on data
-  const getColumnType = useCallback((columnId: string): ColumnType => {
-    const values = data.map((row) => row[columnId]);
-    const hasNumbers = values.some((val) => typeof val === "number");
-    const hasStrings = values.some((val) => typeof val === "string");
+  const columnMetadata = useMemo(() => {
+    const metadata: Record<
+      string,
+      {
+        type: ColumnType;
+        numericValues: number[];
+        isStrictNumeric: boolean;
+      }
+    > = {};
 
-    if (hasNumbers && !hasStrings) return "number";
-    if (hasStrings && !hasNumbers) return "string";
-    return "mixed";
-  }, [data]);
+    columns.forEach((columnId) => {
+      let hasNumbers = false;
+      let hasStrings = false;
+      const numericValues: number[] = [];
 
-  // Custom sort function
+      for (const row of data) {
+        const value = row[columnId];
+
+        if (typeof value === "number") {
+          hasNumbers = true;
+          if (!Number.isNaN(value)) {
+            numericValues.push(value);
+          }
+        } else if (typeof value === "string") {
+          hasStrings = true;
+        }
+      }
+
+      const firstValue = data[0]?.[columnId];
+      const isStrictNumeric =
+        typeof firstValue === "number" &&
+        data.every((row) => typeof row[columnId] === "number" || row[columnId] === null);
+
+      metadata[columnId] = {
+        type: hasNumbers && !hasStrings ? "number" : hasStrings && !hasNumbers ? "string" : "mixed",
+        numericValues,
+        isStrictNumeric,
+      };
+    });
+
+    return metadata;
+  }, [columns, data]);
+
   const sortData = useCallback((a: DataRow, b: DataRow, columnId: string): number => {
-    const columnType = getColumnType(columnId);
+    const columnType = columnMetadata[columnId]?.type ?? "mixed";
     const aValue = a[columnId];
     const bValue = b[columnId];
 
-    // Handle null/undefined values
     if (aValue == null) return 1;
     if (bValue == null) return -1;
     if (aValue == null && bValue == null) return 0;
@@ -87,7 +116,6 @@ const DataTable: React.FC<DataTableProps> = ({
       case "string":
         return String(aValue).localeCompare(String(bValue));
       case "mixed": {
-        // For mixed types, try to convert to numbers if possible
         const aNum = Number(aValue);
         const bNum = Number(bValue);
         if (!isNaN(aNum) && !isNaN(bNum)) {
@@ -98,9 +126,8 @@ const DataTable: React.FC<DataTableProps> = ({
       default:
         return 0;
     }
-  }, [data, getColumnType]);
+  }, [columnMetadata]);
 
-  // Sort the data based on current sort config
   const sortedData = useMemo(() => {
     if (!sortConfig) return data;
 
@@ -110,16 +137,14 @@ const DataTable: React.FC<DataTableProps> = ({
     });
   }, [data, sortConfig, sortData]);
 
-  // Format columns for react-table
   const expandedTableColumns = useMemo<Column[]>(
     () =>
-      columns
-        .filter((col) => !hiddenColumns.includes(col))
+      visibleColumns
         .map((col) => ({
           Header: () => (
             <div
-              className={`column-header ${
-                sortConfig?.id === col ? (sortConfig.desc ? "sorted-desc" : "sorted-asc") : ""
+              className={`${styles.columnHeader} ${
+                sortConfig?.id === col ? (sortConfig.desc ? styles.sortedDesc : styles.sortedAsc) : ""
               }`}
               onMouseEnter={() => setHoveredColumn(col)}
               onMouseLeave={() => setHoveredColumn(null)}
@@ -138,9 +163,8 @@ const DataTable: React.FC<DataTableProps> = ({
           ),
           accessor: col,
           id: col,
-          sortType: (rowA: DataRow, rowB: DataRow) => sortData(rowA, rowB, col),
         })),
-    [columns, hiddenColumns, hoveredColumn, sortConfig, menuOptions, handleHideColumn, sortData],
+    [visibleColumns, hoveredColumn, sortConfig, menuOptions, handleHideColumn],
   );
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
@@ -156,53 +180,33 @@ const DataTable: React.FC<DataTableProps> = ({
         : [...selectedColumns, colId];
 
     setSelectedColumns(newSelected);
-    // Move the parent update outside of setState
     onColumnSelect(newSelected);
-  };
-
-  const getColumnData = (columnName: string): number[] => {
-    return data.map((row) => row[columnName])
-      .filter((value): value is number => typeof value === 'number' && !isNaN(value));
-  };
-
-  // Helper function to check if a column is numerical
-  const isNumericalColumn = (columnName: string): boolean => {
-    return (
-      data.length > 0 &&
-      typeof data[0][columnName] === "number" &&
-      data.every((row) => typeof row[columnName] === "number" || row[columnName] === null)
-    );
   };
 
   const handleHistogramClick = (columnName: string) => {
     setActiveHistogram(activeHistogram === columnName ? null : columnName);
   };
 
-  // Add this memoized function to cache column statistics
   const columnStats = useMemo(() => {
     const stats: Record<string, { min: number; max: number; range: number }> = {};
 
-    // Only process visible columns to save computation
-    columns
-      .filter((col) => !hiddenColumns.includes(col))
-      .forEach((col) => {
-        const values = data.map((row) => row[col]).filter((val) => typeof val === "number");
+    visibleColumns.forEach((col) => {
+      const values = columnMetadata[col]?.numericValues ?? [];
 
-        if (values.length > 0) {
-          const min = Math.min(...values);
-          const max = Math.max(...values);
-          stats[col] = {
-            min,
-            max,
-            range: max - min,
-          };
-        }
-      });
+      if (values.length > 0) {
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        stats[col] = {
+          min,
+          max,
+          range: max - min,
+        };
+      }
+    });
 
     return stats;
-  }, [data, columns, hiddenColumns]);
+  }, [columnMetadata, visibleColumns]);
 
-  // Update the getCellStyle function to use the cached stats
   const getCellStyle = (value: number, columnId: string) => {
     if (viewMode !== "heatmap" || typeof value !== "number") return {};
 
@@ -216,32 +220,33 @@ const DataTable: React.FC<DataTableProps> = ({
     } as React.CSSProperties;
   };
 
-  // ranked Shapley values
-  const rankedShapleyValues = useMemo(() => {
+  const featureImportanceMap = useMemo(() => {
     if (!shapleyValues || shapleyValues.length === 0) return null;
 
     const sorted = [...shapleyValues].sort((a, b) => b["SHAP Value"] - a["SHAP Value"]);
-
     const maxValue = sorted[0]["SHAP Value"];
 
-    // Add rank and normalized value
-    return sorted.map((item, index) => ({
-      ...item,
-      rank: index + 1,
-      normalizedValue: item["SHAP Value"] / maxValue,
-    }));
+    return new Map(
+      sorted.map((item, index) => [
+        item.feature,
+        {
+          ...item,
+          rank: index + 1,
+          normalizedValue: maxValue === 0 ? 0 : item["SHAP Value"] / maxValue,
+        },
+      ]),
+    );
   }, [shapleyValues]);
 
   const getFeatureImportance = (featureName: string) => {
-    if (!rankedShapleyValues) return null;
-    return rankedShapleyValues.find((item) => item.feature === featureName);
+    return featureImportanceMap?.get(featureName) ?? null;
   };
 
   return (
-    <div className="table-panel-content">
+    <div className={styles.tablePanelContent}>
       {isExpanded ? (
-        <div className="table-container">
-          <table {...getTableProps()}>
+        <div className={styles.tableContainer}>
+          <table {...getTableProps()} className={styles.table}>
             <thead>
               {headerGroups.map((headerGroup) => {
                 const { key, ...headerGroupProps } = headerGroup.getHeaderGroupProps();
@@ -254,7 +259,7 @@ const DataTable: React.FC<DataTableProps> = ({
                           key={headerKey}
                           {...headerProps}
                           onClick={() => toggleColumnSelection(column.id)}
-                          className={selectedColumns.includes(column.id) ? "selected" : ""}
+                          className={`${styles.headerCell} ${selectedColumns.includes(column.id) ? styles.headerCellSelected : ""}`}
                         >
                           {column.render("Header")}
                         </th>
@@ -269,12 +274,13 @@ const DataTable: React.FC<DataTableProps> = ({
                 prepareRow(row);
                 const { key, ...rowProps } = row.getRowProps();
                 const isRowHovered = hoveredRowIndex === rowIndex;
+                const rowParityClass = rowIndex % 2 === 0 ? styles.bodyRowOdd : styles.bodyRowEven;
 
                 return (
                   <tr
                     key={key}
                     {...rowProps}
-                    className={isRowHovered && viewMode === "heatmap" ? "hovered-row" : ""}
+                    className={`${rowParityClass} ${isRowHovered && viewMode === "heatmap" ? styles.hoveredRow : ""}`}
                     onMouseEnter={() => viewMode === "heatmap" && setHoveredRowIndex(rowIndex)}
                     onMouseLeave={() => viewMode === "heatmap" && setHoveredRowIndex(null)}
                   >
@@ -284,11 +290,9 @@ const DataTable: React.FC<DataTableProps> = ({
                         <td
                           key={cellKey}
                           {...cellProps}
-                          className={`
-                            ${selectedColumns.includes(cell.column.id) ? "selected" : ""}
-                            ${viewMode === "heatmap" ? "heatmap-cell" : ""}
-                            ${isRowHovered && viewMode === "heatmap" ? "hovered-cell" : ""}
-                          `}
+                          className={`${styles.dataCell} ${selectedColumns.includes(cell.column.id) ? styles.selectedCell : ""} ${
+                            viewMode === "heatmap" ? styles.heatmapCell : ""
+                          } ${isRowHovered && viewMode === "heatmap" ? styles.hoveredCell : ""}`}
                           style={getCellStyle(cell.value, cell.column.id)}
                         >
                           {viewMode === "numerical" ? (
@@ -296,7 +300,7 @@ const DataTable: React.FC<DataTableProps> = ({
                           ) : (
                             <>
                               {isRowHovered && viewMode === "heatmap" ? (
-                                <div className="hovered-cell-content">{cell.render("Cell")}</div>
+                                <div className={styles.hoveredCellContent}>{cell.render("Cell")}</div>
                               ) : null}
                             </>
                           )}
@@ -310,9 +314,9 @@ const DataTable: React.FC<DataTableProps> = ({
           </table>
         </div>
       ) : (
-        <div className="compressed-view-container">
-          <div className="table-container compressed">
-            <table>
+        <div className={styles.compressedViewContainer}>
+          <div className={styles.compressedTableContainer}>
+            <table className={styles.compressedTable}>
               <thead>
                 <tr>
                   <th>Feature</th>
@@ -321,51 +325,52 @@ const DataTable: React.FC<DataTableProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {columns.map((col) => {
+                {columns.map((col, index) => {
                   const importance = getFeatureImportance(col);
+                  const rowParityClass = index % 2 === 0 ? styles.bodyRowOdd : styles.bodyRowEven;
 
                   return (
-                    <tr key={col}>
+                    <tr key={col} className={rowParityClass}>
                       <td
-                        className={`column-name ${selectedColumns.includes(col) ? "selected" : ""}`}
+                        className={`${styles.columnName} ${selectedColumns.includes(col) ? styles.selectedCompressedColumn : ""}`}
                         onClick={() => toggleColumnSelection(col)}
                       >
                         {col}
                         {hiddenColumns.includes(col) && (
-                          <span className="hidden-indicator" title="Hidden in expanded view">
+                          <span title="Hidden in expanded view">
                             (hidden)
                           </span>
                         )}
                       </td>
                       {shapleyValues && shapleyValues.length > 0 && (
-                        <td className="importance-cell">
+                        <td className={styles.importanceCell}>
                           {importance ? (
-                            <div className="importance-container">
-                              <div className="importance-rank">#{importance.rank}</div>
-                              <div className="importance-bar-container">
+                            <div className={styles.importanceContainer}>
+                              <div className={styles.importanceRank}>#{importance.rank}</div>
+                              <div className={styles.importanceBarContainer}>
                                 <div
-                                  className="importance-bar"
+                                  className={styles.importanceBar}
                                   style={{ width: `${importance.normalizedValue * 100}%` }}
                                   title={`SHAP Value: ${importance["SHAP Value"].toFixed(4)}`}
                                 ></div>
                               </div>
                             </div>
                           ) : (
-                            <span>—</span>
+                            <span>{"\u2014"}</span>
                           )}
                         </td>
                       )}
-                      <td className="tiny-histogram-cell">
+                      <td className={styles.tinyHistogramCell}>
                         <button
-                          className={`tiny-histogram-wrapper ${isNumericalColumn(col) ? "clickable" : ""}`}
-                          onClick={() => isNumericalColumn(col) && handleHistogramClick(col)}
-                          disabled={!isNumericalColumn(col)}
-                          title={isNumericalColumn(col) ? "Click to view detailed histogram" : "Not a numerical column"}
+                          className={`${styles.tinyHistogramButton} ${columnMetadata[col]?.isStrictNumeric ? styles.tinyHistogramClickable : ""}`}
+                          onClick={() => columnMetadata[col]?.isStrictNumeric && handleHistogramClick(col)}
+                          disabled={!columnMetadata[col]?.isStrictNumeric}
+                          title={columnMetadata[col]?.isStrictNumeric ? "Click to view detailed histogram" : "Not a numerical column"}
                         >
-                          {isNumericalColumn(col) ? (
-                            <Histogram data={getColumnData(col)} variant="tiny" width={100} height={30} />
+                          {columnMetadata[col]?.isStrictNumeric ? (
+                            <Histogram data={columnMetadata[col].numericValues} variant="tiny" width={100} height={30} />
                           ) : (
-                            <span className="non-numerical-indicator">—</span>
+                            <span className={styles.nonNumericalIndicator}>{"\u2014"}</span>
                           )}
                         </button>
                       </td>
@@ -376,14 +381,14 @@ const DataTable: React.FC<DataTableProps> = ({
             </table>
           </div>
           {activeHistogram && (
-            <div className="histogram-container">
-              <div className="histogram-header">
+            <div className={styles.histogramContainer}>
+              <div className={styles.histogramHeader}>
                 <h3>{activeHistogram} Distribution</h3>
-                <button className="close-button" onClick={() => setActiveHistogram(null)} aria-label="Close histogram">
-                  ×
+                <button className={styles.closeButton} onClick={() => setActiveHistogram(null)} aria-label="Close histogram">
+                  {"\u00D7"}
                 </button>
               </div>
-              <Histogram data={getColumnData(activeHistogram)} variant="big" />
+              <Histogram data={columnMetadata[activeHistogram]?.numericValues ?? []} variant="big" />
             </div>
           )}
         </div>

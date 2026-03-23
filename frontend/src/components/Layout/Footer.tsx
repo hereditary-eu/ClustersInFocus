@@ -1,10 +1,13 @@
-// import '../styles/Footer.module.scss';
+import styles from "./Footer.module.css";
 
 const Footer: React.FC = () => {
   return (
-    <div>
-      Uicons by <a href="https://www.flaticon.com/uicons">Flaticon</a>
-    </div> // TODO: check if project allows this
+    <footer className={styles.footer}>
+      Uicons by{" "}
+      <a className={styles.link} href="https://www.flaticon.com/uicons">
+        Flaticon
+      </a>
+    </footer>
   );
 };
 

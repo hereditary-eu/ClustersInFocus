@@ -1,0 +1,94 @@
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.selectContainer {
+  position: relative;
+  min-width: 120px;
+}
+
+.selectContainer::after {
+  content: "▼";
+  font-size: 10px;
+  color: var(--color-gray);
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.select {
+  appearance: none;
+  padding: 8px 30px 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-lighter);
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px var(--color-black-transparent);
+}
+
+.select:focus {
+  border-color: var(--color-blue-accent);
+  box-shadow: 0 0 0 2px var(--color-blue-accent-transparent);
+  outline: none;
+}
+
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  box-shadow: 0 2px 4px var(--color-black-transparent);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.primaryButton {
+  background-color: var(--color-blue-accent);
+  color: var(--color-white);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background-color: var(--color-blue-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px var(--color-black-transparent);
+}
+
+.primaryButton:active:not(:disabled) {
+  background-color: var(--color-blue-accent-active);
+  transform: translateY(0);
+  box-shadow: 0 1px 2px var(--color-black-transparent);
+}
+
+.secondaryButton {
+  background-color: var(--color-white);
+  color: var(--color-gray-dark);
+  border: 1px solid var(--color-gray-lighter);
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background-color: var(--color-white-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px var(--color-black-transparent);
+}
+
+.secondaryButton:active:not(:disabled) {
+  background-color: var(--color-white-gray);
+  transform: translateY(0);
+  box-shadow: 0 1px 2px var(--color-black-transparent);
+}

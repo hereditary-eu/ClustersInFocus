@@ -1,8 +1,11 @@
 import { useState, useCallback } from "react";
 import { ClusteringService, DEFAULT_PARAMS } from "../../services/ClusteringService";
-import { ComputeClustersButtonProps, HyperparamModalProps, ClusteringAlgorithm, ClusteringParams } from "../../types";
+import { HyperparamModalProps, ClusteringAlgorithm, ClusteringParams } from "../../types";
+import { useAppStore } from "../../stores/useAppStore";
+import { useColumnValidation } from "../../hooks/useColumnValidation";
 import { toast } from "../../stores/useToastStore";
 import "../UI/Modal.css";
+import styles from "./ComputeClustersButton.module.css";
 
 const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, onClose, onSave }) => {
   const [localParams, setLocalParams] = useState(params);
@@ -117,13 +120,10 @@ const HyperparamModal: React.FC<HyperparamModalProps> = ({ algorithm, params, on
   );
 };
 
-export function ComputeClustersButton({
-  csvData,
-  columns,
-  onClustersComputed,
-  fileId,
-  fileName,
-}: ComputeClustersButtonProps) {
+export function ComputeClustersButton() {
+  const data = useAppStore(state => state.data);
+  const setSelectedColumns = useAppStore(state => state.setSelectedColumns);
+  const { numericColumns } = useColumnValidation(data.csvData);
   const [isComputing, setIsComputing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showHyperparam, setShowHyperparam] = useState(false);
@@ -136,21 +136,18 @@ export function ComputeClustersButton({
 
     try {
       await ClusteringService.computeFeaturePairsClusters(
-        csvData,
-        columns,
+        data.csvData,
+        numericColumns,
         algorithm,
         params,
         setProgress,
-        fileId,
-        fileName,
+        data.fileId,
+        data.fileName,
       );
 
-      setIsComputing(false);
-      onClustersComputed();
+      setSelectedColumns([]);
       toast.success("Clusters computed successfully!");
     } catch (err) {
-      setIsComputing(false);
-
       // Check if this is a network error
       if (
         (err instanceof TypeError && err.message.includes("network")) ||
@@ -160,14 +157,16 @@ export function ComputeClustersButton({
       } else {
         toast.error("An error occurred while computing clusters. Please try again.");
       }
+    } finally {
+      setIsComputing(false);
     }
-  }, [csvData, columns, algorithm, params, onClustersComputed, fileId, fileName]);
+  }, [data.csvData, numericColumns, algorithm, params, data.fileId, data.fileName, setSelectedColumns]);
 
   return (
-    <div className="clustering-controls">
-      <div className="select-container">
+    <div className={styles.controls}>
+      <div className={styles.selectContainer}>
         <select
-          className="select"
+          className={styles.select}
           value={algorithm}
           onChange={(e) => {
             const newAlgorithm = e.target.value as ClusteringAlgorithm;
@@ -181,11 +180,15 @@ export function ComputeClustersButton({
         </select>
       </div>
 
-      <button onClick={() => setShowHyperparam(true)} disabled={isComputing} className="button button-secondary">
+      <button
+        onClick={() => setShowHyperparam(true)}
+        disabled={isComputing}
+        className={`${styles.button} ${styles.secondaryButton}`}
+      >
         Configure
       </button>
 
-      <button onClick={computeClusters} disabled={isComputing} className="button button-primary">
+      <button onClick={computeClusters} disabled={isComputing} className={`${styles.button} ${styles.primaryButton}`}>
         {isComputing ? `Computing... ${Math.round(progress)}%` : "Compute Clusters"}
       </button>
 

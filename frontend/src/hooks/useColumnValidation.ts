@@ -1,21 +1,19 @@
 import { useMemo } from 'react';
 import { DataRow } from '../types';
-import { getNumericColumns, isNumericColumn, hasMinimumNumericColumns } from '../utils/validation';
+import { getNumericColumns } from '../utils/validation';
 
 /**
  * Custom hook for column validation with memoization
  */
 export const useColumnValidation = (data: DataRow[]) => {
   const numericColumns = useMemo(() => getNumericColumns(data), [data]);
-  
-  const hasMinimumColumns = useMemo(
-    () => hasMinimumNumericColumns(data, 2),
-    [data]
-  );
-  
+
+  const numericColumnSet = useMemo(() => new Set(numericColumns), [numericColumns]);
+  const hasMinimumColumns = numericColumns.length >= 2;
+
   const isColumnNumeric = useMemo(
-    () => (columnName: string) => isNumericColumn(data, columnName),
-    [data]
+    () => (columnName: string) => numericColumnSet.has(columnName),
+    [numericColumnSet]
   );
   
   const validateColumnsForClustering = useMemo(

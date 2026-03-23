@@ -3,7 +3,8 @@ import { VariableSizeGrid as Grid } from "react-window";
 import { ClusteringService } from "../../../services/ClusteringService";
 import { useAppStore } from "../../../stores/useAppStore";
 import { toast } from "../../../stores/useToastStore";
-import "./ClusterSimilarityMatrix.css";
+import { getNumericColumns } from "../../../utils/validation";
+import styles from "./ClusterSimilarityMatrix.module.css";
 
 interface FeaturePairMatrixData {
   features: string[];
@@ -50,51 +51,43 @@ const MatrixCell = React.memo<{
 }>(({ columnIndex, rowIndex, style, data }) => {
   const { featurePairMatrixData, onCellHover, onCellLeave, colorRangeMode } = data;
 
-  // Header cells
   if (rowIndex === 0 && columnIndex === 0) {
-    // Corner cell
     return (
-      <div style={style} className="matrix-header-cell matrix-corner-cell">
+      <div style={style} className={`${styles.headerCell} ${styles.cornerCell}`}>
         Features
       </div>
     );
   }
 
   if (rowIndex === 0) {
-    // Column header
     const featureIndex = columnIndex - 1;
     const feature = featurePairMatrixData.features[featureIndex];
     return (
-      <div style={style} className="matrix-header-cell matrix-column-header" title={feature}>
+      <div style={style} className={`${styles.headerCell} ${styles.columnHeader}`} title={feature}>
         {feature}
       </div>
     );
   }
 
   if (columnIndex === 0) {
-    // Row header
     const featureIndex = rowIndex - 1;
     const feature = featurePairMatrixData.features[featureIndex];
     return (
-      <div style={style} className="matrix-header-cell matrix-row-header" title={feature}>
+      <div style={style} className={`${styles.headerCell} ${styles.rowHeader}`} title={feature}>
         {feature}
       </div>
     );
   }
 
-  // Data cell
   const dataRowIndex = rowIndex - 1;
   const dataColIndex = columnIndex - 1;
   const similarity = featurePairMatrixData.similarities[dataRowIndex]?.[dataColIndex] ?? 0;
   const isDiagonal = dataRowIndex === dataColIndex;
 
-  // Calculate normalized value based on color range mode
   let normalizedValue: number;
   if (colorRangeMode === "full") {
-    // Use full 0-100% range
     normalizedValue = similarity;
   } else {
-    // Use min-max range
     normalizedValue =
       featurePairMatrixData.stats.max_similarity !== featurePairMatrixData.stats.min_similarity
         ? (similarity - featurePairMatrixData.stats.min_similarity) /
@@ -110,11 +103,11 @@ const MatrixCell = React.memo<{
   return (
     <div
       style={cellStyle}
-      className={`matrix-cell ${isDiagonal ? "diagonal" : ""}`}
+      className={`${styles.cell} ${isDiagonal ? styles.diagonal : ""}`}
       onMouseEnter={(e) => !isDiagonal && onCellHover(dataRowIndex, dataColIndex, e)}
       onMouseLeave={onCellLeave}
     >
-      {!isDiagonal && <div className="similarity-matrix-heatmap-cell" />}
+      {!isDiagonal && <div className={styles.heatmapCell} />}
     </div>
   );
 });
@@ -137,6 +130,7 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
     y: 0,
     content: null,
   });
+  const numericColumns = useMemo(() => getNumericColumns(data.csvData), [data.csvData]);
 
   useEffect(() => {
     if (!data.fileId) {
@@ -144,7 +138,6 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
       return;
     }
 
-    // Only fetch data if a cluster is selected
     if (selectedCluster === null || selectedColumns.length !== 2) {
       setFeaturePairMatrixData(null);
       return;
@@ -153,11 +146,6 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
     const fetchMatrixData = async () => {
       setLoading(true);
       try {
-        const numericColumns = data.columns.filter(() => {
-          // WIP: check if column is numeric
-          return true;
-        });
-
         const matrixData = await ClusteringService.getFeaturePairSimilarityMatrix(
           data.fileId!,
           selectedColumns[0],
@@ -190,7 +178,7 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
     };
 
     fetchMatrixData();
-  }, [data.fileId, data.columns, selectedCluster, selectedColumns, aggregationMethod, reorderMethod]);
+  }, [data.fileId, numericColumns, selectedCluster, selectedColumns, aggregationMethod, reorderMethod]);
 
   const handleCellHover = useCallback(
     (rowIndex: number, colIndex: number, event: React.MouseEvent) => {
@@ -233,18 +221,16 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
 
   if (loading) {
     return (
-      <div className="cluster-similarity-matrix-container">
-        <div className="matrix-loading">Loading feature pair similarity matrix...</div>
+      <div className={styles.container}>
+        <div className={styles.loading}>Loading feature pair similarity matrix...</div>
       </div>
     );
   }
 
-
-  // Show message when no cluster is selected
   if (selectedCluster === null || selectedColumns.length !== 2) {
     return (
-      <div className="cluster-similarity-matrix-container">
-        <div className="matrix-empty">
+      <div className={styles.container}>
+        <div className={styles.empty}>
           <p>Select a cluster point in the visualization to view feature pair similarities.</p>
           <p>This will show how the selected cluster compares across different feature combinations.</p>
         </div>
@@ -254,23 +240,21 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
 
   if (!featurePairMatrixData || !cellData) {
     return (
-      <div className="cluster-similarity-matrix-container">
-        <div className="matrix-empty">No similarity matrix data available. Please compute clusters first.</div>
+      <div className={styles.container}>
+        <div className={styles.empty}>No similarity matrix data available. Please compute clusters first.</div>
       </div>
     );
   }
 
   if (featurePairMatrixData.features.length === 0) {
     return (
-      <div className="cluster-similarity-matrix-container">
-        <div className="matrix-empty">No features found for similarity comparison.</div>
+      <div className={styles.container}>
+        <div className={styles.empty}>No features found for similarity comparison.</div>
       </div>
     );
   }
 
-  const gridSize = featurePairMatrixData.features.length + 1; // +1 for headers
-
-  // Calculate dynamic dimensions
+  const gridSize = featurePairMatrixData.features.length + 1;
   const getColumnWidth = (index: number) => (index === 0 ? ROW_HEADER_WIDTH : CELL_SIZE);
   const getRowHeight = (index: number) => (index === 0 ? COLUMN_HEADER_HEIGHT : CELL_SIZE);
 
@@ -278,45 +262,44 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
   const totalHeight = COLUMN_HEADER_HEIGHT + (gridSize - 1) * CELL_SIZE;
 
   const gridWidth = Math.min(width, totalWidth);
-  const gridHeight = Math.min(height - 40, totalHeight); // -40 for header
+  const gridHeight = Math.min(height - 40, totalHeight);
 
   return (
-    <div className="cluster-similarity-matrix-container">
-      <div className="matrix-header">
-        <div className="matrix-stats">
-          Feature Pair Matrix for Cluster {selectedCluster! + 1} ({selectedColumns[0]}, {selectedColumns[1]}):{" "}
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div>
+          Feature Pair Matrix for Cluster {selectedCluster + 1} ({selectedColumns[0]}, {selectedColumns[1]}):{" "}
           {featurePairMatrixData.features.length} features,
-          {/* Range: {(featurePairMatrixData.stats.min_similarity * 100).toFixed(1)}% - {(featurePairMatrixData.stats.max_similarity * 100).toFixed(1)}% */}
-          <span className="aggregation-indicator"> Aggregation: {aggregationMethod.toUpperCase()}, </span>
-          <span className="color-range-indicator">
+          <span className={styles.aggregationIndicator}> Aggregation: {aggregationMethod.toUpperCase()}, </span>
+          <span className={styles.colorRangeIndicator}>
             {" "}
             Color Range: {colorRangeMode === "full" ? "0-100%" : "Min-Max"}
           </span>
         </div>
-        <div className="matrix-controls">
+        <div className={styles.controls}>
           <button
-            className="matrix-control-button"
+            className={styles.controlButton}
             onClick={(e) => {
               e.stopPropagation();
               setShowConfig(!showConfig);
             }}
             title="Configure matrix options"
           >
-            ⚙️
+            {"\u2699"}
           </button>
         </div>
       </div>
 
       {showConfig && (
-        <div className="matrix-config-panel">
-          <div className="config-section">
+        <div className={styles.configPanel}>
+          <div className={styles.configSection}>
             <h4>Aggregation</h4>
-            <div className="config-group">
+            <div className={styles.configGroup}>
               <label>Aggregation Method:</label>
               <select
                 value={aggregationMethod}
                 onChange={(e) => setAggregationMethod(e.target.value)}
-                className="config-select"
+                className={styles.configSelect}
               >
                 <option value="max">Maximum</option>
                 <option value="avg">Average</option>
@@ -326,14 +309,14 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
             </div>
           </div>
 
-          <div className="config-section">
+          <div className={styles.configSection}>
             <h4>Color Scale</h4>
-            <div className="config-group">
+            <div className={styles.configGroup}>
               <label>Color Range:</label>
               <select
                 value={colorRangeMode}
                 onChange={(e) => setColorRangeMode(e.target.value as "min-max" | "full")}
-                className="config-select"
+                className={styles.configSelect}
               >
                 <option value="min-max">Min-Max Range</option>
                 <option value="full">Full Range (0-100%)</option>
@@ -341,14 +324,14 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
             </div>
           </div>
 
-          <div className="config-section">
+          <div className={styles.configSection}>
             <h4>Matrix Ordering</h4>
-            <div className="config-group">
+            <div className={styles.configGroup}>
               <label>Reorder Method:</label>
               <select
                 value={reorderMethod}
                 onChange={(e) => setReorderMethod(e.target.value as "none" | "optimal" | "average")}
-                className="config-select"
+                className={styles.configSelect}
               >
                 <option value="none">Original Order</option>
                 <option value="optimal">Optimal Leaf Ordering</option>
@@ -357,14 +340,14 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
             </div>
           </div>
 
-          <div className="config-section">
+          <div className={styles.configSection}>
             <h4>Similarity Color Scale</h4>
-            <div className="config-group">
-              <div className="colorbar-container">
-                <div className="colorbar-gradient"></div>
-                <div className="colorbar-labels">
-                  <span className="colorbar-label-left">Low</span>
-                  <span className="colorbar-label-right">High</span>
+            <div className={styles.configGroup}>
+              <div className={styles.colorbarContainer}>
+                <div className={styles.colorbarGradient}></div>
+                <div className={styles.colorbarLabels}>
+                  <span className={styles.colorbarLabelLeft}>Low</span>
+                  <span className={styles.colorbarLabelRight}>High</span>
                 </div>
               </div>
             </div>
@@ -372,9 +355,9 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
         </div>
       )}
 
-      <div className="matrix-viewport">
+      <div className={styles.viewport}>
         <Grid
-          className="matrix-grid"
+          className={styles.grid}
           columnCount={gridSize}
           rowCount={gridSize}
           columnWidth={getColumnWidth}
@@ -389,19 +372,19 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
 
       {tooltip.visible && tooltip.content && (
         <div
-          className="similarity-tooltip"
+          className={styles.tooltip}
           style={{
             left: tooltip.x,
             top: tooltip.y,
           }}
         >
-          <div className="tooltip-line">
+          <div className={styles.tooltipLine}>
             <strong>Row:</strong> {tooltip.content.rowCluster}
           </div>
-          <div className="tooltip-line">
+          <div className={styles.tooltipLine}>
             <strong>Col:</strong> {tooltip.content.colCluster}
           </div>
-          <div className="tooltip-line">
+          <div className={styles.tooltipLine}>
             <strong>Similarity:</strong> {tooltip.content.similarity}
           </div>
         </div>

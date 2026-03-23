@@ -1,0 +1,97 @@
+.panelLeft {
+  background: var(--color-bg-panel1);
+}
+
+.headerOptions {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.hiddenColumnsTags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.columnTag {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 2px;
+  background-color: var(--color-white-accent-transparent);
+  border: 1px solid var(--color-gray-lighter);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--color-gray-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.columnTag:hover {
+  background-color: var(--color-red-accent-transparent);
+  color: var(--color-gray-dark);
+}
+
+.viewModeSwitch {
+  display: flex;
+  gap: 2px;
+  margin-right: 8px;
+  background: var(--color-white-accent);
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.viewModeButton {
+  border: none;
+  background: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
+.viewModeButtonActive {
+  background: var(--color-white);
+  color: var(--color-gray-dark);
+  box-shadow: 0 1px 2px var(--color-black-transparent);
+}
+
+.viewModeButton:hover:not(.viewModeButtonActive) {
+  background: var(--color-white-half-transparent);
+}
+
+.toggleViewButton {
+  width: 24px;
+  height: 24px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 10px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+}
+
+.compressButton {
+  background-image: var(--svg-url-compress);
+  background-size: 90%;
+}
+
+.compressButton:hover {
+  background-size: 80%;
+}
+
+.expandButton {
+  background-image: var(--svg-url-expand);
+  background-size: 90%;
+}
+
+.expandButton:hover {
+  background-size: 100%;
+}

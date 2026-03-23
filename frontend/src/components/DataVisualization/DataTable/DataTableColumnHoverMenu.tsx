@@ -1,4 +1,5 @@
 import React from "react";
+import styles from "./DataTable.module.css";
 
 interface ColumnMenuProps {
   column: string;
@@ -22,27 +23,29 @@ const ColumnMenu: React.FC<ColumnMenuProps> = ({
   onHide,
 }) => {
   return (
-    <div className="column-dropdown" onClick={(e) => e.stopPropagation()}>
+    <div className={styles.columnDropdown} onClick={(e) => e.stopPropagation()}>
       {menuOptions.canSort && onSort && (
         <div
-          className="dropdown-item"
+          className={styles.dropdownItem}
           onClick={(e) => {
             e.stopPropagation();
             onSort(column);
           }}
         >
-          <span>{sortConfig?.id === column ? (sortConfig.desc ? "Sort ASC ↑" : "Sort DESC ↓") : "Sort ⇅"}</span>
+          <span className={styles.dropdownItemText}>
+            {sortConfig?.id === column ? (sortConfig.desc ? "Sort ASC \u2191" : "Sort DESC \u2193") : "Sort \u21C5"}
+          </span>
         </div>
       )}
       {menuOptions.canHide && onHide && (
         <div
-          className="dropdown-item"
+          className={styles.dropdownItem}
           onClick={(e) => {
             e.stopPropagation();
             onHide(column);
           }}
         >
-          <span>Hide Column</span>
+          <span className={styles.dropdownItemText}>Hide Column</span>
         </div>
       )}
     </div>

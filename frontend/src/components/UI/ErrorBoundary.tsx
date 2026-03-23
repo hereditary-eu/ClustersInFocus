@@ -1,5 +1,6 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
-import { toast } from '../../stores/useToastStore';
+import { Component, ErrorInfo, ReactNode } from "react";
+import { toast } from "../../stores/useToastStore";
+import styles from "./ErrorBoundary.module.css";
 
 interface Props {
   children: ReactNode;
@@ -22,13 +23,9 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
-    // Show user-friendly error message
-    toast.error(
-      `Something went wrong: ${error.message}. Please try refreshing the page.`,
-      8000
-    );
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+
+    toast.error(`Something went wrong: ${error.message}. Please try refreshing the page.`, 8000);
   }
 
   render() {
@@ -38,38 +35,19 @@ class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="error-boundary">
-          <div className="error-boundary-content">
-            <h2>🚨 Something went wrong</h2>
-            <p>
-              We encountered an unexpected error. Please try refreshing the page.
-            </p>
-            <details style={{ marginTop: '16px' }}>
+        <div className={styles.errorBoundary}>
+          <div className={styles.content}>
+            <h2 className={styles.title}>Something went wrong</h2>
+            <p className={styles.message}>We encountered an unexpected error. Please try refreshing the page.</p>
+            <details className={styles.details}>
               <summary>Technical details</summary>
-              <pre style={{ 
-                background: '#f5f5f5', 
-                padding: '12px', 
-                borderRadius: '4px',
-                fontSize: '12px',
-                marginTop: '8px',
-                overflow: 'auto'
-              }}>
-                {this.state.error?.stack}
-              </pre>
+              <pre className={styles.stack}>{this.state.error?.stack}</pre>
             </details>
             <button
+              className={styles.refreshButton}
               onClick={() => {
                 this.setState({ hasError: false });
                 window.location.reload();
-              }}
-              style={{
-                marginTop: '16px',
-                padding: '8px 16px',
-                backgroundColor: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
               }}
             >
               Refresh Page

@@ -14,7 +14,8 @@ authors:
   given-names: "Tobias"
   orcid: "https://orcid.org/0000-0003-0778-8665"
 title: "Clusters in Focus: A Simple and Robust Detail-On-Demand Dashboard for Patient Data"
-version: 1.0.0
+version: 0.1.0
 doi: 10.2312/vcbm.20251250
-date-released: 2025-10-02
+date-released: 2025-11-20
 url: "https://github.com/hereditary-eu/ClustersInFocus"
+license: MIT

@@ -38,6 +38,13 @@ docker compose up
 ```
 
 This will start a webserver (on port 80), which you can access via your browser.
+
+For development, dependencies are managed with [uv](https://docs.astral.sh/uv/) (backend) and [bun](https://bun.sh/) (frontend) from the repository root:
+
+```bash
+uv sync && (cd backend && uv run run.py)  # API on http://localhost:8000
+bun install && bun dev                    # frontend on http://localhost:5173/cif
+```
 In order to recreate the screenshot above and in the paper (Figure 1), open Firefox on `http://localhost`.
 You should now be able to see the interface.
 On the top right dropdown, select `parkinsonsdata.csv`, which should already be available within the pre-loaded database.

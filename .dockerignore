@@ -1,0 +1,11 @@
+.git
+**/.venv
+**/node_modules
+**/__pycache__
+frontend/dist
+data
+paper
+stuff
+figures
+eda.ipynb
+screenshot.png

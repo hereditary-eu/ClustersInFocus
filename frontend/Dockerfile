@@ -1,15 +1,15 @@
-FROM node:22-slim AS build
+# build from the repo root: docker build -f frontend/Dockerfile .
+FROM oven/bun:1.4.3 AS build
 
 WORKDIR /app
 
-# did not include package-lock.json as there was some cross-platform compatibility issue
-COPY package.json ./
-RUN npm install --ignore-platform
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-COPY . .
-RUN npm run build
+COPY frontend/ frontend/
+RUN bun run build
 
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
 
 EXPOSE 80

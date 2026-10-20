@@ -1,6 +1,8 @@
 import React from "react";
 import DataTable from "../DataVisualization/DataTable/DataTable";
 import { useAppStore } from "../../stores/useAppStore";
+import styles from "./Panel1_Data.module.css";
+import shellStyles from "./PanelShell.module.css";
 
 const Panel1Data: React.FC = () => {
   const data = useAppStore(state => state.data);
@@ -15,6 +17,8 @@ const Panel1Data: React.FC = () => {
   const setDataViewMode = useAppStore(state => state.setDataViewMode);
   const setIsDataTableExpanded = useAppStore(state => state.setIsDataTableExpanded);
   const setSelectedColumns = useAppStore(state => state.setSelectedColumns);
+  const isExpanded = expandedPanel === "left";
+  const isCollapsed = expandedPanel !== null && !isExpanded;
 
   const handlePanelClick = (panelId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -22,20 +26,21 @@ const Panel1Data: React.FC = () => {
       setExpandedPanel(panelId);
     }
   };
+
   return (
     <div
-      className={`panel panel-left ${expandedPanel === "left" ? "expanded" : ""}`}
+      className={`${shellStyles.panel} ${styles.panelLeft} ${isExpanded ? shellStyles.expanded : ""} ${isCollapsed ? shellStyles.collapsed : ""} ${isCollapsed ? shellStyles.dimmed : ""}`}
       onClick={(e) => handlePanelClick("left", e)}
     >
-      <h2 className="panel-header">
-        <div className="panel-header-title">Data</div>
-        <div className="panel-header-options">
+      <h2 className={shellStyles.panelHeader}>
+        <div>Data</div>
+        <div className={styles.headerOptions}>
           {expandedPanel === "left" && hiddenColumns.length > 0 && (
-            <div className="hidden-columns-tags">
+            <div className={styles.hiddenColumnsTags}>
               {hiddenColumns.map((col) => (
                 <button
                   key={col}
-                  className="column-tag"
+                  className={styles.columnTag}
                   onClick={(e) => {
                     e.stopPropagation();
                     removeHiddenColumn(col);
@@ -48,9 +53,9 @@ const Panel1Data: React.FC = () => {
             </div>
           )}
           {isDataTableExpanded && (
-            <div className="view-mode-switch">
+            <div className={styles.viewModeSwitch}>
               <button
-                className={`view-mode-button ${dataViewMode === "numerical" ? "active" : ""}`}
+                className={`${styles.viewModeButton} ${dataViewMode === "numerical" ? styles.viewModeButtonActive : ""}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDataViewMode("numerical");
@@ -60,19 +65,19 @@ const Panel1Data: React.FC = () => {
                 123
               </button>
               <button
-                className={`view-mode-button ${dataViewMode === "heatmap" ? "active" : ""}`}
+                className={`${styles.viewModeButton} ${dataViewMode === "heatmap" ? styles.viewModeButtonActive : ""}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDataViewMode("heatmap");
                 }}
                 title="Show heatmap"
               >
-                ▦
+                {"\u25A6"}
               </button>
             </div>
           )}
           <button
-            className={`toggle-view-button ${isDataTableExpanded ? "compress-button" : "expand-button"}`}
+            className={`${styles.toggleViewButton} ${isDataTableExpanded ? styles.compressButton : styles.expandButton}`}
             onClick={() => setIsDataTableExpanded(!isDataTableExpanded)}
             aria-label={isDataTableExpanded ? "Compress table" : "Expand table"}
             title={isDataTableExpanded ? "Compress table" : "Expand table"}
@@ -85,7 +90,6 @@ const Panel1Data: React.FC = () => {
         columns={data.columns}
         hiddenColumns={hiddenColumns}
         onColumnHide={addHiddenColumn}
-        onColumnRestore={removeHiddenColumn}
         onColumnSelect={setSelectedColumns}
         isExpanded={isDataTableExpanded}
         viewMode={dataViewMode}

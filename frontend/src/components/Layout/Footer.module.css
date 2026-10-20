@@ -1,0 +1,9 @@
+.footer {
+  padding: 8px 20px 12px;
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
+.link {
+  color: inherit;
+}

@@ -1,12 +1,13 @@
 import React, { useRef, useState, useEffect } from "react";
 import { FileService } from "../../../services/FileService";
-import { ClusteringService } from "../../../services/ClusteringService";
-import { DatasetInfo, FileUploadButtonProps } from "../../../types";
+import { DatasetInfo } from "../../../types";
+import { useAppStore } from "../../../stores/useAppStore";
 import { toast } from "../../../stores/useToastStore";
-import "./FileUploadButton.css";
+import styles from "./FileUploadButton.module.css";
 
-export function FileUploadButton({ onFileLoaded, onClustersFound }: FileUploadButtonProps) {
+export function FileUploadButton() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleFileUpload = useAppStore(state => state.handleFileUpload);
   const [fileName, setFileName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -52,8 +53,8 @@ export function FileUploadButton({ onFileLoaded, onClustersFound }: FileUploadBu
         }
 
         const { data, headers, fileId } = await FileService.parseCSVFile(file);
-        onFileLoaded(file.name, data, headers, fileId);
-        // Refresh the saved datasets list
+        handleFileUpload(file.name, data, headers, fileId);
+        toast.success(`Successfully loaded ${file.name} with ${data.length} rows`);
         await loadSavedDatasets();
       } catch (error) {
         setFileName(null);
@@ -76,19 +77,8 @@ export function FileUploadButton({ onFileLoaded, onClustersFound }: FileUploadBu
       setShowOptions(false);
 
       const { data, headers } = await FileService.getDatasetById(dataset.hash);
-      onFileLoaded(dataset.name, data, headers, dataset.hash);
-
-      // Check if there are existing clusters for this dataset
-      if (onClustersFound) {
-        try {
-          const existingClusters = await ClusteringService.checkExistingClusters(dataset.hash);
-          if (existingClusters && existingClusters.length > 0) {
-            onClustersFound();
-          }
-        } catch (clusterErr) {
-          // Continue normally even if cluster check fails
-        }
-      }
+      handleFileUpload(dataset.name, data, headers, dataset.hash);
+      toast.success(`Successfully loaded ${dataset.name} with ${data.length} rows`);
     } catch (error) {
       setFileName(null);
       toast.error(error instanceof Error ? error.message : "Failed to load dataset. Please try again.");
@@ -143,22 +133,28 @@ export function FileUploadButton({ onFileLoaded, onClustersFound }: FileUploadBu
 
 
   return (
-    <div className="file-upload-container">
-      {fileName && <span className="file-name">{fileName}</span>}
-      {loading && <span className="loading-indicator">Loading...</span>}
+    <div className={styles.fileUploadContainer}>
+      {fileName && <span className={styles.fileName}>{fileName}</span>}
+      {loading && <span className={styles.loadingIndicator}>Loading...</span>}
 
       {/* Confirmation dialog */}
       {showConfirmDelete && (
-        <div className="confirm-delete-container">
-          <div className="confirm-delete-dialog">
-            <p className="confirm-delete-message">
+        <div className={styles.confirmDeleteContainer}>
+          <div className={styles.confirmDeleteDialog}>
+            <p className={styles.confirmDeleteMessage}>
               Are you sure you want to delete dataset "{showConfirmDelete.name}"?
             </p>
-            <div className="confirm-delete-buttons">
-              <button className="confirm-delete-button delete" onClick={confirmDelete}>
+            <div className={styles.confirmDeleteButtons}>
+              <button
+                className={`${styles.confirmDeleteButton} ${styles.confirmDeleteButtonDelete}`}
+                onClick={confirmDelete}
+              >
                 Delete
               </button>
-              <button className="confirm-delete-button cancel" onClick={cancelDelete}>
+              <button
+                className={`${styles.confirmDeleteButton} ${styles.confirmDeleteButtonCancel}`}
+                onClick={cancelDelete}
+              >
                 Cancel
               </button>
             </div>
@@ -168,26 +164,26 @@ export function FileUploadButton({ onFileLoaded, onClustersFound }: FileUploadBu
 
       <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} style={{ display: "none" }} />
 
-      <button className="file-upload-button" onClick={toggleOptions} aria-label="Upload file" disabled={loading} />
+      <button className={styles.fileUploadButton} onClick={toggleOptions} aria-label="Upload file" disabled={loading} />
 
       {showOptions && !showConfirmDelete && (
-        <div className="upload-options-dropdown">
-          <button className="upload-option button button-primary" onClick={() => fileInputRef.current?.click()}>
+        <div className={styles.uploadOptionsDropdown}>
+          <button className={styles.uploadOption} onClick={() => fileInputRef.current?.click()}>
             Upload new file
           </button>
 
-          <div className="saved-datasets-list">
-            <h4>Saved Datasets</h4>
+          <div className={styles.savedDatasetsList}>
+            <h4 className={styles.savedDatasetsTitle}>Saved Datasets</h4>
             {savedDatasets.length === 0 ? (
-              <p className="no-datasets">No saved datasets</p>
+              <p className={styles.noDatasets}>No saved datasets</p>
             ) : (
               savedDatasets.map((dataset, index) => (
-                <div key={index} className="dataset-option-container">
-                  <button className="dataset-option" onClick={() => handleSelectDataset(dataset)}>
+                <div key={index} className={styles.datasetOptionContainer}>
+                  <button className={styles.datasetOption} onClick={() => handleSelectDataset(dataset)}>
                     {dataset.name}
                   </button>
                   <button
-                    className="dataset-delete-button"
+                    className={styles.datasetDeleteButton}
                     onClick={(e) => handleDeleteDataset(dataset, e)}
                     aria-label={`Delete dataset ${dataset.name}`}
                     title={`Delete dataset ${dataset.name}`}

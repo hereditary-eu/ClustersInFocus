@@ -1,0 +1,36 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.mainContent {
+  flex: 1;
+  min-height: 0;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.panelsContainer {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.uploadPrompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .panelsContainer {
+    flex-direction: column;
+  }
+}

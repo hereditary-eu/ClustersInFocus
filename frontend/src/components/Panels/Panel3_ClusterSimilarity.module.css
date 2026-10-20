@@ -1,0 +1,140 @@
+.panelRight {
+  background: var(--color-bg-panel3);
+}
+
+.headerOptions {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.viewModeSwitch {
+  display: flex;
+  gap: 2px;
+  margin-right: 8px;
+  background: var(--color-white-accent);
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.viewModeButton {
+  border: none;
+  background: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
+.viewModeButtonActive {
+  background: var(--color-white);
+  color: var(--color-gray-dark);
+  box-shadow: 0 1px 2px var(--color-black-transparent);
+}
+
+.viewModeButton:hover:not(.viewModeButtonActive) {
+  background: var(--color-white-half-transparent);
+}
+
+.analysisPanel {
+  min-height: 0;
+  flex: 1;
+}
+
+.similarityAnalysis {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.similarityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.clusterInfo {
+  font-weight: 500;
+}
+
+.similarityControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filterCheckbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.tableContainer {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  margin: 10px auto 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px var(--color-black-transparent);
+  max-width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: auto;
+}
+
+.headerCell {
+  background-color: var(--color-gray-lighter);
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.cell {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.rowOdd {
+  background-color: var(--color-table-rows-odd);
+}
+
+.rowEven {
+  background-color: var(--color-table-rows-even);
+}
+
+.rowOdd:hover,
+.rowEven:hover {
+  background-color: var(--color-table-rows-hover);
+}
+
+.emptyRowCell {
+  text-align: center;
+  font-style: italic;
+}
+
+.similarityStats {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--color-gray);
+  font-style: italic;
+  text-align: right;
+}

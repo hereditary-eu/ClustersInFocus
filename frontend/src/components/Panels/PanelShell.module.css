@@ -1,0 +1,55 @@
+.panel {
+  flex: 1;
+  padding-top: 0;
+  padding-right: 15px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+  border-radius: 8px;
+  overflow: auto;
+  position: relative;
+  min-width: 50px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.expanded {
+  flex: 3;
+  box-shadow: 0 0 10px var(--color-blue-accent-transparent);
+}
+
+.collapsed {
+  flex: 0.45;
+}
+
+.dimmed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-white-transparent);
+  opacity: 1;
+  pointer-events: none;
+}
+
+.panel > * {
+  width: 100%;
+  min-height: 0;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: -4px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--color-black);
+  flex-shrink: 0;
+  justify-content: flex-start;
+}
+
+@media (max-width: 768px) {
+  .panel {
+    min-height: 200px;
+  }
+}

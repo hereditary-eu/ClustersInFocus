@@ -1,0 +1,15 @@
+.panelMiddle {
+  background: var(--color-bg-panel2);
+}
+
+.visualizeClustersContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.scatterplotContainer {
+  padding: 15px;
+  background: var(--color-white-accent-transparent);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px var(--color-black-transparent);
+}

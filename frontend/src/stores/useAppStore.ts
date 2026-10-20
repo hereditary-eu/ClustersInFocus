@@ -80,7 +80,10 @@ export const useAppStore = create<AppStore>()((set) => ({
     expandedPanel: null,
     selectedColumns: [],
     selectedCluster: null,
+    hiddenColumns: [],
     shapleyValues: null,
+    isDataTableExpanded: true,
+    dataViewMode: "numerical",
     
     // Update data state
     data: {
@@ -92,35 +95,4 @@ export const useAppStore = create<AppStore>()((set) => ({
   })),
   
   resetState: () => set(initialState),
-}));
-
-// Optimized selectors
-export const useDataState = () => useAppStore((state) => ({
-  data: state.data,
-  selectedColumns: state.selectedColumns,
-  selectedCluster: state.selectedCluster,
-  shapleyValues: state.shapleyValues,
-}));
-
-export const useUIState = () => useAppStore((state) => ({
-  expandedPanel: state.expandedPanel,
-  isDataTableExpanded: state.isDataTableExpanded,
-  dataViewMode: state.dataViewMode,
-  hiddenColumns: state.hiddenColumns,
-}));
-
-export const useDataActions = () => useAppStore((state) => ({
-  setSelectedColumns: state.setSelectedColumns,
-  setData: state.setData,
-  setShapleyValues: state.setShapleyValues,
-  handleFileUpload: state.handleFileUpload,
-}));
-
-export const useUIActions = () => useAppStore((state) => ({
-  setExpandedPanel: state.setExpandedPanel,
-  setIsDataTableExpanded: state.setIsDataTableExpanded,
-  setDataViewMode: state.setDataViewMode,
-  setSelectedCluster: state.setSelectedCluster,
-  addHiddenColumn: state.addHiddenColumn,
-  removeHiddenColumn: state.removeHiddenColumn,
 }));

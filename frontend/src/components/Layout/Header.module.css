@@ -1,0 +1,26 @@
+.header {
+  height: 5vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background-color: var(--color-white);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--color-gray-dark);
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.separator {
+  color: var(--color-gray-lighter);
+  font-size: 18px;
+}

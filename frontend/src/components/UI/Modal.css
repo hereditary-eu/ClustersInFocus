@@ -5,12 +5,12 @@
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: modal-fade-in 0.2s ease-out;
+  animation: modal-fade-in 0.12s ease-out;
 }
 
 /* Modal Content Container */
@@ -21,8 +21,9 @@
   max-width: 90vw;
   max-height: 90vh;
   overflow: hidden;
-  animation: modal-slide-in 0.3s ease-out;
+  animation: modal-slide-in 0.16s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
+  will-change: transform, opacity;
 }
 
 /* Modal Header */
@@ -142,8 +143,8 @@
 
 .config-input:focus {
   outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  border-color: var(--color-blue-accent);
+  box-shadow: 0 0 0 3px var(--color-blue-accent-transparent);
 }
 
 .config-select {
@@ -158,8 +159,8 @@
 
 .config-select:focus {
   outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  border-color: var(--color-blue-accent);
+  box-shadow: 0 0 0 3px var(--color-blue-accent-transparent);
 }
 
 .config-group {
@@ -187,14 +188,14 @@
 }
 
 .modal-button--primary {
-  background-color: #10b981;
+  background-color: var(--color-blue-accent);
   color: #ffffff;
-  border-color: #10b981;
+  border-color: var(--color-blue-accent);
 }
 
 .modal-button--primary:hover {
-  background-color: #059669;
-  border-color: #059669;
+  background-color: var(--color-blue-accent-hover);
+  border-color: var(--color-blue-accent-hover);
 }
 
 .modal-button--secondary {
@@ -220,11 +221,11 @@
 
 @keyframes modal-slide-in {
   from {
-    transform: translateY(-8px);
+    transform: translateY(-4px) scale(0.985);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
@@ -240,11 +241,11 @@
 
 @keyframes modal-slide-out {
   from {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
   to {
-    transform: translateY(-8px);
+    transform: translateY(-4px) scale(0.985);
     opacity: 0;
   }
 }

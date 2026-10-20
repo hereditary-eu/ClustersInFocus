@@ -4,6 +4,8 @@ import ClusterSimilarityMatrix from "../DataVisualization/ClusterSimilarityMatri
 import { useAppStore } from "../../stores/useAppStore";
 import { ClusterSimilarityResponse } from "../../types";
 import { toast } from "../../stores/useToastStore";
+import styles from "./Panel3_ClusterSimilarity.module.css";
+import shellStyles from "./PanelShell.module.css";
 
 const Panel3ClusterSimilarity: React.FC = () => {
   const data = useAppStore(state => state.data);
@@ -12,6 +14,8 @@ const Panel3ClusterSimilarity: React.FC = () => {
   const expandedPanel = useAppStore(state => state.expandedPanel);
   const setExpandedPanel = useAppStore(state => state.setExpandedPanel);
   const setSelectedCluster = useAppStore(state => state.setSelectedCluster);
+  const isExpanded = expandedPanel === "right";
+  const isCollapsed = expandedPanel !== null && !isExpanded;
 
   const handlePanelClick = (panelId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -19,6 +23,7 @@ const Panel3ClusterSimilarity: React.FC = () => {
       setExpandedPanel(panelId);
     }
   };
+
   const [similarities, setSimilarities] = useState<ClusterSimilarityResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"similarity" | "matrix">("similarity");
@@ -30,14 +35,13 @@ const Panel3ClusterSimilarity: React.FC = () => {
     setSelectedCluster(null);
   }, [selectedColumns, setSelectedCluster]);
 
-  // Dynamic resizing effect
   useEffect(() => {
     const updateDimensions = () => {
       if (panelRef.current) {
         const rect = panelRef.current.getBoundingClientRect();
         setPanelDimensions({
           width: rect.width,
-          height: rect.height - 120, // Account for header and controls
+          height: rect.height - 120,
         });
       }
     };
@@ -55,16 +59,14 @@ const Panel3ClusterSimilarity: React.FC = () => {
   }, [expandedPanel]);
 
   useEffect(() => {
-    // Clear previous similarities when selection changes
     setSimilarities([]);
 
-    // Fetch similarities when a cluster is selected
     if (selectedCluster !== null && selectedColumns.length === 2 && data.fileId) {
       setLoading(true);
 
       ClusteringService.getClusterSimilarities(selectedColumns[0], selectedColumns[1], selectedCluster, data.fileId!)
-        .then((data) => {
-          setSimilarities(data);
+        .then((response) => {
+          setSimilarities(response);
         })
         .catch(() => {
           toast.error("Failed to load similarity data");
@@ -75,12 +77,10 @@ const Panel3ClusterSimilarity: React.FC = () => {
     }
   }, [selectedCluster, selectedColumns, data.fileId]);
 
-  // Filter similarities based on the filter checkbox
   const getFilteredSimilarities = () => {
     if (!filterHighSimilarity) {
       return similarities;
     }
-    // Filter to only show similarities above 50%
     return similarities.filter((sim) => sim.similarity > 0.5);
   };
 
@@ -88,7 +88,6 @@ const Panel3ClusterSimilarity: React.FC = () => {
     if (loading) {
       return <p>Loading similarity data...</p>;
     }
-
 
     if (selectedCluster === null || selectedColumns.length !== 2) {
       return <p>Select a cluster point to view similarity analysis</p>;
@@ -101,13 +100,13 @@ const Panel3ClusterSimilarity: React.FC = () => {
     const filteredSimilarities = getFilteredSimilarities();
 
     return (
-      <div className="similarity-analysis">
-        <div className="similarity-header">
-          <div className="cluster-info">
+      <div className={styles.similarityAnalysis}>
+        <div className={styles.similarityHeader}>
+          <div className={styles.clusterInfo}>
             Cluster {selectedCluster + 1} of feature pair: <i>{selectedColumns.join(" and ")}</i>
           </div>
-          <div className="similarity-controls">
-            <label className="filter-checkbox">
+          <div className={styles.similarityControls}>
+            <label className={styles.filterCheckbox}>
               <input
                 type="checkbox"
                 checked={filterHighSimilarity}
@@ -118,29 +117,29 @@ const Panel3ClusterSimilarity: React.FC = () => {
           </div>
         </div>
         <hr />
-        <div className="table-container">
-          <table>
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
             <thead>
               <tr>
-                <th>Feature 1</th>
-                <th>Feature 2</th>
-                <th>Cluster</th>
-                <th>Jaccard Similarity</th>
+                <th className={styles.headerCell}>Feature 1</th>
+                <th className={styles.headerCell}>Feature 2</th>
+                <th className={styles.headerCell}>Cluster</th>
+                <th className={styles.headerCell}>Jaccard Similarity</th>
               </tr>
             </thead>
             <tbody>
               {filteredSimilarities.length > 0 ? (
                 filteredSimilarities.map((sim, idx) => (
-                  <tr key={idx}>
-                    <td>{sim.feature1}</td>
-                    <td>{sim.feature2}</td>
-                    <td>{sim.cluster_id + 1}</td>
-                    <td>{(sim.similarity * 100).toFixed(1)}%</td>
+                  <tr key={idx} className={idx % 2 === 0 ? styles.rowOdd : styles.rowEven}>
+                    <td className={styles.cell}>{sim.feature1}</td>
+                    <td className={styles.cell}>{sim.feature2}</td>
+                    <td className={styles.cell}>{sim.cluster_id + 1}</td>
+                    <td className={styles.cell}>{(sim.similarity * 100).toFixed(1)}%</td>
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td colSpan={4} style={{ textAlign: "center", fontStyle: "italic" }}>
+                <tr className={styles.rowOdd}>
+                  <td className={`${styles.cell} ${styles.emptyRowCell}`} colSpan={4}>
                     No clusters match the current filter criteria
                   </td>
                 </tr>
@@ -148,7 +147,7 @@ const Panel3ClusterSimilarity: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="similarity-stats">
+        <div className={styles.similarityStats}>
           Showing {filteredSimilarities.length} of {similarities.length} similar clusters
         </div>
       </div>
@@ -158,15 +157,15 @@ const Panel3ClusterSimilarity: React.FC = () => {
   return (
     <div
       ref={panelRef}
-      className={`panel panel-right ${expandedPanel === "right" ? "expanded" : ""}`}
+      className={`${shellStyles.panel} ${styles.panelRight} ${isExpanded ? shellStyles.expanded : ""} ${isCollapsed ? shellStyles.collapsed : ""} ${isCollapsed ? shellStyles.dimmed : ""}`}
       onClick={(e) => handlePanelClick("right", e)}
     >
-      <h2 className="panel-header">
-        <div className="panel-header-title">Cluster Similarity</div>
-        <div className="panel-header-options">
-          <div className="view-mode-switch">
+      <h2 className={shellStyles.panelHeader}>
+        <div>Cluster Similarity</div>
+        <div className={styles.headerOptions}>
+          <div className={styles.viewModeSwitch}>
             <button
-              className={`view-mode-button ${viewMode === "similarity" ? "active" : ""}`}
+              className={`${styles.viewModeButton} ${viewMode === "similarity" ? styles.viewModeButtonActive : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setViewMode("similarity");
@@ -176,7 +175,7 @@ const Panel3ClusterSimilarity: React.FC = () => {
               List
             </button>
             <button
-              className={`view-mode-button ${viewMode === "matrix" ? "active" : ""}`}
+              className={`${styles.viewModeButton} ${viewMode === "matrix" ? styles.viewModeButtonActive : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setViewMode("matrix");
@@ -188,14 +187,11 @@ const Panel3ClusterSimilarity: React.FC = () => {
           </div>
         </div>
       </h2>
-      <div className="analysis-panel">
+      <div className={styles.analysisPanel}>
         {viewMode === "similarity" ? (
           renderSimilarityAnalysis()
         ) : (
-          <ClusterSimilarityMatrix
-            width={panelDimensions.width}
-            height={panelDimensions.height}
-          />
+          <ClusterSimilarityMatrix width={panelDimensions.width} height={panelDimensions.height} />
         )}
       </div>
     </div>

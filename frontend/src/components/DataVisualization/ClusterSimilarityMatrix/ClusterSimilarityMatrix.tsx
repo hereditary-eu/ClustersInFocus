@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { VariableSizeGrid as Grid } from "react-window";
+import { Grid, type CellComponentProps } from "react-window";
 import { ClusteringService } from "../../../services/ClusteringService";
 import { useAppStore } from "../../../stores/useAppStore";
 import { toast } from "../../../stores/useToastStore";
@@ -43,13 +43,15 @@ const CELL_SIZE = 16;
 const ROW_HEADER_WIDTH = 120;
 const COLUMN_HEADER_HEIGHT = 80;
 
-const MatrixCell = React.memo<{
-  columnIndex: number;
-  rowIndex: number;
-  style: React.CSSProperties;
-  data: CellData;
-}>(({ columnIndex, rowIndex, style, data }) => {
-  const { featurePairMatrixData, onCellHover, onCellLeave, colorRangeMode } = data;
+const MatrixCell = ({
+  columnIndex,
+  rowIndex,
+  style,
+  featurePairMatrixData,
+  onCellHover,
+  onCellLeave,
+  colorRangeMode,
+}: CellComponentProps<CellData>) => {
 
   if (rowIndex === 0 && columnIndex === 0) {
     return (
@@ -110,9 +112,7 @@ const MatrixCell = React.memo<{
       {!isDiagonal && <div className={styles.heatmapCell} />}
     </div>
   );
-});
-
-MatrixCell.displayName = "MatrixCell";
+};
 
 const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width, height }) => {
   const data = useAppStore(state => state.data);
@@ -362,12 +362,10 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
           rowCount={gridSize}
           columnWidth={getColumnWidth}
           rowHeight={getRowHeight}
-          width={gridWidth}
-          height={gridHeight}
-          itemData={cellData}
-        >
-          {MatrixCell}
-        </Grid>
+          style={{ width: gridWidth, height: gridHeight }}
+          cellComponent={MatrixCell}
+          cellProps={cellData}
+        />
       </div>
 
       {tooltip.visible && tooltip.content && (

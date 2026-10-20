@@ -9,7 +9,7 @@ interface ScatterplotClusteredProps {
   xLabel: string;
   yLabel: string;
   k: number;
-  width?: string | number;
+  width?: number | `${number}%`;
   height?: number;
 }
 

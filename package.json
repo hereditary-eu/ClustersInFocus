@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@types/papaparse": "^5.3.14",
-    "@types/react-window": "^2.0.0",
     "d3": "^7.9.0",
     "ml-kmeans": "^7.0.1",
     "ml-pca": "^4.1.1",
@@ -26,7 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/react": "^18.3.31",
+    "@types/react": "^19",
     "@types/react-dom": "^19.3.0",
     "@types/react-table": "^7.7.20",
     "@vitejs/plugin-react": "^6.1.2",
@@ -42,6 +41,6 @@
     "printWidth": 120
   },
   "overrides": {
-    "@types/react": "^18.3.10"
+    "@types/react": "^19"
   }
 }

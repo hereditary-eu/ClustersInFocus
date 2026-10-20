@@ -5,8 +5,7 @@ This file is the release disclaimer required by the HEREDITARY misuse self-asses
 > **Research use only. Not a medical device.**
 > This software was developed in the HEREDITARY project as a research prototype. It has not been assessed or certified under the EU Medical Device Regulation (EU) 2017/745. It must not be used to diagnose, treat, monitor or make any other decision about individual patients.
 
-<!-- To be shown in the user interface:
-"Research prototype of the HEREDITARY project. Not a medical device and not for clinical use. Do not enter personal or patient data." (not yet shown, as of 2026-10-18) -->
+<!-- Shown in the user interface, page footer (`frontend/src/components/Layout/Footer.tsx`): "Research prototype · Not a medical device · Not for clinical use" -->
 
 **Do not upload personal or patient data to the public demo.** Datasets uploaded through the interface are stored in the server-side database of that deployment and are visible to every other visitor of it. For real data, self-host the application with the provided `docker-compose.yml`.
 
@@ -66,7 +65,7 @@ The dataset ships pre-loaded in the SQLite database `backend/app.db` so that the
 ## 7. Responsible use and reporting
 
 - **Terms of use.** Public demo at https://hereditary.cgv.tugraz.at/cif with a shared database that any visitor can upload to or clear; self-hosting via `docker compose up` for any non-public data. Licensed under MIT (`LICENSE`).
-- **Pre-release actions.** This disclaimer is linked from the repository README since 2026-10-18. Since the same date the repository carries an MIT `LICENSE` file. Still open: show the research-use and no-upload notice in the interface.
+- **Pre-release actions.** This disclaimer is linked from the repository README, the repository carries an MIT `LICENSE` file, and the interface shows a short not-a-medical-device line (page footer, `frontend/src/components/Layout/Footer.tsx`). Still open: show the no-upload notice in the interface.
 - **Contact for misuse or vulnerability reports.** peter.waldert@tugraz.at
 
 ## 8. Acknowledgement

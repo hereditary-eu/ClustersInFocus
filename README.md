@@ -6,7 +6,7 @@
 
 Welcome to the code behind _Clusters in Focus: A Simple and Robust Detail-On-Demand Dashboard for Patient Data_, presented at EG [VCBM 2025](https://conferences.eg.org/vcbm2025/) at TU Delft.
 
-[Demo](https://hereditary.cgv.tugraz.at/cif) · [Paper](https://diglib.eg.org/items/3d093c70-1cde-43a1-894b-d1ac41f22903) · [PDF](https://diglib.eg.org/server/api/core/bitstreams/3562c219-0d2c-49f7-bbef-d5c63fbe1a70/content)
+[Demo](https://hereditary.cgv.tugraz.at/clusters-in-focus) · [Paper](https://diglib.eg.org/items/3d093c70-1cde-43a1-894b-d1ac41f22903) · [PDF](https://diglib.eg.org/server/api/core/bitstreams/3562c219-0d2c-49f7-bbef-d5c63fbe1a70/content)
 
 ![Clusters in Focus Preview](./screenshot.png)
 
@@ -32,19 +32,12 @@ You can open your own CSV files through the interface. All computation (clusteri
 
 ## Running locally
 
-```bash
-docker compose build
-docker compose up
-```
-
-This will start a webserver (on port 80), which you can access via your browser.
-
 The computations live in the Rust crate `compute/`, compiled to WebAssembly and run in a Web Worker.
 For development you need [Rust](https://rustup.rs/) (the wasm target is installed via `rust-toolchain.toml`), the matching `wasm-bindgen` CLI and [bun](https://bun.sh/):
 
 ```bash
 cargo install wasm-bindgen-cli --version 0.2.130 --locked  # once; must match compute/Cargo.toml
-bun install && bun dev                                      # http://localhost:5173/cif
+bun install && bun dev                                      # http://localhost:5173/clusters-in-focus
 ```
 
 `reference/` keeps the original Python implementation (scikit-learn, scipy, xgboost + shap); its parity tests run the Rust crate against it:
@@ -52,7 +45,19 @@ bun install && bun dev                                      # http://localhost:5
 ```bash
 bun run test  # cargo test + uv run pytest
 ```
-In order to recreate the screenshot above and in the paper (Figure 1), open Firefox on `http://localhost`.
+
+## Deployment
+
+The app is a static site. `docker-compose.yml` builds it into an nginx image and serves it behind [Traefik](https://traefik.io/) at `https://hereditary.cgv.tugraz.at/clusters-in-focus/`, on the external `web` network:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+## Reproducing Figure 1
+
+In order to recreate the screenshot above and in the paper (Figure 1), run `bun dev` and open Firefox on `http://localhost:5173/clusters-in-focus`.
 You should now be able to see the interface.
 On the top right dropdown, select `parkinsonsdata.csv (example)`.
 

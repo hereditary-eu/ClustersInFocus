@@ -18,7 +18,7 @@ This file is the release disclaimer required by the HEREDITARY misuse self-asses
 | Type | Demo or web application (with source code and a bundled public demonstration dataset) |
 | Owner partner and contact | TU Graz (IVC); Peter Waldert, peter.waldert@tugraz.at |
 | License | MIT (see [`LICENSE`](LICENSE)), in line with the WP5 licensing policy (D5.2, "Component FAIRification"). |
-| Repository and DOI | https://github.com/hereditary-eu/ClustersInFocus — demo: https://hereditary.cgv.tugraz.at/cif — paper: https://doi.org/10.2312/vcbm.20251250 — software archive: https://doi.org/10.5281/zenodo.17661296 |
+| Repository and DOI | https://github.com/hereditary-eu/ClustersInFocus — demo: https://hereditary.cgv.tugraz.at/clusters-in-focus — paper: https://doi.org/10.2312/vcbm.20251250 — software archive: https://doi.org/10.5281/zenodo.17661296 |
 | Release date | Repository created 2025-04-30; presented at VCBM 2025 on 2025-10-02; tag `v0.1.0` released 2025-11-20; archived on Zenodo in November 2025 |
 | Related task or deliverable | WP5, T5.1; D5.1, D5.2 |
 | How to cite | Schilcher, Waldert, Kantz, Schreck, *Clusters in Focus: A Simple and Robust Detail-On-Demand Dashboard for Patient Data*, VCBM 2025. https://doi.org/10.2312/vcbm.20251250 |
@@ -64,7 +64,7 @@ The dataset ships as the static file `frontend/public/parkinsonsdata.csv` so tha
 
 ## 7. Responsible use and reporting
 
-- **Terms of use.** Public demo at https://hereditary.cgv.tugraz.at/cif, a static site that processes all data in the visitor's browser; self-hosting via `docker compose up`. Licensed under MIT (`LICENSE`).
+- **Terms of use.** Public demo at https://hereditary.cgv.tugraz.at/clusters-in-focus, a static site that processes all data in the visitor's browser; self-hosting via the Docker image (see the README's Deployment section). Licensed under MIT (`LICENSE`).
 - **Pre-release actions.** This disclaimer is linked from the repository README, the repository carries an MIT `LICENSE` file, and the interface shows a short not-a-medical-device line (page footer, `frontend/src/components/Layout/Footer.tsx`). The dataset menu states that files are processed and saved only in the browser.
 - **Contact for misuse or vulnerability reports.** peter.waldert@tugraz.at
 

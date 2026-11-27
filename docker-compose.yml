@@ -1,8 +1,38 @@
 services:
-  frontend:
-    image: clusters-in-focus-frontend
+  clusters-in-focus-frontend:
+    image: registry.gitlab.tugraz.at/hereditary/clustersinfocus:frontend_main
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    ports:
-      - 80:80
+    networks:
+      - web
+    labels:
+      # the app is built with base /clusters-in-focus (frontend/vite.config.ts); nginx serves it from its root
+      - traefik.http.routers.clusters-in-focus-http.rule=Host(`hereditary.cgv.tugraz.at`) && PathPrefix(`/clusters-in-focus/`)
+      - traefik.http.routers.clusters-in-focus-http.entrypoints=http
+      - traefik.http.routers.clusters-in-focus-https.rule=Host(`hereditary.cgv.tugraz.at`) && PathPrefix(`/clusters-in-focus/`)
+      - traefik.http.routers.clusters-in-focus-https.entrypoints=https
+      - traefik.http.routers.clusters-in-focus-https.tls=true
+      - traefik.http.routers.clusters-in-focus-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.clusters-in-focus-http.middlewares=redirect,clusters-in-focus_sp@docker
+      - traefik.http.routers.clusters-in-focus-https.middlewares=redirect,clusters-in-focus_sp@docker
+      - traefik.http.middlewares.clusters-in-focus_sp.stripprefix.prefixes=/clusters-in-focus
+      - traefik.http.middlewares.clusters-in-focus_sp.stripprefix.forceSlash=false
+      - traefik.http.middlewares.redirect.redirectscheme.scheme=https
+      - traefik.http.services.clusters-in-focus.loadbalancer.server.port=80
+      # the demo used to live at /cif: redirect old links permanently
+      - traefik.http.routers.clusters-in-focus-legacy-http.rule=Host(`hereditary.cgv.tugraz.at`) && (Path(`/cif`) || PathPrefix(`/cif/`))
+      - traefik.http.routers.clusters-in-focus-legacy-http.entrypoints=http
+      - traefik.http.routers.clusters-in-focus-legacy-http.middlewares=clusters-in-focus_legacy
+      - traefik.http.routers.clusters-in-focus-legacy-https.rule=Host(`hereditary.cgv.tugraz.at`) && (Path(`/cif`) || PathPrefix(`/cif/`))
+      - traefik.http.routers.clusters-in-focus-legacy-https.entrypoints=https
+      - traefik.http.routers.clusters-in-focus-legacy-https.tls=true
+      - traefik.http.routers.clusters-in-focus-legacy-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.clusters-in-focus-legacy-https.middlewares=clusters-in-focus_legacy
+      - traefik.http.middlewares.clusters-in-focus_legacy.redirectregex.regex=^https?://([^/]+)/cif(/.*)?$$
+      - traefik.http.middlewares.clusters-in-focus_legacy.redirectregex.replacement=https://$${1}/clusters-in-focus$${2}
+      - traefik.http.middlewares.clusters-in-focus_legacy.redirectregex.permanent=true
+
+networks:
+  web:
+    external: true

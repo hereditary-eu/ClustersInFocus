@@ -20,17 +20,17 @@ services:
       - traefik.http.middlewares.clusters-in-focus_sp.stripprefix.forceSlash=false
       - traefik.http.middlewares.redirect.redirectscheme.scheme=https
       - traefik.http.services.clusters-in-focus.loadbalancer.server.port=80
-      # the demo used to live at /cif: redirect old links permanently
-      - traefik.http.routers.clusters-in-focus-legacy-http.rule=Host(`hereditary.cgv.tugraz.at`) && (Path(`/cif`) || PathPrefix(`/cif/`))
+      # redirect the old /cif links and the bare path (no trailing slash) to /clusters-in-focus/
+      - traefik.http.routers.clusters-in-focus-legacy-http.rule=Host(`hereditary.cgv.tugraz.at`) && (Path(`/cif`) || PathPrefix(`/cif/`) || Path(`/clusters-in-focus`))
       - traefik.http.routers.clusters-in-focus-legacy-http.entrypoints=http
       - traefik.http.routers.clusters-in-focus-legacy-http.middlewares=clusters-in-focus_legacy
-      - traefik.http.routers.clusters-in-focus-legacy-https.rule=Host(`hereditary.cgv.tugraz.at`) && (Path(`/cif`) || PathPrefix(`/cif/`))
+      - traefik.http.routers.clusters-in-focus-legacy-https.rule=Host(`hereditary.cgv.tugraz.at`) && (Path(`/cif`) || PathPrefix(`/cif/`) || Path(`/clusters-in-focus`))
       - traefik.http.routers.clusters-in-focus-legacy-https.entrypoints=https
       - traefik.http.routers.clusters-in-focus-legacy-https.tls=true
       - traefik.http.routers.clusters-in-focus-legacy-https.tls.certresolver=letsencrypt
       - traefik.http.routers.clusters-in-focus-legacy-https.middlewares=clusters-in-focus_legacy
-      - traefik.http.middlewares.clusters-in-focus_legacy.redirectregex.regex=^https?://([^/]+)/cif(/.*)?$$
-      - traefik.http.middlewares.clusters-in-focus_legacy.redirectregex.replacement=https://$${1}/clusters-in-focus$${2}
+      - traefik.http.middlewares.clusters-in-focus_legacy.redirectregex.regex=^https?://([^/]+)/(?:cif|clusters-in-focus)/?(.*)$$
+      - traefik.http.middlewares.clusters-in-focus_legacy.redirectregex.replacement=https://$${1}/clusters-in-focus/$${2}
       - traefik.http.middlewares.clusters-in-focus_legacy.redirectregex.permanent=true
 
 networks:

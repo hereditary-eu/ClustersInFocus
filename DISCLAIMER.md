@@ -7,7 +7,7 @@ This file is the release disclaimer required by the HEREDITARY misuse self-asses
 
 <!-- Shown in the user interface, page footer (`frontend/src/components/Layout/Footer.tsx`): "Research prototype · Not a medical device · Not for clinical use" -->
 
-**Do not upload personal or patient data to the public demo.** Datasets uploaded through the interface are stored in the server-side database of that deployment and are visible to every other visitor of it. For real data, self-host the application with the provided `docker-compose.yml`.
+**Data you open stays in your browser.** All computation runs locally via WebAssembly; datasets are never sent to a server and are saved only in the browser's IndexedDB, where anyone with access to that browser profile can open them.
 
 ## 1. Overview
 
@@ -41,13 +41,13 @@ This file is the release disclaimer required by the HEREDITARY misuse self-asses
 |---|---|---|---|---|
 | `parkinsonsdata.csv` — biomedical voice measurements for Parkinson's disease detection (UCI / Little et al., redistributed on [Kaggle](https://www.kaggle.com/datasets/debasisdotcom/parkinson-disease-detection/data)) | External, public | Public, no direct identifiers | 195 sustained-phonation recordings from 31 subjects, 23 of them with Parkinson's disease; single study | Publicly redistributed research dataset. No HEREDITARY partner data used; no ethics approval under D2.2 Table 1 required. |
 
-The dataset ships pre-loaded in the SQLite database `backend/app.db` so that the demonstration in the paper can be reproduced. This repository and the released files contain no personal data, pseudonymized records, identifiers or pseudonymization keys. The committed `backend/.env` holds only host, port, thread count and the local database path — no credentials. A pattern scan of the full git history (66 commits, 2026-10-18) for API keys, tokens, private keys and passwords found none.
+The dataset ships as the static file `frontend/public/parkinsonsdata.csv` so that the demonstration in the paper can be reproduced (earlier versions bundled it in the SQLite database `backend/app.db`). This repository and the released files contain no personal data, pseudonymized records, identifiers or pseudonymization keys. The `backend/.env` in earlier commits held only host, port, thread count and the local database path — no credentials. A pattern scan of the full git history (66 commits, 2026-10-18) for API keys, tokens, private keys and passwords found none.
 
 ## 4. Method
 
-- **Algorithm or architecture.** React/TypeScript frontend and a FastAPI backend over SQLite. For a user-selected feature pair the backend computes a 2D clustering (K-Means or DBSCAN, scikit-learn). Selecting one cluster `C_AB` scores every other feature-pair clustering `C_XY:k` by the Jaccard index `J = |C_AB ∩ C_XY:k| / |C_AB ∪ C_XY:k|`, presented both as a ranked list and as a reorderable similarity matrix. SHAP values for the condensed data view are computed on demand from an XGBoost surrogate.
+- **Algorithm or architecture.** React/TypeScript single-page app with a Rust crate compiled to WebAssembly (`compute/`) that runs in a Web Worker; there is no backend. For every feature pair it computes a 2D clustering (K-Means or DBSCAN, matching scikit-learn's semantics). Selecting one cluster `C_AB` scores every other feature-pair clustering `C_XY:k` by the Jaccard index `J = |C_AB ∩ C_XY:k| / |C_AB ∪ C_XY:k|`, presented both as a ranked list and as a reorderable similarity matrix. SHAP values for the condensed data view are computed on demand with TreeSHAP from a random-forest surrogate configured like the original `XGBRFRegressor`. `reference/` keeps the original Python implementation, and parity tests check the Rust crate against it.
 - **Training setting.** Not applicable. Nothing is trained ahead of time and no model weights are released; clustering and SHAP values are computed per request from the selected dataset.
-- **Privacy techniques.** None applied, and none required for the released configuration: the bundled dataset is public and carries no identifiers. Data a user uploads is neither anonymized nor isolated per user — see Section 6.
+- **Privacy techniques.** None applied, and none required for the released configuration: the bundled dataset is public and carries no identifiers. Data a user opens is processed locally and never transmitted — see Section 6.
 
 ## 5. Performance
 
@@ -57,15 +57,15 @@ The dataset ships pre-loaded in the SQLite database `backend/app.db` so that the
 
 ## 6. Known limitations and risks
 
-- **Generalizability.** The views assume numeric tabular data of moderate size that fits in memory on the backend. Behaviour with very wide tables (the pairwise feature-pair comparison grows quadratically with the number of features), with mostly categorical columns, or with heavy missingness has not been characterised.
+- **Generalizability.** The views assume numeric tabular data of moderate size that fits in browser memory. Behaviour with very wide tables (the pairwise feature-pair comparison grows quadratically with the number of features), with mostly categorical columns, or with heavy missingness has not been characterised.
 - **Known biases and confounders.** Cluster structure depends on the chosen algorithm, `k` and the scaling of the two selected features; a high Jaccard overlap is evidence of shared membership, not of a causal or biological relationship. The bundled dataset is a single small study (31 subjects) and is not representative of any population.
 - **Failure modes.** DBSCAN parameters that collapse the data into one cluster or into noise make the similarity panel uninformative; clusterings computed on different numbers of rows are not comparable by Jaccard overlap; SHAP values from the surrogate model are an approximation and should not be read as feature importances of any deployed model.
-- **Privacy risks.** No model weights are released, so no membership-inference or model-inversion test was run; it was judged unnecessary. The real privacy risk is operational: the demo's upload endpoint (`POST /dataset/upload`) stores uploaded tables in the shared server-side database, where they are listed to every visitor, with no per-user separation and no automatic deletion. The database is cleared through `GET /dataset/reset`, which is unauthenticated, so any visitor can wipe the shared demo. Do not upload personal or patient data to a shared deployment.
+- **Privacy risks.** No model weights are released, so no membership-inference or model-inversion test was run; it was judged unnecessary. Opened datasets never leave the browser; the remaining risk is local: they persist in that browser's IndexedDB until deleted from the dataset menu or cleared with the site data, so do not open patient data on a shared computer or profile.
 
 ## 7. Responsible use and reporting
 
-- **Terms of use.** Public demo at https://hereditary.cgv.tugraz.at/cif with a shared database that any visitor can upload to or clear; self-hosting via `docker compose up` for any non-public data. Licensed under MIT (`LICENSE`).
-- **Pre-release actions.** This disclaimer is linked from the repository README, the repository carries an MIT `LICENSE` file, and the interface shows a short not-a-medical-device line (page footer, `frontend/src/components/Layout/Footer.tsx`). Still open: show the no-upload notice in the interface.
+- **Terms of use.** Public demo at https://hereditary.cgv.tugraz.at/cif, a static site that processes all data in the visitor's browser; self-hosting via `docker compose up`. Licensed under MIT (`LICENSE`).
+- **Pre-release actions.** This disclaimer is linked from the repository README, the repository carries an MIT `LICENSE` file, and the interface shows a short not-a-medical-device line (page footer, `frontend/src/components/Layout/Footer.tsx`). The dataset menu states that files are processed and saved only in the browser.
 - **Contact for misuse or vulnerability reports.** peter.waldert@tugraz.at
 
 ## 8. Acknowledgement

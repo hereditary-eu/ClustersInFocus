@@ -139,11 +139,10 @@
   background-color: var(--color-red-accent-hover);
 }
 
-.noDatasets {
-  font-size: 13px;
+.privacyNote {
+  font-size: 12px;
   color: var(--color-gray-light);
-  font-style: italic;
-  margin: 5px 0;
+  margin: 4px 0 10px;
 }
 
 .confirmDeleteContainer {

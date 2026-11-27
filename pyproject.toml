@@ -5,22 +5,21 @@ description = "Clusters in Focus: A Simple and Robust Detail-On-Demand Dashboard
 authors = [{ name = "Lukas Schilcher" }, { name = "Peter Waldert" }]
 license = { text = "MIT" }
 requires-python = ">=3.12"
+# Python is only the reference implementation the Rust crate is tested against (reference/)
 dependencies = [
-  # structural
-  "fastapi (>=0.115.14,<0.116.0)",
-  "uvicorn (>=0.34.3,<0.35.0)",
-  "jinja2 (>=3.1.6,<4.0.0)",
-  "dotenv (>=0.9.9,<0.10.0)",
-  "aiosqlite (>=0.21.0,<0.22.0)",
-  "sqlalchemy (>=2.0.41,<3.0.0)",
-
-  # logical
-  "shap (>=0.48.0,<0.49.0)",
-  "scikit-learn (>=1.7.0,<2.0.0)",
-  "lightgbm (>=4.6.0,<5.0.0)",
+  "numpy (>=2.3.0,<3.0.0)",
   "pandas (>=2.3.0,<3.0.0)",
+  "scikit-learn (>=1.7.0,<2.0.0)",
+  "scipy (>=1.16.0,<2.0.0)",
+  "shap (>=0.54.1,<0.55.0)",
   "xgboost-cpu (>=3.0.2,<4.0.0)",
 ]
+
+[dependency-groups]
+dev = ["pytest (>=8.4.0,<10.0.0)"]
+
+[tool.pytest.ini_options]
+testpaths = ["reference"]
 
 [tool.ruff]
 line-length = 120

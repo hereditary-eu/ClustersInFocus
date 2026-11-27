@@ -1,3 +1,6 @@
+"""Original Python implementation of the clustering computations, kept as the reference for test_parity.py."""
+
+import logging
 from typing import Any, Dict, List, Literal, Union
 
 import numpy as np
@@ -6,10 +9,7 @@ from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 from scipy.spatial.distance import squareform
 from sklearn.cluster import DBSCAN, KMeans
 
-from models.clustering import DBScanParams, KMeansParams
-from utils.logger import get_logger
-
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ClusteringService:
@@ -18,7 +18,7 @@ class ClusteringService:
         data: List[Dict[str, Union[float, str, None]]],
         columns: List[str],
         algorithm: Literal["kmeans", "dbscan"],
-        params: KMeansParams | DBScanParams,
+        params: Any,
     ) -> Dict[str, Dict[str, Dict[int, List[int]]]]:
         """
         Compute clusters for each feature pair.

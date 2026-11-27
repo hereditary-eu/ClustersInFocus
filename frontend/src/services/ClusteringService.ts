@@ -1,13 +1,6 @@
-import { API_ROUTES } from "./ApiRoutes";
-import { ApiClient } from "./ApiClient";
-import {
-  ShapleyValueItem,
-  DataRow,
-  ClusteringAlgorithm,
-  ClusteringParams,
-  ClusterSimilarityResponse,
-  ClusteringResult,
-} from "../types";
+import { compute } from "../compute/client";
+import { useAppStore } from "../stores/useAppStore";
+import { ShapleyValueItem, DataRow, ClusteringAlgorithm, ClusteringParams, ClusterSimilarityResponse } from "../types";
 
 export const DEFAULT_PARAMS: ClusteringParams = {
   kmeans: {
@@ -20,44 +13,63 @@ export const DEFAULT_PARAMS: ClusteringParams = {
   },
 };
 
+export interface FeaturePairMatrix {
+  features: string[];
+  similarities: number[][];
+  stats: { min_similarity: number; max_similarity: number; size: number };
+}
+
+/** The dataset and columns currently held by the compute worker. */
+let loaded: { data: DataRow[]; columns: string[] } | null = null;
+
+async function ensureLoaded(data: DataRow[], columns: string[]) {
+  if (loaded?.data === data && loaded.columns.join("\0") === columns.join("\0")) return;
+  const n = data.length;
+  const values = new Float64Array(n * columns.length);
+  columns.forEach((column, j) =>
+    data.forEach((row, i) => {
+      const v = row[column];
+      values[j * n + i] = v === null || v === "" ? NaN : Number(v);
+    }),
+  );
+  loaded = null;
+  await compute("load", values, n, columns.length);
+  loaded = { data, columns };
+}
+
+/** Column indices of a feature pair, or null when no clusters exist for the dataset currently shown. */
+function pairIndices(feature1: string, feature2: string): [number, number] | null {
+  if (!loaded || loaded.data !== useAppStore.getState().data.csvData) return null;
+  const i = loaded.columns.indexOf(feature1);
+  const j = loaded.columns.indexOf(feature2);
+  return i < 0 || j < 0 ? null : [i, j];
+}
+
 export class ClusteringService {
   static async computeFeaturePairsClusters(
     csvData: DataRow[],
     columns: string[],
     algorithm: ClusteringAlgorithm,
     params: ClusteringParams[typeof algorithm],
-    onProgress: (progress: number) => void,
-    fileId?: string,
-    fileName?: string,
   ): Promise<void> {
+    await ensureLoaded(csvData, columns);
+    if (algorithm === "kmeans") {
+      const { k, maxIterations } = params as ClusteringParams["kmeans"];
+      await compute("kmeans", k, maxIterations);
+    } else {
+      const { eps, minSamples } = params as ClusteringParams["dbscan"];
+      await compute("dbscan", eps, minSamples);
+    }
+  }
+
+  /** Cluster label per row for a feature pair (-1 is DBSCAN noise), or null if not computed yet. */
+  static async getClusterLabels(feature1: string, feature2: string): Promise<number[] | null> {
+    const pair = pairIndices(feature1, feature2);
+    if (!pair) return null;
     try {
-      onProgress(25); // Initial progress
-
-      const requestData = {
-        data: csvData,
-        columns: columns,
-        algorithm: algorithm,
-        params:
-          algorithm === "kmeans"
-            ? {
-                k: (params as ClusteringParams["kmeans"]).k,
-                max_iterations: (params as ClusteringParams["kmeans"]).maxIterations,
-              }
-            : {
-                eps: (params as ClusteringParams["dbscan"]).eps,
-                min_samples: (params as ClusteringParams["dbscan"]).minSamples,
-              },
-        dataset_id: fileId, // Include the dataset ID if available
-        filename: fileName, // Include filename for saving if dataset doesn't exist
-      };
-
-      onProgress(60); // Processing data
-      
-      await ApiClient.post(API_ROUTES.clustering.compute, requestData);
-
-      onProgress(100); // Complete
-    } catch (error) {
-      throw error;
+      return Array.from(await compute("labels", ...pair));
+    } catch {
+      return null;
     }
   }
 
@@ -65,162 +77,65 @@ export class ClusteringService {
     selectedFeature1: string,
     selectedFeature2: string,
     selectedClusterId: number,
-    datasetId: string,
-  ): Promise<
-    Array<{
-      feature1: string;
-      feature2: string;
-      cluster_id: number;
-      similarity: number;
-    }>
-  > {
-    try {
-      const requestData = {
-        selected_feature1: selectedFeature1,
-        selected_feature2: selectedFeature2,
-        selected_cluster_id: selectedClusterId,
-        dataset_id: datasetId,
-      };
-
-      const responseData = await ApiClient.post<ClusterSimilarityResponse[]>(
-        API_ROUTES.clustering.similarities,
-        requestData,
-      );
-
-      // Transform response to match frontend expected format
-      return responseData.map((item: ClusterSimilarityResponse) => ({
-        feature1: item.feature1,
-        feature2: item.feature2,
-        cluster_id: item.cluster_id,
-        similarity: item.similarity,
-      }));
-    } catch (error) {
-      throw error;
+  ): Promise<ClusterSimilarityResponse[]> {
+    const pair = pairIndices(selectedFeature1, selectedFeature2);
+    if (!pair) throw new Error("No clusters found. Please compute clusters first.");
+    const flat = await compute("similarities", ...pair, selectedClusterId);
+    const columns = loaded!.columns;
+    const out: ClusterSimilarityResponse[] = [];
+    for (let k = 0; k < flat.length; k += 4) {
+      out.push({
+        feature1: columns[flat[k]],
+        feature2: columns[flat[k + 1]],
+        cluster_id: flat[k + 2],
+        similarity: flat[k + 3],
+      });
     }
-  }
-
-  static async getClustersByFeatures(
-    feature1: string,
-    feature2: string,
-    datasetId: string,
-    data?: DataRow[],
-  ): Promise<Record<number, number[]> | null> {
-    try {
-      // Check if both features are numeric if data is provided
-      if (data && data.length > 0) {
-        const isNumericColumn = (column: string): boolean => {
-          // Check a sample of values (up to 100) to see if they're all numeric
-          const sampleSize = Math.min(100, data.length);
-
-          for (let i = 0; i < sampleSize; i++) {
-            const value = data[i][column];
-            // Skip null values
-            if (value === null || value === undefined) continue;
-
-            // If any non-null value is not a number, return false
-            if (typeof value !== "number" && isNaN(Number(value))) {
-              return false;
-            }
-          }
-          return true;
-        };
-
-        // Check both columns
-        if (!isNumericColumn(feature1) || !isNumericColumn(feature2)) {
-          return null;
-        }
-      }
-
-      // Only proceed with the request if both columns are numeric
-      const url = `${API_ROUTES.clustering.getByFeatures}?dataset_id=${datasetId}&feature1=${feature1}&feature2=${feature2}`;
-      return await ApiClient.get<Record<number, number[]> | null>(url);
-    } catch (error) {
-      return null;
-    }
-  }
-
-  static async checkExistingClusters(datasetId: string): Promise<ClusteringResult[] | null> {
-    try {
-      if (!datasetId) {
-        return null;
-      }
-
-      const url = `${API_ROUTES.clustering.getAllFeaturePairs}?dataset_id=${datasetId}`;
-      const response = await ApiClient.get<ClusteringResult[]>(url);
-
-      return response && response.length > 0 ? response : null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  static async computeShapleyValues(
-    targetColumn: string,
-    datasetId: string,
-    onProgress: (progress: number) => void,
-    data?: DataRow[],
-    fileName?: string,
-  ): Promise<void> {
-    try {
-      onProgress(25); // Initial progress
-
-      const requestData = {
-        target_column: targetColumn,
-        dataset_id: datasetId,
-        data: data, // Include the data in case dataset doesn't exist
-        filename: fileName, // Include filename for saving if dataset doesn't exist
-      };
-
-      onProgress(60); // Processing data
-      
-      await ApiClient.post(API_ROUTES.shapley.compute, requestData);
-
-      onProgress(100); // Complete
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async getShapleyValues(targetColumn: string, datasetId: string): Promise<ShapleyValueItem[] | null> {
-    try {
-      const url = `${API_ROUTES.shapley.getValues}/${datasetId}/${targetColumn}`;
-      return await ApiClient.get<ShapleyValueItem[] | null>(url);
-    } catch (error) {
-      return null;
-    }
+    return out;
   }
 
   static async getFeaturePairSimilarityMatrix(
-    datasetId: string,
     selectedFeature1: string,
     selectedFeature2: string,
     selectedClusterId: number,
-    features: string[],
     aggregation: string = "max",
     reorderMethod: string = "none",
-  ): Promise<{
-    features: string[];
-    similarities: number[][];
-    stats: {
-      min_similarity: number;
-      max_similarity: number;
-      size: number;
-    };
-  } | null> {
-    try {
-      const requestData = {
-        dataset_id: datasetId,
-        selected_feature1: selectedFeature1,
-        selected_feature2: selectedFeature2,
-        selected_cluster_id: selectedClusterId,
-        features: features,
-        aggregation: aggregation,
-        reorder_method: reorderMethod,
-      };
+  ): Promise<FeaturePairMatrix> {
+    const pair = pairIndices(selectedFeature1, selectedFeature2);
+    if (!pair) throw new Error("No clusters found. Please compute clusters first.");
+    const columns = loaded!.columns;
+    const n = columns.length;
+    const values = await compute("matrix", ...pair, selectedClusterId, aggregation);
 
-      return await ApiClient.post(`${API_ROUTES.clustering.featurePairMatrix}`, requestData);
-    } catch (error) {
-      return null;
-    }
+    let min = Infinity;
+    let max = -Infinity;
+    values.forEach((v, k) => {
+      if (k % n !== Math.floor(k / n)) {
+        min = Math.min(min, v);
+        max = Math.max(max, v);
+      }
+    });
+
+    const order = reorderMethod === "none" ? columns.map((_, i) => i) : Array.from(await compute("reorder", values, n, reorderMethod));
+    return {
+      features: order.map((i) => columns[i]),
+      similarities: order.map((i) => order.map((j) => values[i * n + j])),
+      stats: { min_similarity: n > 1 ? min : 0, max_similarity: n > 1 ? max : 1, size: n },
+    };
+  }
+
+  /** Mean |SHAP| of every other numeric column for predicting `targetColumn`, highest first. */
+  static async computeShapleyValues(
+    csvData: DataRow[],
+    columns: string[],
+    targetColumn: string,
+  ): Promise<ShapleyValueItem[]> {
+    await ensureLoaded(csvData, columns);
+    const target = columns.indexOf(targetColumn);
+    const importance = await compute("shap", target);
+    return columns
+      .map((feature, i) => ({ feature, "SHAP Value": importance[i] }))
+      .filter((_, i) => i !== target)
+      .sort((a, b) => b["SHAP Value"] - a["SHAP Value"]);
   }
 }

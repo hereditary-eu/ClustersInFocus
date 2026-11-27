@@ -46,20 +46,11 @@ const Panel2Selection: React.FC = () => {
           return;
         }
 
-        const clusterGroups = await ClusteringService.getClustersByFeatures(feature1, feature2, data.fileId!, data.csvData);
+        const clusterArray = await ClusteringService.getClusterLabels(feature1, feature2);
 
-        if (clusterGroups) {
-          const clusterArray = new Array(data.csvData.length).fill(-1);
-          const uniqueClusterIds = Object.keys(clusterGroups).map(Number);
-
-          Object.entries(clusterGroups).forEach(([clusterId, indices]) => {
-            indices.forEach((index: number) => {
-              clusterArray[index] = Number(clusterId);
-            });
-          });
-
+        if (clusterArray) {
           setClusterData(clusterArray);
-          setNumClusters(uniqueClusterIds.length);
+          setNumClusters(new Set(clusterArray).size);
 
           const newScatterData = data.csvData.map((row, index) => [
             Number(row[feature1]),

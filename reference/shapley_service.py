@@ -1,33 +1,15 @@
-from typing import Union
+"""Original Python implementation of the SHAP importances, kept as the reference for test_parity.py."""
 
-import lightgbm as lgb
 import numpy as np
 import pandas as pd
 import shap
 import xgboost
 
-from core.config import CONFIG
-
 
 class ShapleyService:
     @classmethod
     def get_shap_model(cls):
-        if CONFIG.SHAP_MODEL == "xgboost":
-            return xgboost.XGBRFRegressor(
-                n_estimators=CONFIG.SHAP_MODEL_PARAMETERS["xgboost"]["n_estimators"],
-                learning_rate=CONFIG.SHAP_MODEL_PARAMETERS["xgboost"]["learning_rate"],
-                max_depth=CONFIG.SHAP_MODEL_PARAMETERS["xgboost"]["max_depth"],
-                random_state=CONFIG.SHAP_MODEL_PARAMETERS["xgboost"]["random_state"],
-            )
-        elif CONFIG.SHAP_MODEL == "lightgbm":
-            return lgb.LGBMRegressor(
-                n_estimators=CONFIG.SHAP_MODEL_PARAMETERS["lightgbm"]["n_estimators"],
-                learning_rate=CONFIG.SHAP_MODEL_PARAMETERS["lightgbm"]["learning_rate"],
-                max_depth=CONFIG.SHAP_MODEL_PARAMETERS["lightgbm"]["max_depth"],
-                random_state=CONFIG.SHAP_MODEL_PARAMETERS["lightgbm"]["random_state"],
-            )
-        else:
-            raise ValueError(f"Model {CONFIG.SHAP_MODEL} not supported")
+        return xgboost.XGBRFRegressor(n_estimators=100, learning_rate=0.1, max_depth=6, random_state=42)
 
     @classmethod
     def normalize_data(cls, data: pd.DataFrame) -> pd.DataFrame:
@@ -43,9 +25,7 @@ class ShapleyService:
         return normalized_data
 
     @classmethod
-    def compute_shap_values(
-        cls, model: Union[xgboost.XGBRFRegressor, lgb.LGBMRegressor], X: pd.DataFrame, y: pd.Series
-    ) -> pd.DataFrame:
+    def compute_shap_values(cls, model: xgboost.XGBRFRegressor, X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
         X_numeric = X.select_dtypes(include=["number"])
         model.fit(X_numeric, y)
         explainer = shap.TreeExplainer(model)

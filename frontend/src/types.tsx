@@ -37,36 +37,11 @@ export interface ClusterSimilarityResponse {
   similarity: number;
 }
 
-export interface ClusteringResult {
-  feature1: string;
-  feature2: string;
-  clusters: Record<number, number[]>;
-}
-
 // Dataset related types
 export interface DatasetInfo {
+  id: number | "example"; // IndexedDB key, or the bundled example
   name: string;
-  hash?: string; // Optional as hash is added after backend computation
 }
-
-export interface ServerDataset {
-  id: string;
-  filename: string;
-}
-
-// API Client types
-export interface RequestOptions {
-  method?: HttpMethod;
-  body?: unknown;
-  headers?: Record<string, string>;
-}
-
-export interface ApiClientError extends Error {
-  statusCode?: number;
-  response?: Response;
-}
-
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 export interface HyperparamModalProps {
   algorithm: ClusteringAlgorithm;

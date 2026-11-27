@@ -1,213 +1,113 @@
 import Papa from "papaparse";
-import { ApiClient } from "./ApiClient";
-import { API_ROUTES } from "./ApiRoutes";
-import { DataRow } from "../types";
+import { DataRow, DatasetInfo } from "../types";
+
+/** Ships with the app (frontend/public), so it can be loaded but not deleted. */
+export const EXAMPLE_DATASET: DatasetInfo = { id: "example", name: "parkinsonsdata.csv" };
+
+function inferColumnType(values: unknown[]): "number" | "string" {
+  return values.filter((v) => v !== null && v !== "" && v !== undefined).every((v) => !isNaN(Number(v)))
+    ? "number"
+    : "string";
+}
+
+/** Parse a CSV file (or CSV text) into typed rows; empty cells become null. */
+function parseCSV(source: File | string): Promise<{ data: DataRow[]; headers: string[] }> {
+  return new Promise((resolve, reject) => {
+    Papa.parse<Record<string, unknown>>(source, {
+      header: true,
+      skipEmptyLines: true,
+      complete: ({ data: rawData }) => {
+        if (rawData.length === 0) return reject(new Error("No data found in file"));
+        const headers = Object.keys(rawData[0]);
+        if (headers.length === 0) return reject(new Error("No valid headers found in the file"));
+
+        const types = Object.fromEntries(headers.map((h) => [h, inferColumnType(rawData.map((row) => row[h]))]));
+        const data: DataRow[] = rawData
+          .filter((row) => Object.values(row).some((v) => v !== null && v !== "" && v !== undefined))
+          .map((row) => {
+            const out: DataRow = {};
+            for (const h of headers) {
+              const v = row[h];
+              if (v === null || v === undefined || v === "") out[h] = null;
+              else if (types[h] === "number") out[h] = isNaN(Number(v)) ? null : Number(v);
+              else out[h] = String(v).trim() || null;
+            }
+            return out;
+          });
+        if (data.length === 0) return reject(new Error("No valid data rows found after processing"));
+        resolve({ data, headers });
+      },
+      error: (error: Error) => reject(error),
+    });
+  });
+}
+
+// Saved datasets live in this browser's IndexedDB: "datasets" holds {id, name} for the list,
+// "rows" holds each dataset's {data, headers} under the same id.
+let opened: Promise<IDBDatabase> | undefined;
+function db(): Promise<IDBDatabase> {
+  opened ??= new Promise((resolve, reject) => {
+    const req = indexedDB.open("clusters-in-focus", 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore("datasets", { keyPath: "id", autoIncrement: true });
+      req.result.createObjectStore("rows");
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return opened;
+}
+
+async function transaction<T>(
+  mode: IDBTransactionMode,
+  run: (datasets: IDBObjectStore, rows: IDBObjectStore) => IDBRequest<T>,
+): Promise<T> {
+  const tx = (await db()).transaction(["datasets", "rows"], mode);
+  const req = run(tx.objectStore("datasets"), tx.objectStore("rows"));
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve(req.result);
+    tx.onerror = tx.onabort = () => reject(tx.error);
+  });
+}
 
 export class FileService {
-  private static inferColumnType(values: unknown[]): "number" | "string" {
-    const nonEmptyValues = values.filter((v) => v !== null && v !== "");
-
-    const isNumeric = nonEmptyValues.every((value) => {
-      const num = Number(value);
-      return !isNaN(num) && typeof num === "number";
-    });
-
-    return isNumeric ? "number" : "string";
+  static parseCSVFile(file: File) {
+    return parseCSV(file);
   }
 
-  static async parseCSVFile(file: File): Promise<{
-    fileName: string;
-    data: DataRow[];
-    headers: string[];
-    fileId?: string;
-  }> {
-    return new Promise((resolve, reject) => {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: async (result) => {
-          if (result.data.length === 0) {
-            reject(new Error("No data found in file"));
-            return;
-          }
+  static async saveDataset(name: string, data: DataRow[], headers: string[]): Promise<DatasetInfo> {
+    const id = await transaction("readwrite", (datasets, rows) => {
+      const req = datasets.add({ name });
+      req.onsuccess = () => rows.put({ data, headers }, req.result);
+      return req;
+    });
+    return { id: id as number, name };
+  }
 
-          try {
+  static async getDataset(dataset: DatasetInfo): Promise<{ data: DataRow[]; headers: string[] }> {
+    if (dataset.id === EXAMPLE_DATASET.id) {
+      const response = await fetch(import.meta.env.BASE_URL.replace(/\/?$/, "/") + EXAMPLE_DATASET.name);
+      if (!response.ok) throw new Error(`Could not load ${EXAMPLE_DATASET.name}`);
+      return parseCSV(await response.text());
+    }
+    const stored = await transaction("readonly", (_, rows) => rows.get(dataset.id));
+    if (!stored) throw new Error(`Dataset ${dataset.name} not found`);
+    return stored;
+  }
 
-            const rawData = result.data as Record<string, unknown>[];
-            const headers = Object.keys(rawData[0]);
-
-            if (headers.length === 0) {
-              reject(new Error("No valid headers found in the file"));
-              return;
-            }
-
-
-            // Determine column types
-            const columnTypes: Record<string, "number" | "string"> = {};
-            headers.forEach((header) => {
-              const columnValues = rawData.map((row) => row[header]);
-              columnTypes[header] = this.inferColumnType(columnValues);
-            });
-
-            // Filter and format data
-            const formattedData: DataRow[] = rawData
-              .filter((row) => {
-                // Skip rows with all empty values
-                const hasValues = Object.values(row).some(
-                  (value) => value !== null && value !== "" && value !== undefined,
-                );
-                return hasValues;
-              })
-              .map((row) => {
-                const newRow: DataRow = {};
-
-                headers.forEach((header) => {
-                  const value = row[header];
-
-                  // Explicitly handle null and undefined values
-                  if (value === null || value === undefined || value === "") {
-                    newRow[header] = null; // Keep all nulls as null
-                    return;
-                  }
-
-                  // Convert to appropriate type
-                  if (columnTypes[header] === "number") {
-                    // Handle numeric values
-                    const numValue = Number(value);
-                    if (isNaN(numValue)) {
-                      newRow[header] = null;
-                    } else {
-                      newRow[header] = numValue;
-                    }
-                  } else {
-                    // Handle string values - ensure it's a string
-                    const strValue = String(value).trim();
-                    newRow[header] = strValue === "" ? null : strValue;
-                  }
-                });
-
-                return newRow;
-              });
-
-            if (formattedData.length === 0) {
-              reject(new Error("No valid data rows found after processing"));
-              return;
-            }
-
-
-            // Check one row as sample for logging
-            if (formattedData.length > 0) {
-            }
-
-            try {
-              // Send data to backend
-              const { file_id } = await this.uploadData(formattedData, file.name);
-
-              resolve({
-                fileName: file.name,
-                data: formattedData,
-                headers,
-                fileId: file_id,
-              });
-            } catch (error) {
-              reject(error);
-            }
-          } catch (error) {
-            reject(
-              new Error(`Failed to process CSV data: ${error instanceof Error ? error.message : "Unknown error"}`),
-            );
-          }
-        },
-        error: (error) => {
-          reject(error);
-        },
-      });
+  static async deleteDataset(dataset: DatasetInfo): Promise<void> {
+    await transaction("readwrite", (datasets, rows) => {
+      rows.delete(dataset.id);
+      return datasets.delete(dataset.id);
     });
   }
 
-  static async uploadData(data: DataRow[], filename: string): Promise<{ file_id: string }> {
+  /** The bundled example first, then this browser's saved datasets. */
+  static async getAllDatasets(): Promise<DatasetInfo[]> {
     try {
-      // Sanitize data to ensure compatibility with backend validation
-      const sanitizedData = data.map((row) => {
-        const sanitizedRow: Record<string, unknown> = {};
-
-        // Process each field to ensure valid types
-        Object.entries(row).forEach(([key, value]) => {
-          // Handle null values - keep them as null to match our updated backend
-          if (value === null || value === undefined) {
-            sanitizedRow[key] = null;
-            return;
-          }
-
-          // Ensure numbers are actually numbers and not strings that look like numbers
-          if (typeof value === "number") {
-            // If it's NaN or Infinity, replace with null
-            sanitizedRow[key] = isNaN(value) || !isFinite(value) ? null : value;
-          } else if (typeof value === "string") {
-            // Trim strings and handle empty strings
-            const trimmed = value.trim();
-            sanitizedRow[key] = trimmed === "" ? null : trimmed;
-          } else {
-            // Convert any other types to string
-            sanitizedRow[key] = String(value);
-          }
-        });
-
-        return sanitizedRow;
-      });
-
-
-      const response = await ApiClient.post<{ message: string; dataset_id: string }>(API_ROUTES.dataset.upload, {
-        data: sanitizedData,
-        filename: filename,
-      });
-      return { file_id: response.dataset_id };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async getDatasetById(fileId: string): Promise<{
-    data: DataRow[];
-    headers: string[];
-  }> {
-    try {
-      const response = await ApiClient.get<{
-        data: DataRow[];
-        headers: string[];
-      }>(API_ROUTES.dataset.getById(fileId));
-
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async deleteDataset(fileId: string): Promise<{ success: boolean; message: string }> {
-    try {
-      const response = await ApiClient.delete<{ message: string }>(API_ROUTES.dataset.deleteById(fileId));
-
-      return {
-        success: true,
-        message: response.message || "Dataset deleted successfully",
-      };
-    } catch (error) {
-
-      // Return structured error
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : "Unknown error deleting dataset",
-      };
-    }
-  }
-
-  static async getAllDatasets(): Promise<{ id: string; filename: string }[]> {
-    try {
-      const response = await ApiClient.get<{ datasets: { id: string; filename: string }[] }>(API_ROUTES.dataset.getAll);
-
-      return response.datasets;
-    } catch (error) {
-      return [];
+      return [EXAMPLE_DATASET, ...(await transaction("readonly", (datasets) => datasets.getAll()))];
+    } catch {
+      return [EXAMPLE_DATASET]; // IndexedDB unavailable, e.g. blocked site data
     }
   }
 }

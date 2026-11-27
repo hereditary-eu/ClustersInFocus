@@ -125,42 +125,24 @@ export function ComputeClustersButton() {
   const setSelectedColumns = useAppStore(state => state.setSelectedColumns);
   const { numericColumns } = useColumnValidation(data.csvData);
   const [isComputing, setIsComputing] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [showHyperparam, setShowHyperparam] = useState(false);
   const [algorithm, setAlgorithm] = useState<ClusteringAlgorithm>("kmeans");
   const [params, setParams] = useState<ClusteringParams[typeof algorithm]>(DEFAULT_PARAMS.kmeans);
 
   const computeClusters = useCallback(async () => {
     setIsComputing(true);
-    setProgress(0);
 
     try {
-      await ClusteringService.computeFeaturePairsClusters(
-        data.csvData,
-        numericColumns,
-        algorithm,
-        params,
-        setProgress,
-        data.fileId,
-        data.fileName,
-      );
+      await ClusteringService.computeFeaturePairsClusters(data.csvData, numericColumns, algorithm, params);
 
       setSelectedColumns([]);
       toast.success("Clusters computed successfully!");
     } catch (err) {
-      // Check if this is a network error
-      if (
-        (err instanceof TypeError && err.message.includes("network")) ||
-        (err instanceof Error && err.message.includes("Failed to fetch"))
-      ) {
-        toast.error("Unable to connect to the server. Please check that the backend is running or try again later.");
-      } else {
-        toast.error("An error occurred while computing clusters. Please try again.");
-      }
+      toast.error(`An error occurred while computing clusters: ${err instanceof Error ? err.message : err}`);
     } finally {
       setIsComputing(false);
     }
-  }, [data.csvData, numericColumns, algorithm, params, data.fileId, data.fileName, setSelectedColumns]);
+  }, [data.csvData, numericColumns, algorithm, params, setSelectedColumns]);
 
   return (
     <div className={styles.controls}>
@@ -189,7 +171,7 @@ export function ComputeClustersButton() {
       </button>
 
       <button onClick={computeClusters} disabled={isComputing} className={`${styles.button} ${styles.primaryButton}`}>
-        {isComputing ? `Computing... ${Math.round(progress)}%` : "Compute Clusters"}
+        {isComputing ? "Computing..." : "Compute Clusters"}
       </button>
 
       {isComputing && (
@@ -199,10 +181,7 @@ export function ComputeClustersButton() {
               <h3 className="modal-title">Computing Clusters</h3>
             </div>
             <div className="modal-body">
-              <div className="progress-bar-container">
-                <div className="progress-bar" style={{ width: `${progress}%` }} />
-              </div>
-              <p className="progress-text">{Math.round(progress)}%</p>
+              <p className="progress-text">Running in your browser…</p>
             </div>
           </div>
         </div>

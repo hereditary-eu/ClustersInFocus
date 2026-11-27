@@ -64,7 +64,7 @@ const Panel3ClusterSimilarity: React.FC = () => {
     if (selectedCluster !== null && selectedColumns.length === 2 && data.fileId) {
       setLoading(true);
 
-      ClusteringService.getClusterSimilarities(selectedColumns[0], selectedColumns[1], selectedCluster, data.fileId!)
+      ClusteringService.getClusterSimilarities(selectedColumns[0], selectedColumns[1], selectedCluster)
         .then((response) => {
           setSimilarities(response);
         })

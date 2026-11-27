@@ -1,20 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Grid, type CellComponentProps } from "react-window";
-import { ClusteringService } from "../../../services/ClusteringService";
+import { ClusteringService, type FeaturePairMatrix } from "../../../services/ClusteringService";
 import { useAppStore } from "../../../stores/useAppStore";
 import { toast } from "../../../stores/useToastStore";
-import { getNumericColumns } from "../../../utils/validation";
 import styles from "./ClusterSimilarityMatrix.module.css";
 
-interface FeaturePairMatrixData {
-  features: string[];
-  similarities: number[][];
-  stats: {
-    min_similarity: number;
-    max_similarity: number;
-    size: number;
-  };
-}
 
 interface ClusterSimilarityMatrixProps {
   width: number;
@@ -22,7 +12,7 @@ interface ClusterSimilarityMatrixProps {
 }
 
 interface CellData {
-  featurePairMatrixData: FeaturePairMatrixData;
+  featurePairMatrixData: FeaturePairMatrix;
   onCellHover: (rowIndex: number, colIndex: number, event: React.MouseEvent) => void;
   onCellLeave: () => void;
   colorRangeMode: "min-max" | "full";
@@ -118,7 +108,7 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
   const data = useAppStore(state => state.data);
   const selectedCluster = useAppStore(state => state.selectedCluster);
   const selectedColumns = useAppStore(state => state.selectedColumns);
-  const [featurePairMatrixData, setFeaturePairMatrixData] = useState<FeaturePairMatrixData | null>(null);
+  const [featurePairMatrixData, setFeaturePairMatrixData] = useState<FeaturePairMatrix | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showConfig, setShowConfig] = useState<boolean>(false);
   const [aggregationMethod, setAggregationMethod] = useState<string>("max");
@@ -130,7 +120,6 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
     y: 0,
     content: null,
   });
-  const numericColumns = useMemo(() => getNumericColumns(data.csvData), [data.csvData]);
 
   useEffect(() => {
     if (!data.fileId) {
@@ -147,22 +136,13 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
       setLoading(true);
       try {
         const matrixData = await ClusteringService.getFeaturePairSimilarityMatrix(
-          data.fileId!,
           selectedColumns[0],
           selectedColumns[1],
           selectedCluster,
-          numericColumns,
           aggregationMethod,
           reorderMethod,
         );
-
-        if (matrixData) {
-          setFeaturePairMatrixData(matrixData);
-        } else {
-          toast.error(
-            "No feature pair similarity data available. Please ensure clusters have been computed for the selected feature pair.",
-          );
-        }
+        setFeaturePairMatrixData(matrixData);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error";
         if (errorMessage.includes("not found for feature pair")) {
@@ -178,7 +158,7 @@ const ClusterSimilarityMatrix: React.FC<ClusterSimilarityMatrixProps> = ({ width
     };
 
     fetchMatrixData();
-  }, [data.fileId, numericColumns, selectedCluster, selectedColumns, aggregationMethod, reorderMethod]);
+  }, [data.fileId, selectedCluster, selectedColumns, aggregationMethod, reorderMethod]);
 
   const handleCellHover = useCallback(
     (rowIndex: number, colIndex: number, event: React.MouseEvent) => {

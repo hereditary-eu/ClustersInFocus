@@ -26,9 +26,9 @@ A use case on a Parkinson's disease speech dataset demonstrates the tool's effec
 ## Data
 
 The use case in the paper uses the Parkinson's disease voice measurement dataset by Max Little ([UCI Machine Learning Repository](https://doi.org/10.24432/C59C74), CC BY 4.0), as redistributed on [Kaggle](https://www.kaggle.com/datasets/debasisdotcom/parkinson-disease-detection/data).
-It ships pre-loaded as `parkinsonsdata.csv` in `backend/app.db`.
+It ships with the app as `frontend/public/parkinsonsdata.csv`.
 
-You can upload your own CSV files through the interface. Uploaded datasets are stored in the server-side database and are visible to everyone using the same deployment, so **do not upload personal or patient data to the public demo**; self-host for anything that is not public.
+You can open your own CSV files through the interface. All computation (clustering, similarities, SHAP values) runs in your browser via WebAssembly, so **your data never leaves your machine**; opened datasets are saved only in your browser's IndexedDB.
 
 ## Running locally
 
@@ -39,15 +39,22 @@ docker compose up
 
 This will start a webserver (on port 80), which you can access via your browser.
 
-For development, dependencies are managed with [uv](https://docs.astral.sh/uv/) (backend) and [bun](https://bun.sh/) (frontend) from the repository root:
+The computations live in the Rust crate `compute/`, compiled to WebAssembly and run in a Web Worker.
+For development you need [Rust](https://rustup.rs/) (the wasm target is installed via `rust-toolchain.toml`), the matching `wasm-bindgen` CLI and [bun](https://bun.sh/):
 
 ```bash
-uv sync && (cd backend && uv run run.py)  # API on http://localhost:8000
-bun install && bun dev                    # frontend on http://localhost:5173/cif
+cargo install wasm-bindgen-cli --version 0.2.130 --locked  # once; must match compute/Cargo.toml
+bun install && bun dev                                      # http://localhost:5173/cif
+```
+
+`reference/` keeps the original Python implementation (scikit-learn, scipy, xgboost + shap); its parity tests run the Rust crate against it:
+
+```bash
+bun run test  # cargo test + uv run pytest
 ```
 In order to recreate the screenshot above and in the paper (Figure 1), open Firefox on `http://localhost`.
 You should now be able to see the interface.
-On the top right dropdown, select `parkinsonsdata.csv`, which should already be available within the pre-loaded database.
+On the top right dropdown, select `parkinsonsdata.csv (example)`.
 
 You should now be able to see a tabular view of the data.
 In order to get to the heatmap view, click on the list icon in the top-right corner of Panel 1 (the Data Panel).

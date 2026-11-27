@@ -11,7 +11,6 @@ export function ComputeShapleyValuesButton() {
   const setShapleyValues = useAppStore(state => state.setShapleyValues);
   const { numericColumns } = useColumnValidation(data.csvData);
   const [isComputing, setIsComputing] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [targetColumn, setTargetColumn] = useState<string>(numericColumns[0] || "");
 
   useEffect(() => {
@@ -29,17 +28,8 @@ export function ComputeShapleyValuesButton() {
     if (!targetColumn) return;
 
     setIsComputing(true);
-    setProgress(0);
     try {
-      await ClusteringService.computeShapleyValues(
-        targetColumn,
-        data.fileId || "",
-        setProgress,
-        data.csvData,
-        data.fileName,
-      );
-      const values = await ClusteringService.getShapleyValues(targetColumn, data.fileId || "");
-      setShapleyValues(values);
+      setShapleyValues(await ClusteringService.computeShapleyValues(data.csvData, numericColumns, targetColumn));
       toast.success("Shapley values computed successfully!");
     } catch (err) {
       if (err instanceof Error) {
@@ -50,7 +40,7 @@ export function ComputeShapleyValuesButton() {
     } finally {
       setIsComputing(false);
     }
-  }, [targetColumn, data.fileId, data.csvData, data.fileName, setShapleyValues]);
+  }, [targetColumn, data.csvData, numericColumns, setShapleyValues]);
 
   return (
     <div className={styles.controls}>
@@ -74,7 +64,7 @@ export function ComputeShapleyValuesButton() {
       </div>
 
       <button onClick={computeShapleyValues} disabled={isComputing || !targetColumn} className={styles.button}>
-        {isComputing ? `Computing... ${Math.round(progress)}%` : "Compute SHAP Values"}
+        {isComputing ? "Computing..." : "Compute SHAP Values"}
       </button>
 
       {isComputing && (
@@ -84,10 +74,7 @@ export function ComputeShapleyValuesButton() {
               <h3 className="modal-title">Computing Shapley Values</h3>
             </div>
             <div className="modal-body">
-              <div className="progress-bar-container">
-                <div className="progress-bar" style={{ width: `${progress}%` }} />
-              </div>
-              <p className="progress-text">{Math.round(progress)}%</p>
+              <p className="progress-text">Running in your browser…</p>
             </div>
           </div>
         </div>
